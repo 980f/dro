@@ -42,60 +42,23 @@ extern "C" {
  *  contains the load address, execution address and length of each RW data
  *  section and the execution and length of each BSS (zero initialized) section.
  */
+  struct InitializedRam {
+    unsigned int *rom;
+    unsigned int *ram;
+    unsigned int length;
+  };
 
-  unsigned int __data_section_table;
-  unsigned int __data_section_table_end;
-  unsigned int __bss_section_table;
-  unsigned int __bss_section_table_end;
+  InitializedRam *__data_section_table;
+  InitializedRam *__data_section_table_end;
+
+  struct ZeroedRam {
+    unsigned int *ram;
+    unsigned int length;
+  };
+
+  ZeroedRam *__bss_section_table;
+  ZeroedRam *__bss_section_table_end;
 }
-
-__attribute__ ((section(".after_vectors")))
-void data_init(unsigned int *rom, unsigned int *ram, unsigned int len){
-  len /= 4; // convert byte count to u32 count.
-  while(len-- > 0) {
-    *ram++ = *rom++;
-  }
-}
-
-__attribute__ ((section(".after_vectors")))
-void bss_init(unsigned int *ram, unsigned int len){
-  len /= 4; // convert byte count to u32 count.
-  while(len-- > 0) {
-    *ram++ = 0;
-  }
-}
-
-/*****************************************************************************
- * Reset entry point. Not actually an isr as it is jumped to, not called.
- * Sets up a simple runtime environment and initializes the C/C++ library.
- */
-
-__attribute__ ((section(".after_vectors")))
-void start(void){
-  // Load base address of Global Section Table
-  unsigned int *SectionTableAddr = &__data_section_table;
-
-  // Copy the data sections from flash to SRAM.
-  while(SectionTableAddr < &__data_section_table_end) {
-    // can't do these in function parameter list due to no guarantee by compiler of argument processing order.
-    unsigned int *LoadAddr = reinterpret_cast<unsigned int *>(*SectionTableAddr++);
-    unsigned int *ExeAddr = reinterpret_cast<unsigned int *>(*SectionTableAddr++);
-    unsigned int SectionLen = *SectionTableAddr++;
-    data_init(LoadAddr, ExeAddr, SectionLen);
-  }
-  // At this point we trust that, SectionTableAddr = &__bss_section_table;
-  // Zero fill the bss segment
-  while(SectionTableAddr < &__bss_section_table_end) {
-    unsigned int *ExeAddr = reinterpret_cast<unsigned int *>(*SectionTableAddr++);
-    unsigned int SectionLen = *SectionTableAddr++;
-    bss_init(ExeAddr, SectionLen);
-  }
-  SystemInit(); // stuff that C++ construction might need, like turning on hardware modules (GPIO::Init())
-  __libc_init_array(); // C++ library initialisation (? constructors for static objects?)
-  main();
-  // todo: theoretically could find and execute destructors for static objects.
-  generateHardReset(); // this choice is based upon the system tolerating spontanenous power cycles.
-} // start
 
 
 // instead of tracking #defined symbols just dummy up the optional routines:
@@ -105,6 +68,48 @@ __attribute__ ((weak)) void SystemInit(void){
 }
 __attribute__ ((section(".after_vectors")))
 __attribute__ ((weak)) void __libc_init_array(void){
-  // must not be any C++ static construction
+  // must not be any C++ static construction or other libc startup.
 }
+
+/** startup only copies 32 bit aligned, 32bit padded structures, but linker gives byte addresses and counts */
+__attribute__ ((section(".after_vectors")))
+void data_init(unsigned int *rom, unsigned int *ram, unsigned int len){
+  len /= sizeof(unsigned int); // convert byte count to u32 count.
+  while(len-- > 0) {
+    *ram++ = *rom++;
+  }
+}
+
+/** startup only copies 32 bit aligned, 32bit padded structures, but linker gives byte addresses and counts.
+ *  Does anyone remember what BSS originally meant? Nowadays it is 'zeroed static variables' */
+__attribute__ ((section(".after_vectors")))
+void bss_init(unsigned int *ram, unsigned int len){
+  len /= sizeof(unsigned int); // convert byte count to u32 count.
+  while(len-- > 0) {
+    *ram++ = 0;
+  }
+}
+
+/*****************************************************************************
+ * Reset entry point. Not actually an isr as it is jumped to, not called nor vectored to.
+ * Sets up a simple runtime environment and initializes the C/C++ library.
+ */
+__attribute__ ((section(".after_vectors")))
+void start(void){
+  // Copy the data sections from flash to SRAM.
+  for(InitializedRam *rammer = __data_section_table; rammer < __data_section_table_end; ++rammer) {
+    data_init(rammer->rom, rammer->ram, rammer->length);
+  }
+  // Zero fill the bss segments
+  for(ZeroedRam *zeroer = __bss_section_table; zeroer < __bss_section_table_end; ++zeroer) {
+    bss_init(zeroer->ram, zeroer->length);
+  }
+  SystemInit(); // stuff that C++ construction might need, like turning on hardware modules (GPIO::Init())
+  __libc_init_array(); // C++ library initialisation (? constructors for static objects?)
+  main();
+  // todo: theoretically could find and execute destructors for static objects.
+  generateHardReset(); // this choice is based upon the system tolerating spontanenous power cycles.
+} // start
+
+
 // end custom pre-main startups

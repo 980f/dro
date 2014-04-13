@@ -1,21 +1,21 @@
 /*all about interrupts*/
 #include "nvic.h"
 
-//vendor/chip/board specific reset generation, don't want to reset just the core.
+// vendor/chip/board specific reset generation, don't want to reset just the core.
 extern "C" void generateHardReset(void);
-//generic error reporter, need to make a header.
+// generic error reporter, need to make a header.
 extern void wtf(int code);
 
 volatile int CriticalSection ::nesting = 0;
 
 struct InterruptController {
-  //ICSR
-  volatile unsigned int active : 9; //isr we are within
+  // ICSR
+  volatile unsigned int active : 9; // isr we are within
   unsigned int : 2;
-  volatile unsigned int unnested : 1; //status: will return to "not-interrupted" if isr ends now.
-  volatile unsigned int pending : 9; //highest priority one pending, if>active we are about to nest :)
-  volatile unsigned int isrpending : 1; //non-NMI, non-Fault is pending
-  volatile unsigned int isrpreempt : 1; //about to be nested, only useful for debug.
+  volatile unsigned int unnested : 1; // status: will return to "not-interrupted" if isr ends now.
+  volatile unsigned int pending : 9; // highest priority one pending, if>active we are about to nest :)
+  volatile unsigned int isrpending : 1; // non-NMI, non-Fault is pending
+  volatile unsigned int isrpreempt : 1; // about to be nested, only useful for debug.
   unsigned int : 1;
   unsigned int pendTickClr : 1;
   unsigned int pendTickSet : 1;
@@ -23,39 +23,39 @@ struct InterruptController {
   unsigned int pendSVSet : 1;
   unsigned int : 2;
   unsigned int pendNMISet : 1;
-  u32 VectorTableBase; //bits 6..0 better be set to 0!
+  u32 VectorTableBase; // bits 6..0 better be set to 0!
 
   struct AIRC {
-    unsigned int hardReset : 1; //generate a hardware reset, maybe
-    unsigned int eraseIrqState : 1; //abend interrupt handling activity, but doesn't fixup the stack
-    unsigned int pleaseReset : 1; //will generate a hardware reset
-    unsigned int priorityGrouper : 3; //indirectly the number of interrupt levels
-    unsigned int endianNess : 1; //read only
-    u16 VectorKey; //write 05FA to write to any of the above fields.
+    unsigned int hardReset : 1; // generate a hardware reset, maybe
+    unsigned int eraseIrqState : 1; // abend interrupt handling activity, but doesn't fixup the stack
+    unsigned int pleaseReset : 1; // will generate a hardware reset
+    unsigned int priorityGrouper : 3; // indirectly the number of interrupt levels
+    unsigned int endianNess : 1; // read only
+    u16 VectorKey; // write 05FA to write to any of the above fields.
   };
 
-  u32 airc; //must build an object then copy as a u32 to this field.
+  u32 airc; // must build an object then copy as a u32 to this field.
 
   unsigned int : 1;
   unsigned int sleepOnExit : 1; //
   unsigned int sleepDeep : 1;
   unsigned int : 1;
-  unsigned int sevOnPend : 1; //let interrupts be events for WFE
+  unsigned int sevOnPend : 1; // let interrupts be events for WFE
   unsigned int : 32 - 5;
 
-  //u32 CCR;
-  unsigned int allowThreadOnReturn : 1; //only an RTOS would want this available
-  unsigned int allowSoftInterruptTriggers : 1; //allow user code to simulate interrupts
+  // u32 CCR;
+  unsigned int allowThreadOnReturn : 1; // only an RTOS would want this available
+  unsigned int allowSoftInterruptTriggers : 1; // allow user code to simulate interrupts
   unsigned int : 1;
   unsigned int trapUnaligned : 1;
-  unsigned int trapDivBy0 : 1; //a heinous thing to do
+  unsigned int trapDivBy0 : 1; // a heinous thing to do
   unsigned int : 3;
   unsigned int ignoreMisalignmentInFaultHandlers : 1;
-  unsigned int : 1; //stkalign, let hardware manage this
+  unsigned int : 1; // stkalign, let hardware manage this
   unsigned int : 32 - 10;
 
-  u8 priority[12]; //syscall settable prorities, 4 .. 15, -12 to -1 in our unified numbering
-  //volatile u32 SHCSR;
+  u8 priority[12]; // syscall settable prorities, 4 .. 15, -12 to -1 in our unified numbering
+  // volatile u32 SHCSR;
   volatile unsigned int memFault : 1;
   volatile unsigned int busFault : 1;
   unsigned int : 1;
@@ -85,70 +85,69 @@ struct InterruptController {
   u32 mmFaultAddress;
   u32 busFaultAddress;
   volatile u32 AFSR;
-  //cpuid table
+  // cpuid table
   // coprocessor
-
 };
 
-//0xE000EF00: write an interrupt id number to get it to pend.
-//nvic[INT_ENA]=1
-//basepri precludes higher numbered interrupts from occuring.
-//primask precludes any normal interrupt
-//faultmask precludes most faults.
+// 0xE000EF00: write an interrupt id number to get it to pend.
+// nvic[INT_ENA]=1
+// basepri precludes higher numbered interrupts from occuring.
+// primask precludes any normal interrupt
+// faultmask precludes most faults.
 /*
-  * void __set_PRIMASK (uint32_t value)  M0, M3  PRIMASK = value  Assign value to Priority Mask Register (using the instruction MSR)
-  * uint32_t __get_PRIMASK (void)  M0, M3  return PRIMASK  Return Priority Mask Register (using the instruction MRS)
-  * void __enable_fault_irq (void)  M3  FAULTMASK = 0  Global Fault exception and Interrupt enable (using the instruction CPSIE f)
-  * void __disable_fault_irq (void)  M3  FAULTMASK = 1  Global Fault exception and Interrupt disable (using the instruction CPSID f)
-  */
+ * void __set_PRIMASK (uint32_t value)  M0, M3  PRIMASK = value  Assign value to Priority Mask Register (using the instruction MSR)
+ * uint32_t __get_PRIMASK (void)  M0, M3  return PRIMASK  Return Priority Mask Register (using the instruction MRS)
+ * void __enable_fault_irq (void)  M3  FAULTMASK = 0  Global Fault exception and Interrupt enable (using the instruction CPSIE f)
+ * void __disable_fault_irq (void)  M3  FAULTMASK = 1  Global Fault exception and Interrupt disable (using the instruction CPSID f)
+ */
 soliton(InterruptController, 0xE000ED04);
 
 void configurePriorityGrouping(int code){
-  *reinterpret_cast <u32 *> (0xE000ED0C) = ((code & 7) << 8) | 0x05FA0000;
+  *reinterpret_cast<u32 *>(0xE000ED0C) = ((code & 7) << 8) | 0x05FA0000;
 }
 
-extern "C" { //to keep names simple for "alias" processor
+extern "C" { // to keep names simple for "alias" processor
   void unhandledFault(void){
     register int num = theInterruptController->active;
 
     if(num >= 4) {
-      theInterruptController->priority[num - 4] = 0xFF; //lower them as much as possible
+      theInterruptController->priority[num - 4] = 0xFF; // lower them as much as possible
     }
     switch(num) {
-    case 0: //surreal: stack pointer init rather than an interrupt
-    case 1: //reset
-      //todo:3 reset vector table base to rom.
+    case 0: // surreal: stack pointer init rather than an interrupt
+    case 1: // reset
+      // todo:3 reset vector table base to rom.
       break;
-    case 2: //NMI
-      //nothing to do, but pin doesn't exist on chip of interest to me
+    case 2: // NMI
+      // nothing to do, but pin doesn't exist on chip of interest to me
       break;
-    case 3: //hard Fault
+    case 3: // hard Fault
       /** infinite recursion gets here, stack trashing, I've had vptr's go bad...*/
-      generateHardReset();//since we usually get into an infinite loop.
+      generateHardReset(); // since we usually get into an infinite loop.
       /* used hard reset rather than soft as my hardware module interfaces expect it.*/
       break;
-    case 4: //memmanage
+    case 4: // memmanage
       theInterruptController->memoryFaultEnable = 0;
       break;
-    case 5: //bus
+    case 5: // bus
       theInterruptController->busFaultEnable = 0;
       break;
-    case 6: //usage
+    case 6: // usage
       theInterruptController->usageFaultEnable = 0;
       break;
-    case 7: //nothing
-    case 8: //nothing
-    case 9: //nothing
-    case 10: //nothing
-    case 11: //sv call
-      //do nothing
+    case 7: // nothing
+    case 8: // nothing
+    case 9: // nothing
+    case 10: // nothing
+    case 11: // sv call
+      // do nothing
       break;
-    case 12: //debug mon
-    case 13: //none
-    case 14: //pend SV (service requested by bit set rather than instruction
+    case 12: // debug mon
+    case 13: // none
+    case 14: // pend SV (service requested by bit set rather than instruction
       break;
-    case 15: //systick
-      //todo:2 disable systick interrupts
+    case 15: // systick
+      // todo:2 disable systick interrupts
       break;
     } /* switch */
   } /* unhandledFault */
@@ -162,15 +161,14 @@ extern "C" { //to keep names simple for "alias" processor
   } /* unhandledInterruptHandler */
 
 /** sometimes pure virtual functions that aren't overloaded get called anyway,
-  * such as from extended classes prophylactically calling the overloaded parent,
-    or constructors calling their members */
+ * such as from extended classes prophylactically calling the overloaded parent,
+ *   or constructors calling their members */
   void __cxa_pure_virtual(){  /* ignore calls to pure virtual functions */
     wtf(100000);
   }
+} // end extern "C"
 
-} //end extern "C"
-
-//the stubs declare handler routines that deFault to unhandledInterruptHandler or unhandledFault if not otherwise declared.
+// the stubs declare handler routines that deFault to unhandledInterruptHandler or unhandledFault if not otherwise declared.
 
 #define stub(irq) void IRQ ## irq(void) __attribute__((weak, alias("unhandledInterruptHandler")))
 
@@ -254,27 +252,27 @@ stub(56);
 stub(57);
 stub(58);
 stub(59);
-//todo:3 device model specific number of these
+// todo:3 device model specific number of these
 
-extern "C" void _start(void); //_start is in thumb_crt0.s, name is magic to Rowley linker setup
+extern "C" void _start(void); // _start is in thumb_crt0.s, name is magic to Rowley linker setup
 
-//default for applications that predated this symbol, 103CB's:
+// default for applications that predated this symbol, 103CB's:
 #ifndef SRAM_K
 #define SRAM_K 20
 #warning setting default amount of ram
 #endif
-//default for stm32:
+// default for stm32:
 #ifndef SRAM_BASE
 #define SRAM_BASE 0x20000000
 #warning setting stm32F10x ram base address.
 #endif
 
-//stack pointer: set to end of ram so as to have the maximum available.
-//todo: on devices with more than 64k stop at 64k so that all variables are bitbanded.
-u32 stacktop __attribute__((section(".vectors"))) =(SRAM_BASE+ SRAM_K*1024);
+// stack pointer: set to end of ram so as to have the maximum available.
+// todo: on devices with more than 64k stop at 64k so that all variables are bitbanded.
+u32 stacktop __attribute__((section(".vectors"))) = (SRAM_BASE + SRAM_K * 1024);
 
 Handler VectorTable[] __attribute__((section(".vectors"))) = {
-  _start, //when the declaration was off by a * the compiler generated code to write to this location, causing a hard fault.
+  _start, // when the declaration was off by a * the compiler generated code to write to this location, causing a hard fault.
   FaultName(2),
   FaultName(3),
   FaultName(4),
@@ -350,7 +348,7 @@ Handler VectorTable[] __attribute__((section(".vectors"))) = {
   IrqName(57),
   IrqName(58),
   IrqName(59),
-//todo:3 device model specific quantity.
+// todo:3 device model specific quantity.
 };
 
 /* end of file*/

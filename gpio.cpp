@@ -1,90 +1,77 @@
 /*****************************************************************************
- *   gpio.c:  GPIO C file for NXP LPC13xx Family Microprocessors
- *
- *   Copyright(C) 2008, NXP Semiconductor
- *   All rights reserved.
- *
- *   History
- *   2009.12.09  ver 1.01    GPIOSetValue() updated
- *   2008.07.20  ver 1.00    Preliminary version, first Release
- *
- *****************************************************************************/
+*   gpio.c:  GPIO C file for NXP LPC13xx Family Microprocessors
+*
+*   Copyright(C) 2008, NXP Semiconductor
+*   All rights reserved.
+*
+*   History
+*   2009.12.09  ver 1.01    GPIOSetValue() updated
+*   2008.07.20  ver 1.00    Preliminary version, first Release
+*
+*****************************************************************************/
 #include "lpc13xx.h"      /* LPC13xx Peripheral Registers */
 #include "gpio.h"
+#include "syscon.h" //for clock enable.
 using namespace LPC;
+
+
+
+/*------------- General Purpose Input/Output (GPIO) --------------------------*/
+  struct GPIO_PORT {
+    union {
+      /** address is anded with port bits, in or out */
+      volatile uint32_t MASKED_ACCESS[4096];
+      /** access all bits using final member of MASKED_ACCESS */
+      struct {
+        SKIPPED RESERVED0[4095];
+        SFR DATA;
+      };
+    };
+    SKIPPED RESERVED1[4096];
+    SFR DIR;
+    SFR IS;
+    SFR IBE;
+    SFR IEV;
+
+    SFR IE;
+    SFR RIS;
+    SFR MIS;
+    SFR IC;
+  };
+
 /** to get rid of gobs of duplicated code, paired with switch statements: */
 static inline GPIO_PORT *portPointer(PortNumber portNum){
-  return reinterpret_cast<GPIO_PORT*> (0x50000000 + (portNum << 16));
+  return reinterpret_cast<GPIO_PORT *>(0x50000000 + (portNum << 16));
 }
-//used static above as it doesn't guard against bad argument.
+// used static above as it doesn't guard against bad argument.
 
-/*****************************************************************************
- * Function name: GPIOInit
- *
- * Descriptions: Initialize GPIO, install the
- * GPIO interrupt handler
- **
- ** parameters: None
- ** Returned value: true or false, return false if the VIC table
- ** is full and GPIO interrupt handler can be
- ** installed.
- **
- *****************************************************************************/
+/** turn clock on to gpio and iocon blocks. */
 void GPIO::Init(void){
-  /* Enable AHB clock to the GPIO domain. */
-  theSYSCON->SYSAHBCLKCTRL |= (1 << 6);
-
-#ifdef __JTAG_DISABLED
-  LPC_IOCON->JTAG_TDO_PIO1_1 &= ~0x07;
-  LPC_IOCON->JTAG_TDO_PIO1_1 |= 0x01;
-#endif
-
+  ClockController<6> (1);//gpio clock bit on.
+  ClockController<16>(1);//iocon has to be turned on somewhere, might as well be here.
+  //FYI: no jtag in these parts, just SWD.
 }
 
-
-/*****************************************************************************
- ** Function name:		GPIOSetDir
- **
- ** Descriptions:		Set the direction in GPIO port
- **
- ** parameters:			port num, bit position, direction (1 out, 0 input)
- ** Returned value:		None
- **
- *****************************************************************************/
 void GPIO::SetDir(PortNumber portNum, BitNumber bitPosi, bool outputter){
-  /* if DIR is OUT(1), but GPIOx_DIR is not set, set DIR
-    * to OUT(1); if DIR is IN(0), but GPIOx_DIR is set, clr
-    * DIR to IN(0). All the other cases are ignored.
-    * On port3(bit 0 through 3 only), no error protection if
-    * bit value is out of range. */
-   if(isLegalPort(portNum )){
+  if(isLegalPort(portNum )) {
+    GPIO_PORT *lpcport = portPointer(portNum);
     register uint32_t bitpicker = (1 << bitPosi);
-     GPIO_PORT*lpcport = portPointer(portNum);
-
+    //for some unpubished reason we go throught the effort of only sending changes. perhaps something happens on a write to the dir even if the bit's value doesn't change?
     if(lpcport->DIR & bitpicker) {
-      if(!outputter) {
+      if(! outputter) {
         lpcport->DIR &= ~bitpicker;
       }
-    } else { //presently 0
-      if(outputter) { //want 1
+    } else { // presently 0
+      if(outputter) { // want 1
         lpcport->DIR |= bitpicker;
       }
     }
-   }
+  }
 } // GPIO::SetDir
 
-/*****************************************************************************
- ** Function name:		GPIOSetValue
- **
- ** Descriptions:		Set/clear a bitvalue in a specific bit position
- **						in GPIO portX(X is the port number.)
- **
- ** parameters:			port num, bit position, bit value
- ** Returned value:		None
- **
- *****************************************************************************/
+
 void GPIO::SetValue(PortNumber portNum, BitNumber bitPosi, bool bitVal){
-   if(isLegalPort(portNum )) {
+  if(isLegalPort(portNum )) {
     portPointer(portNum)->MASKED_ACCESS[(1 << bitPosi)] = bitVal ? ~0 : 0;
   }
 }
@@ -99,20 +86,20 @@ bool GPIO::GetValue(PortNumber portNum, BitNumber bitPosi){
 
 
 /*****************************************************************************
- ** Function name:		GPIOSetInterrupt
- **
- ** Descriptions:		Set interrupt sense, event, etc.
- **						edge or level, 0 is edge, 1 is level
- **						single or double edge, 0 is single, 1 is double
- **						active high or low, etc.
- **
- ** parameters:			port num, bit position, sense, single/double, polarity
- ** Returned value:		None
- **
- *****************************************************************************/
+** Function name:		GPIOSetInterrupt
+**
+** Descriptions:		Set interrupt sense, event, etc.
+**						edge or level, 0 is edge, 1 is level
+**						single or double edge, 0 is single, 1 is double
+**						active high or low, etc.
+**
+** parameters:			port num, bit position, sense, single/double, polarity
+** Returned value:		None
+**
+*****************************************************************************/
 void GPIO::SetInterrupt(PortNumber portNum, BitNumber bitPosi, uint32_t sense, uint32_t single, uint32_t event){
   if(isLegalPort(portNum)) {
-    GPIO_PORT*lpcport = portPointer(portNum);
+    GPIO_PORT *lpcport = portPointer(portNum);
 
     if(sense == 0) {
       lpcport->IS &= ~(1 << bitPosi);
@@ -134,14 +121,14 @@ void GPIO::SetInterrupt(PortNumber portNum, BitNumber bitPosi, uint32_t sense, u
 } // GPIO::SetInterrupt
 
 /*****************************************************************************
- ** Function name:		GPIOIntEnable
- **
- ** Descriptions:		Enable Interrupt Mask for a port pin.
- **
- ** parameters:			port num, bit position
- ** Returned value:		None
- **
- *****************************************************************************/
+** Function name:		GPIOIntEnable
+**
+** Descriptions:		Enable Interrupt Mask for a port pin.
+**
+** parameters:			port num, bit position
+** Returned value:		None
+**
+*****************************************************************************/
 void GPIO::IntEnable(uint32_t portNum, uint32_t bitPosi){
   if(isLegalPort(portNum)) {
     portPointer(portNum)->IE |= (1 << bitPosi);
@@ -149,14 +136,14 @@ void GPIO::IntEnable(uint32_t portNum, uint32_t bitPosi){
 }
 
 /*****************************************************************************
- ** Function name:		GPIOIntDisable
- **
- ** Descriptions:		Disable Interrupt Mask for a port pin.
- **
- ** parameters:			port num, bit position
- ** Returned value:		None
- **
- *****************************************************************************/
+** Function name:		GPIOIntDisable
+**
+** Descriptions:		Disable Interrupt Mask for a port pin.
+**
+** parameters:			port num, bit position
+** Returned value:		None
+**
+*****************************************************************************/
 void GPIO::IntDisable(uint32_t portNum, uint32_t bitPosi){
   if(isLegalPort(portNum)) {
     portPointer(portNum)->IE &= ~(1 << bitPosi);
@@ -164,14 +151,14 @@ void GPIO::IntDisable(uint32_t portNum, uint32_t bitPosi){
 }
 
 /*****************************************************************************
- ** Function name:		GPIOIntStatus
- **
- ** Descriptions:		Get Interrupt status for a port pin.
- **
- ** parameters:			port num, bit position
- ** Returned value:		None
- **
- *****************************************************************************/
+** Function name:		GPIOIntStatus
+**
+** Descriptions:		Get Interrupt status for a port pin.
+**
+** parameters:			port num, bit position
+** Returned value:		None
+**
+*****************************************************************************/
 
 bool GPIO::IntStatus(PortNumber portNum, BitNumber bitPosi){
   if(isLegalPort(portNum)) {
@@ -183,14 +170,14 @@ bool GPIO::IntStatus(PortNumber portNum, BitNumber bitPosi){
 }
 
 /*****************************************************************************
- ** Function name:		GPIOIntClear
- **
- ** Descriptions:		Clear Interrupt for a port pin.
- **
- ** parameters:			port num, bit position
- ** Returned value:		None
- **
- *****************************************************************************/
+** Function name:		GPIOIntClear
+**
+** Descriptions:		Clear Interrupt for a port pin.
+**
+** parameters:			port num, bit position
+** Returned value:		None
+**
+*****************************************************************************/
 void GPIO::IntClear(uint32_t portNum, uint32_t bitPosi){
   if(isLegalPort(portNum)) {
     portPointer(portNum)->IC |= (1 << bitPosi);
@@ -198,5 +185,5 @@ void GPIO::IntClear(uint32_t portNum, uint32_t bitPosi){
 }
 
 /******************************************************************************
- **                            End Of File
- ******************************************************************************/
+**                            End Of File
+******************************************************************************/
