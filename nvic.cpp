@@ -254,25 +254,9 @@ stub(58);
 stub(59);
 // todo:3 device model specific number of these
 
-extern "C" void _start(void); // _start is in thumb_crt0.s, name is magic to Rowley linker setup
 
-// default for applications that predated this symbol, 103CB's:
-#ifndef SRAM_K
-#define SRAM_K 20
-#warning setting default amount of ram
-#endif
-// default for stm32:
-#ifndef SRAM_BASE
-#define SRAM_BASE 0x20000000
-#warning setting stm32F10x ram base address.
-#endif
-
-// stack pointer: set to end of ram so as to have the maximum available.
-// todo: on devices with more than 64k stop at 64k so that all variables are bitbanded.
-u32 stacktop __attribute__((section(".vectors"))) = (SRAM_BASE + SRAM_K * 1024);
-
-Handler VectorTable[] __attribute__((section(".vectors"))) = {
-  _start, // when the declaration was off by a * the compiler generated code to write to this location, causing a hard fault.
+//todo: indirect name of vectors section or alter the lpcxpresso to match rowley choice.
+Handler VectorTable[] __attribute__((section(".isr_vector"))) = {
   FaultName(2),
   FaultName(3),
   FaultName(4),

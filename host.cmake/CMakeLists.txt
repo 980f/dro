@@ -8,6 +8,8 @@ cmake_minimum_required(VERSION 2.8)
 
 project(lpcbase)
 
+#need a local dir for binaries so that we can use multiple compilers.
+set(CMAKE_BINARY_DIR built)
 #cutting edge language features, the point of this project is to show their worth.
 set( CMAKE_C_FLAGS "-std=c99" )
 set( CMAKE_CXX_FLAGS "-Wall -std=c++11 " )

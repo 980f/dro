@@ -95,21 +95,37 @@ void bss_init(unsigned int *ram, unsigned int len){
  * Sets up a simple runtime environment and initializes the C/C++ library.
  */
 __attribute__ ((section(".after_vectors")))
-void start(void){
-  // Copy the data sections from flash to SRAM.
+void cstartup(void){
+  //initialize static variables
   for(InitializedRam *rammer = __data_section_table; rammer < __data_section_table_end; ++rammer) {
     data_init(rammer->rom, rammer->ram, rammer->length);
   }
-  // Zero fill the bss segments
+  // Zero other static variables.
   for(ZeroedRam *zeroer = __bss_section_table; zeroer < __bss_section_table_end; ++zeroer) {
     bss_init(zeroer->ram, zeroer->length);
   }
-  SystemInit(); // stuff that C++ construction might need, like turning on hardware modules (GPIO::Init())
-  __libc_init_array(); // C++ library initialisation (? constructors for static objects?)
+  //a hook:
+  SystemInit(); // stuff that C++ construction might need, like turning on hardware modules (e.g. LPC::GPIO::Init())
+  //a hook
+  __libc_init_array(); // C++ library initialization (? constructors for static objects?)
   main();
   // todo: theoretically could find and execute destructors for static objects.
-  generateHardReset(); // this choice is based upon the system tolerating spontanenous power cycles.
+  generateHardReset(); // this choice is based upon the system tolerating spontaneous power cycles.
 } // start
 
+// default for applications that predated this symbol, stm32F103CB's:
+#ifndef SRAM_K
+#define SRAM_K 20
+#warning setting default amount of ram
+#endif
+// default for stm32:
+#ifndef SRAM_BASE
+#define SRAM_BASE 0x20000000
+#warning setting stm32F10x ram base address.
+#endif
+
+// stack pointer: set to end of ram so as to have the maximum available.
+unsigned stacktop __attribute__((section(".isr_vector"))) = (SRAM_BASE + SRAM_K * 1024);
+void (*resetVector)(void) __attribute__((section(".isr_vector"))) = cstartup;
 
 // end custom pre-main startups

@@ -3,18 +3,17 @@
  */
 
 #include "lpc13xx.h"
-
 #include "gpio.h" // lpcexpresso
 #include "nvic.h" // alh
-
+#include "core_cmInstr.h" //cm3 intrinsics
 #include "cheapTricks.h"
 
 // p0-4,p05 for qei.
 // using defines rather than enum due to limitations of IrqName macro
 using namespace LPC;
 
-InputPin<0,4> primePhase(0);
-InputPin<0,5> otherPhase(0);
+const InputPin<0,4> primePhase(0);
+const InputPin<0,5> otherPhase(0);
 
 Irq qeiPrimeIrq(4);
 
@@ -53,13 +52,13 @@ int main(void){
   // soft stuff
   axis = 0;
   // hw stuff
-//  GPIO::Init();
+
   // live with input defaults for now, the lpc does not have a sane memory organization for its configuration controls.
   // interrupt defaults to edge sensitive
   qeiPrimeIrq.enable();
 
   while(1) {
-//    WFE();
+    __WFE();
   }
   return 0;
 } // main

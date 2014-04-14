@@ -129,7 +129,7 @@ void GPIO::SetInterrupt(PortNumber portNum, BitNumber bitPosi, uint32_t sense, u
 ** Returned value:		None
 **
 *****************************************************************************/
-void GPIO::IntEnable(uint32_t portNum, uint32_t bitPosi){
+void GPIO::IntEnable(PortNumber portNum, BitNumber bitPosi){
   if(isLegalPort(portNum)) {
     portPointer(portNum)->IE |= (1 << bitPosi);
   }
@@ -144,7 +144,7 @@ void GPIO::IntEnable(uint32_t portNum, uint32_t bitPosi){
 ** Returned value:		None
 **
 *****************************************************************************/
-void GPIO::IntDisable(uint32_t portNum, uint32_t bitPosi){
+void GPIO::IntDisable(PortNumber portNum, BitNumber bitPosi){
   if(isLegalPort(portNum)) {
     portPointer(portNum)->IE &= ~(1 << bitPosi);
   }
@@ -178,7 +178,7 @@ bool GPIO::IntStatus(PortNumber portNum, BitNumber bitPosi){
 ** Returned value:		None
 **
 *****************************************************************************/
-void GPIO::IntClear(uint32_t portNum, uint32_t bitPosi){
+void GPIO::IntClear(PortNumber portNum, BitNumber bitPosi){
   if(isLegalPort(portNum)) {
     portPointer(portNum)->IC |= (1 << bitPosi);
   }

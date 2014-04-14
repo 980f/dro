@@ -6,11 +6,11 @@ const double Infinity = std::numeric_limits<double>::infinity();
 const double Nan = std::numeric_limits<double>::quiet_NaN();
 #else
 // firmware platform didn't have a useful limits.h so ...
-static int64_t InfPattern = 0x7FFLL << 52;
-static int64_t NanPattern = 0x7FF8LL << 48;
+constexpr int64_t InfPattern = 0x7FFLL << 52;
+constexpr int64_t NanPattern = 0x7FF8LL << 48;
 
-const double Infinity = pun(double, InfPattern);
-const double Nan = pun(double, NanPattern);
+const double Infinity = pun(const double, InfPattern);
+const double Nan = pun(const double, NanPattern);
 #endif
 
 const u32 Decimal1[] = {
@@ -20,7 +20,7 @@ const u32 Decimal1[] = {
 /** @returns the number of decimal digits needed to represent the given integer, -1 if the number is 0 */
 int ilog10(u32 value){
   for(int log = countof(Decimal1); log-- > 0; ) {
-    if(Decimal1[log] <= value) {
+    if(Decimal1[log] < value) {
       return log;
     }
   }

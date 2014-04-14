@@ -190,13 +190,6 @@ using namespace LPC;
 #define __SYSTEM_CLOCK               (__XTAL)
 #endif  // CLOCK_SETUP
 
-
-///*----------------------------------------------------------------------------
-// *  Clock Variable definitions
-// *----------------------------------------------------------------------------*/
-// uint32_t SystemCoreClock = __SYSTEM_CLOCK; /*!< System Clock Frequency (Core Clock)*/
-
-
 /*----------------------------------------------------------------------------
  *  Clock functions
  *----------------------------------------------------------------------------*/
@@ -205,10 +198,8 @@ unsigned pllInputHz(void){
   switch(theSYSCON.SYSPLLCLKSEL & 0x03) {
   case 0:                       /* Internal RC oscillator             */
     return __IRC_OSC_CLK;
-
   case 1:                       /* System oscillator                  */
     return __SYS_OSC_CLK;
-
   case 2:                       /* WDT Oscillator                     */
     return LPC::WDT::osc_hz(theSYSCON.WDTOSCCTRL);
   } // switch
@@ -219,23 +210,18 @@ unsigned coreInputHz(){
   switch(theSYSCON.MAINCLKSEL & 0x03) {
   case 0:                             /* Internal RC oscillator             */
     return __IRC_OSC_CLK;
-
-    break;
   case 1:                             /* Input Clock to System PLL          */
     return pllInputHz();
-
   case 2:                             /* WDT Oscillator                     */
     return LPC::WDT::osc_hz(theSYSCON.WDTOSCCTRL);
-
-    break;
   case 3: /* System PLL Clock Out               */
     if(theSYSCON.SYSPLLCTRL & 0x180) {
-      pllInputHz();
+      return pllInputHz();
     } else {
       return pllInputHz() * 1 + (theSYSCON.SYSPLLCTRL & 0x01F);
     }
-    break;
   } // switch
+  return 0;//hopefully caller pays attention to this bogus value
 } // coreInputHz
 
 unsigned SystemCoreClockUpdate (void){           /* Get Core Clock Frequency      */
