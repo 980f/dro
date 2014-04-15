@@ -47,18 +47,6 @@
 
 
 namespace LPC {
-/******************************************************************************/
-/*                         Peripheral memory map                              */
-/******************************************************************************/
-/* Base addresses                                                             */
-//  constexpr unsigned FLASH_BASE(0x00000000UL);
-//  constexpr unsigned RAM_BASE(0x10000000UL);
-
-// 16k blocks of address space are allocated per apb device
-  constexpr unsigned apb0Device(unsigned unitNumber){
-    return 0x40000000UL + (unitNumber << 14);
-  }
-
 
 /*------------- Power Management Unit (PMU) --------------------------*/
   struct PMU {
@@ -90,44 +78,6 @@ namespace LPC {
     SKIPPED RESERVED2[12];
     SFR CTCR;
     SFR PWMC;
-  };
-
-/*------------- Universal Asynchronous Receiver Transmitter (UART) -----------*/
-  struct UART {
-    /** actually overlapped registers.*/
-    union {
-      const SFR RBR;
-      SFR THR;
-      /** baud rate divisor lower word */
-      SFR DLL;
-    };
-
-    union {
-      /** baud rate divisor upper word */
-      SFR DLM;
-      /** interrupt enable */
-      SFR IER;
-    };
-
-    union {
-      const SFR IIR;
-      SFR FCR;
-    };
-    SFR LCR;
-    SFR MCR;
-    const SFR LSR;
-    const SFR MSR;
-    SFR SCR;
-    SFR ACR;
-    SFR ICR;
-    SFR FDR;
-    SKIPPED RESERVED0;
-    SFR TER;
-    SKIPPED RESERVED1[6];
-    SFR RS485CTRL;
-    SFR ADRMATCH;
-    SFR RS485DLY;
-    const SFR FIFOLVL;
   };
 
 /*------------- Synchronous Serial Communication (SSP) -----------------------*/

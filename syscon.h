@@ -1,7 +1,7 @@
 #ifndef SYSCON_H
 #define SYSCON_H
 
-#include "lpc13xx.h"
+#include "lpcperipheral.h"
 
 /**------------- System Control (SYSCON) --------------------------------------*/
 
@@ -88,14 +88,14 @@ public:
 };
 
 /** construct one of these to set the selected clock enable */
-template <int bit> struct ClockController: public SFRbit<SFRptr(apb0Device(18), SYSCON, SYSAHBCLKCTRL), bit> {
+template <int bit> struct ClockController: public SFRbit<SFRptr(LPC::apb0Device(18), SYSCON, SYSAHBCLKCTRL), bit> {
   ClockController(bool value){
     this->operator =(value);
   }
 };
 
 /** creating one of these resets then conditionally enables a device. */
-template <int bit> struct Resetter: public SFRbit<SFRptr(apb0Device(18), SYSCON, PRESETCTRL), bit> {
+template <int bit> struct Resetter: public SFRbit<SFRptr(LPC::apb0Device(18), SYSCON, PRESETCTRL), bit> {
   Resetter(bool value=true){
     this->operator =(0);
     this->operator =(value);

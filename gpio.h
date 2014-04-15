@@ -8,8 +8,7 @@
  * and then a purely c++ performance tweaked version (operations 100% inlinable)
  ******************************************************************************/
 
-#include "peripheraltypes.h"
-#include "lpc13xx.h" //for base address stuff
+#include "lpcperipheral.h"
 
 /** the ports are numbered from 0. Making them unsigned gives us a quick bounds check via a single compare*/
 typedef unsigned PortNumber;
@@ -37,10 +36,10 @@ constexpr int pinIndex(PortNumber portNum, BitNumber bitPosition){
  the LPC designers should be spanked for this, spanked hard and with something nasty. */
 constexpr int ioconf_map[]= {
   3, 4, 7,11,12,13,19,20,24,25,26,29,
- 30,31,32,36,37,40,41,42, 5,14,27,38,
+  30,31,32,36,37,40,41,42, 5,14,27,38,
   2,10,23,35,16,17, 0, 8, 9,21,22,28,
- 33,34,39,43,15,18,
- //1 6 are not present in this list (reserved locations in hardware map), gok what they may be used for someday.
+  33,34,39,43,15,18,
+  //1 6 are not present in this list (reserved locations in hardware map), gok what they may be used for someday.
 };
 
 constexpr int ioconIndex(PortNumber portNum, BitNumber bitPosition){
@@ -97,27 +96,50 @@ protected: //for simple gpio you must use an extended class that defines read vs
     mode=ioconIndex(portNum,bitPosition), //iocon array index
     pinn=base+(mask<<2)    //phsyical pin 'masked' access location
   };
-  //each pin has its own rules as to what the pattern means, although there are a large set of common patterns.
-  inline GpioPin(uint32_t pattern){
-    reinterpret_cast<uint32_t*>(apb0Device(17))[mode]=pattern;
+
+  /** set associated IOCON register to @param pattern.
+   * Each pin has its own rules as to what the pattern means, although there are a large set of common patterns. */
+  inline void setIocon(uint32_t pattern){
+    //this presumes that the IOCON has been globally enabled by systeminit
+    reinterpret_cast<uint32_t*>(LPC::apb0Device(17))[mode]=pattern;
   }
+
+  inline GpioPin(uint32_t pattern){
+    setIocon(pattern);
+  }
+  /** @returns reference to the masked access port of the register, mask set to the one bit for this pin. @see InputPin and @see OutputPin classes for use, unlike stm32 bitbanding some shifting is still needed. */
   inline uint32_t& pin()const {
     return *reinterpret_cast<uint32_t*>(GpioPin<portNum, bitPosition>::pinn);
   }
 };
 
+/** declared outside of InputPIn class so that we don't have to apply template args to each use.*/
+enum InputPinBias {
+  LeaveFloating=0, //in case someone forgets to explicitly select a mode
+  BusLatch,   //edge, either edge, input mode buslatch
+  PullUp, //level, pulled up
+  PullDown, //level, pulled down
+};
+
 /** simple digital input */
 template <PortNumber portNum, BitNumber bitPosition> class InputPin:public GpioPin<portNum, bitPosition> {
 private:
-  void operator =(bool); //because this is a read-only entity.
+  void operator =(bool); //private because this is a read-only entity.
+
 public:
-  /** @param yanker controls pullup modality */
-  InputPin(int yanker=1):GpioPin<portNum, bitPosition>(yanker){
+
+  static constexpr unsigned ioconPattern(InputPinBias bias){
     //todo: coerce making it an input. Not simple as some gpio pins have inverted configuration from the bulk.
+    return bias;
+  }
+
+  /** @param yanker controls pullup modality */
+  InputPin(InputPinBias yanker=BusLatch):GpioPin<portNum, bitPosition>(ioconPattern(yanker)){
+    //nothing to do.
   }
   /** use the pin as if it were a boolean variable. */
   inline operator bool() const {
-    return GpioPin<portNum, bitPosition>::pin()!=0;
+    return GpioPin<portNum, bitPosition>::pin()!=0;//need to check assembler, a shift might be better.
   }
 };
 
@@ -134,7 +156,7 @@ public:
   }
 
   bool operator =(bool newvalue){
-    GpioPin<portNum, bitPosition>::pin()=newvalue?~0:0;//don't need to mask,
+    GpioPin<portNum, bitPosition>::pin()=newvalue?~0:0;//don't need to mask or shift, just present all ones or all zeroes and let the hardware 'mask with address' take care of business.
     return newvalue;
   }
 };
@@ -163,7 +185,7 @@ public:
 };
 
 
-/** simple digital input */
+/** interrupt input */
 template <PortNumber portNum, BitNumber bitPosition> class IrqPin:public GpioPin<portNum, bitPosition> {
 private:
   void operator =(bool); //because this is a read-only entity.
@@ -174,16 +196,18 @@ private:
 public:
   //values for gpio config as well as irq config.
   enum IrqStyle {
-    LowActive=0, //level, pulled up
+    NotAnInterrupt=0, //in case someone forgets to explicitly select a mode
+    AnyEdge,   //edge, either edge, input mode buslatch
+    LowActive, //level, pulled up
     HighActive, //level, pulled down
     LowEdge,   //edge, pulled up
     HighEdge,  //edge, pulled down
-    AnyEdge,   //edge, either edge, input mode buslatch
+
   };
 
   /** @param yanker controls pullup modality */
   IrqPin(int yanker):GpioPin<portNum, bitPosition>(yanker){
-    //todo: coerce making it an input. Not simple as some gpio pins have inverted configuration from the bulk.
+    //todo: set multiple registers
   }
   //todo: functions for dynamic inspection and enabling. //might allow for dynamic redefinition of polarity.
 };

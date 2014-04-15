@@ -8,12 +8,12 @@
 #include "core_cmInstr.h" //cm3 intrinsics
 #include "cheapTricks.h"
 
-// p0-4,p05 for qei.
-// using defines rather than enum due to limitations of IrqName macro
 using namespace LPC;
 
-const InputPin<0,4> primePhase(0);
-const InputPin<0,5> otherPhase(0);
+// p0-4,p05 for qei.
+
+const InputPin<PortNumber(0),BitNumber(4)> primePhase(BusLatch);
+const InputPin<0,5> otherPhase(BusLatch);
 
 Irq qeiPrimeIrq(4);
 

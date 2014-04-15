@@ -76,11 +76,4 @@ public:
 /** macro for first template argument for SFRfield and SFRbit, mates to cmsis style type declarations which can't use c bit-fields.*/
 #define SFRptr(absaddress, blocktype, member) (absaddress + offsetof(blocktype, member))
 
-//todo: move the following into their own file and include that instead of this one (in most places)
-#define DeclareSingle(regname, addr) extern LPC:: regname & const the ## regname;
-#define DefineSingle(regname, addr) LPC:: regname & the ## regname(*reinterpret_cast<LPC:: regname *>(addr))
-
-//// this variation is for things like  multiple functionally identical timers:
-//#define DeclareUnit(regname, luno, addr) LPC:: regname * const the ## regname ## luno(reinterpret_cast<LPC:: regname *>(addr))
-
 #endif // PERIPHERALTYPES_H

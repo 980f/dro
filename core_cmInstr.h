@@ -30,7 +30,16 @@
 
 #define INTRINSICALLY __attribute__((always_inline)) static inline
 
+#if __linux__
+#define SIMPLEOP(mne) void __ ## mne(void){  }
+#define SINGLEOP(mne)  uint32_t __ ## mne(uint32_t value){ return 0;}
+
+#else
 #define SIMPLEOP(mne) INTRINSICALLY void __ ## mne(void){ __asm volatile (# mne); }
+#define SINGLEOP(mne)  INTRINSICALLY unsigned __ ## mne(unsigned value){                             \
+    uint32_t result; __asm volatile (# mne " %0, %1" : "=r" (result) : "r" (value));  return result; \
+}
+#endif
 
 /** @see cm3/arm instruction manual for what these do.*/
 SIMPLEOP(NOP)
@@ -43,10 +52,10 @@ SIMPLEOP(ISB)
 SIMPLEOP(DSB)
 SIMPLEOP(DMB)
 
-#define SINGLEOP(mne)  INTRINSICALLY uint32_t __ ## mne(uint32_t value){                             \
-    uint32_t result; __asm volatile (# mne " %0, %1" : "=r" (result) : "r" (value));  return result; \
-}
+//leaving out all the load and store exclusive stuff, need to write the whole pairing in assembler to ensure always used nicely and relatively optimally.
 
+
+#if 0 //expose these at need.
 /** @returns  byte reversed value of @param value */
 SINGLEOP(REV)
 
@@ -58,102 +67,6 @@ SINGLEOP(REVSH)
 // fancier cores have bit reverser:
 SINGLEOP(RBIT)
 
-/** \brief  LDR Exclusive (8 bit)
- */
-INTRINSICALLY uint8_t __LDREXB(volatile uint8_t *addr){
-  uint8_t result;
-  __asm volatile ("ldrexb %0, [%1]" : "=r" (result) : "r" (addr));
-
-  return result;
-}
-
-
-/** \brief  LDR Exclusive (16 bit)
- *
- *   This function performs a exclusive LDR command for 16 bit values.
- *
- *   \param [in]    ptr  Pointer to data
- *   \return        value of type uint16_t at (*ptr)
- */
-INTRINSICALLY uint16_t __LDREXH(volatile uint16_t *addr){
-  uint16_t result;
-
-  __asm volatile ("ldrexh %0, [%1]" : "=r" (result) : "r" (addr));
-
-  return result;
-}
-
-
-/** \brief  LDR Exclusive (32 bit)
- *
- *   This function performs a exclusive LDR command for 32 bit values.
- *
- *   \param [in]    ptr  Pointer to data
- *   \return        value of type uint32_t at (*ptr)
- */
-INTRINSICALLY uint32_t __LDREXW(volatile uint32_t *addr){
-  uint32_t result;
-
-  __asm volatile ("ldrex %0, [%1]" : "=r" (result) : "r" (addr));
-
-  return result;
-}
-
-
-/** \brief  STR Exclusive (8 bit)
- *
- *   This function performs a exclusive STR command for 8 bit values.
- *
- *   \param [in]  value  Value to store
- *   \param [in]    ptr  Pointer to location
- *   \return          0  Function succeeded
- *   \return          1  Function failed
- */
-INTRINSICALLY uint32_t __STREXB(uint8_t value, volatile uint8_t *addr){
-  uint32_t result;
-
-  __asm volatile ("strexb %0, %2, [%1]" : "=&r" (result) : "r" (addr), "r" (value));
-
-  return result;
-}
-
-
-/** \brief  STR Exclusive (16 bit)
- *
- *   This function performs a exclusive STR command for 16 bit values.
- *
- *   \param [in]  value  Value to store
- *   \param [in]    ptr  Pointer to location
- *   \return          0  Function succeeded
- *   \return          1  Function failed
- */
-INTRINSICALLY uint32_t __STREXH(uint16_t value, volatile uint16_t *addr){
-  uint32_t result;
-
-  __asm volatile ("strexh %0, %2, [%1]" : "=&r" (result) : "r" (addr), "r" (value));
-
-  return result;
-}
-
-
-/** \brief  STR Exclusive (32 bit)
- *
- *   This function performs a exclusive STR command for 32 bit values.
- *
- *   \param [in]  value  Value to store
- *   \param [in]    ptr  Pointer to location
- *   \return          0  Function succeeded
- *   \return          1  Function failed
- */
-INTRINSICALLY uint32_t __STREXW(uint32_t value, volatile uint32_t *addr){
-  uint32_t result;
-
-  __asm volatile ("strex %0, %2, [%1]" : "=r" (result) : "r" (addr), "r" (value));
-
-  return result;
-}
-
-SIMPLEOP(CLREX);
 
 /** \brief  Signed Saturate
  *
@@ -165,7 +78,7 @@ SIMPLEOP(CLREX);
  */
 #define __SSAT(ARG1, ARG2)                                                \
   ({                                                                      \
-     uint32_t __RES, __ARG1 = (ARG1);                                     \
+     unsigned __RES, __ARG1 = (ARG1);                                     \
      __asm("ssat %0, %1, %2" : "=r" (__RES) :  "I" (ARG2), "r" (__ARG1)); \
      __RES;                                                               \
    }                                                                      \
@@ -182,7 +95,7 @@ SIMPLEOP(CLREX);
  */
 #define __USAT(ARG1, ARG2)                                                \
   ({                                                                      \
-     uint32_t __RES, __ARG1 = (ARG1);                                     \
+     unsigned __RES, __ARG1 = (ARG1);                                     \
      __asm("usat %0, %1, %2" : "=r" (__RES) :  "I" (ARG2), "r" (__ARG1)); \
      __RES;                                                               \
    }                                                                      \
@@ -196,12 +109,13 @@ SIMPLEOP(CLREX);
  *   \param [in]  value  Value to count the leading zeros
  *   \return             number of leading zeros in value
  */
-INTRINSICALLY uint8_t __CLZ(uint32_t value){
-  uint8_t result;
+INTRINSICALLY unsigned __CLZ(unsigned value){
+  unsigned result;
 
   __asm volatile ("clz %0, %1" : "=r" (result) : "r" (value));
 
   return result;
 }
+#endif
 
 #endif // ifndef __CORE_CMINSTR_H__
