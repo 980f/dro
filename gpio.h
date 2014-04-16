@@ -48,6 +48,14 @@ constexpr int ioconIndex(PortNumber portNum, BitNumber bitPosition){
 //weird iocons: 0.0 1 rather than 0 for gpio, is reset* so normally not used for gpio.
 
 //there are 4 iocon registers that aren't directly related to a gpio designator.
+#if 0
+SFR SCK_LOC; /*!< Offset: 0x0B0 SCK pin location select Register (R/W) */
+#endif
+
+/** for acces to the 4 non-gpio pin registers:*/
+constexpr unsigned ioconRegister(unsigned offset){
+  return LPC::apb0Device(17)+offset;
+}
 
 /** traditional verbose way of doing I/O, but not nearly so verbose as the nxp cmsis version it mimics.
  * instances of this class act like a boolean variable but call functions to do access operations.
@@ -104,14 +112,19 @@ protected: //for simple gpio you must use an extended class that defines read vs
     reinterpret_cast<uint32_t*>(LPC::apb0Device(17))[mode]=pattern;
   }
 
-  inline GpioPin(uint32_t pattern){
-    setIocon(pattern);
-  }
   /** @returns reference to the masked access port of the register, mask set to the one bit for this pin. @see InputPin and @see OutputPin classes for use, unlike stm32 bitbanding some shifting is still needed. */
   inline uint32_t& pin()const {
     return *reinterpret_cast<uint32_t*>(GpioPin<portNum, bitPosition>::pinn);
   }
+public:
+  /** only special pins should use this directly. */
+  inline GpioPin(uint32_t pattern){
+    setIocon(pattern);
+  }
+
 };
+
+
 
 /** declared outside of InputPIn class so that we don't have to apply template args to each use.*/
 enum InputPinBias {

@@ -1,16 +1,25 @@
 #include "uart.h"
-#include "lpcperipheral.h" //the peripheral is wholly hidden within this module.
+#include "lpcperipheral.h" // the peripheral is wholly hidden within this module.
+#include "gpio.h" // to gain control of pins
+#include "clocks.h"
+#include "syscon.h" // to enable clock
+#include "bitbanger.h" // for BitField
 using namespace LPC;
 
+// apb dev 2
+// interrupt
 /** 0=disabled else divide by 1:255.
- Could use a simple SFR, but would still want a function to validate the range. */
-SFRfield <sysConReg(0x98),0,8>uartClockDivider;
+ *  Could use a simple SFR, but would still want a function to validate the range. */
+SFRfield<sysConReg(0x98), 0, 8> uartClockDivider;
 
 
 #include "nvic.h"
 
-constexpr unsigned uartIrq=3;
+constexpr unsigned uartIrq = 46;
 
+Irq uirq(uartIrq);
+// vector isn't declared here as we need the concrete class.
+// if we use function pointers instead of extension then we can do it here.
 
 namespace LPC {
 /*------------- Universal Asynchronous Receiver Transmitter (UART) -----------*/
@@ -50,105 +59,190 @@ struct UART {
   SFR RS485DLY;
   const SFR FIFOLVL;
 };
-}
+} // namespace LPC
+
 DefineSingle(UART, apb0Device(2));
-
-Uart::Uart(){
-  //todo: turn on clock, do any basic housekeeping.
+// going through one level of computation in expectation that we will meet a part with more than one uart:
+constexpr unsigned uartRegister(unsigned offset){
+  return apb0Device(2) + offset;
 }
 
-unsigned Uart::setBaud(unsigned hertz) const {
-  return 0;
+
+
+// line control register:
+constexpr unsigned LCR = uartRegister(0x0c);
+SFRfield<LCR, 0, 2> numbitsSub5;
+SFRbit<LCR, 2> longStop;
+/** only 5 relevent values, only 3 common ones*/
+SFRfield<LCR, 3, 3> parity;
+/** sends break for as long as this is true */
+SFRbit<LCR, 6> sendBreak;
+/** the heinous divisor latch access bit. */
+SFRbit<LCR, 7> dlab;
+
+
+
+constexpr unsigned pickUart = 0b11010001; // rtfm, not worth making syntax
+Uart::Uart(): receive(nullptr), send(nullptr){
+  uirq.disable();
+  GpioPin<PortNumber(1), BitNumber(6)> rxd(pickUart);
+  GpioPin<PortNumber(1), BitNumber(7)> txd(pickUart);
+  // the 134x parts are picky about order here, the clock must be OFF when configuring the pins.
+
+  /* Enable UART clock */
+  ClockController<12>(1); //
+  uartClockDivider = unsigned(1);//a functioning value, that allows for the greatest precision, if in range.
 }
 
-void Uart::setFraming(const char *coded) const{
+///** @param which 0:dsr, 1:dcd, 2:ri @param onP3 true: port 3 else port 2 */
+// void configureModemWire(int which, bool onP3){
+//  //and here we finally find a reason for a dynamically picked iopin:
+//  //SFRbit<ioconRegister(0xb4+(which<<2),0)> HSport(onP3);
+//  //and until that is finished the user must independently configure the related pin.
+// }
 
 
+unsigned Uart::setBaudPieces(unsigned divider, unsigned mul, unsigned div, unsigned sysFreq) const {
+  if(sysFreq == 0) {//then it is a request to use the active value
+    sysFreq = coreHz();
+  }
+
+  if(mul==0 || mul>15 || div>mul ){//invalid, so set to disabling values:
+    mul=1;
+    div=0;
+  } else if(div==0){
+    mul=1; //for sake of frequency computation
+  }
+
+  constexpr unsigned FDR = uartRegister(0x28);
+  SFRfield<FDR, 0, 3> fdiv(div);
+  SFRfield<FDR, 4, 7> fmul(mul);
+
+  dlab = 1;
+  theUART.DLM = divider >> 8;
+  theUART.DLL = divider;
+  dlab = 0;
+  return /*ratio*/((mul*sysFreq) / ((mul+div)*divider*uartClockDivider*16));
+} // Uart::setBaud
+
+
+unsigned Uart::setBaud(unsigned hertz, unsigned sysFreq) const {
+  if(sysFreq == 0) {
+    sysFreq = coreHz();
+  }
+  hertz *= 16; // we need 16 times the desired baudrate.
+
+  unsigned pclk = sysFreq / uartClockDivider;
+  unsigned divider = pclk / hertz;
+  //maydo: if divider is >64k hit uartClockDivider to bring it into range.
+  static unsigned error = pclk % hertz;
+  //todo: find best pair of 4 bit mul/div to match error/hertz.
+
+  return setBaudPieces(divider,0,0,sysFreq);
+} // Uart::setBaud
+
+void Uart::setFraming(const char *coded) const {
+  int numbits = *coded++ - '0';
+
+  if(numbits < 5) {
+    return;
+  }
+  if(numbits > 8) {
+    return;
+  }
+  numbitsSub5 = numbits - 5;
+  switch(*coded++) {
+  default:
+  case 0: return;
+
+  case 'N':
+    parity = 0;
+    break;
+  case 'O':
+    parity = 0b001;
+    break;
+  case 'E':
+    parity = 0b011;
+    break;
+  case 'M':
+    parity = 0b101;
+    break;
+  case 'S':
+    parity = 0b111;
+    break;
+  } // switch
+  int stopbits = *coded++ - '0';
+  if(stopbits < 1) {
+    return;
+  }
+  if(stopbits > 2) {
+    return;
+  }
+  longStop = stopbits != 1;
+} // Uart::setFraming
+
+
+unsigned Uart::tryInput(unsigned LSRValue){
+  typedef BitWad<7,0> bits;//look just at the 'OR of 'some corruption' and the 'data available' bits
+  for(;bits::exactly(LSRValue,1);LSRValue = theUART.LSR){
+    (*receive)(theUART.RBR);
+  }
+  return LSRValue;
 }
 
-bool Uart::receive(int /*incoming*/){
-  return false; //disable reception if improper access is made to base class.
-}
 
-int Uart::send(){
-  return -1;//disable transmitter if improper access is made to base class.
-}
+void Uart::isr(){
+  unsigned IIRValue = theUART.IIR; // read once, so many of these registers have side effects let us practice on this one.
 
-#if 0
-void UART_IRQHandler(void)
-{
-  uint8_t IIRValue, LSRValue;
-  uint8_t Dummy = Dummy;
+  BitField<1, 3> irqID(IIRValue);
 
-  IIRValue = UART_U0IIR;
-  IIRValue &= ~(UART_U0IIR_IntStatus_MASK); /* skip pending bit in IIR */
-  IIRValue &= UART_U0IIR_IntId_MASK;        /* check bit 1~3, interrupt identification */
+  switch(irqID) {
+  case 0: // modem
+    break; // no formal reaction to modem line change.
+  case 1:  // thre
+//    int nextch = (*send)();
+    if(int nextch = (*send)() < 0) {
+      // todo: stop xmit interrupts
+    } else {
+      theUART.THR = nextch;
+    }
+  break;
+  case 2: // rda
+    tryInput(1);
+  break;
+  case 3:{ // line error
+    unsigned LSRValue= tryInput(theUART.LSR);//copying other people here, e.g. this deals with overrun error
 
-  // 1.) Check receiver line status
-  if (IIRValue == UART_U0IIR_IntId_RLS)
-  {
-    LSRValue = UART_U0LSR;
-    // Check for errors
-    if (LSRValue & (UART_U0LSR_OE | UART_U0LSR_PE | UART_U0LSR_FE | UART_U0LSR_RXFE | UART_U0LSR_BI))
-    {
-      /* There are errors or break interrupt */
-      /* Read LSR will clear the interrupt */
-      pcb.status = LSRValue;
-      Dummy = UART_U0RBR;	/* Dummy read on RX to clear interrupt, then bail out */
+    if(BitWad<7, 1, 2, 3, 4>::any(LSRValue)) {//someone else's code. grr, bundles OE with the others which is NOT so good.
+      (*receive)(~LSRValue); // inform user code
+      LSRValue = theUART.RBR;  // Dummy read on RX to clear cause interrupt
       return;
     }
-    // No error and receive data is ready
-    if (LSRValue & UART_U0LSR_RDR_DATA)
-    {
-      /* If no error on RLS, normal ready, save into the data buffer. */
-      /* Note: read RBR will clear the interrupt */
-      uartRxBufferWrite(UART_U0RBR);
-    }
-  }
+  }  break;
+  case 4: // reserved
+    break;
+  case 5: // reserved
+    break;
 
-  // 2.) Check receive data available
-  else if (IIRValue == UART_U0IIR_IntId_RDA)
-  {
-    // Add incoming text to UART buffer
-    uartRxBufferWrite(UART_U0RBR);
-  }
+  case 6: // char timeout (dribble in fifo)
+    tryInput(1);
+    break;
+  case 7:
+    break;
+  } // switch
+} // Uart::isr
 
-  // 3.) Check character timeout indicator
-  else if (IIRValue == UART_U0IIR_IntId_CTI)
-  {
-    /* Bit 9 as the CTI error */
-    pcb.status |= 0x100;
-  }
-
-  // 4.) Check THRE (transmit holding register empty)
-  else if (IIRValue == UART_U0IIR_IntId_THRE)
-  {
-    /* Check status in the LSR to see if valid data in U0THR or not */
-    LSRValue = UART_U0LSR;
-    if (LSRValue & UART_U0LSR_THRE)
-    {
-      pcb.pending_tx_data = 0;
-    }
-    else
-    {
-      pcb.pending_tx_data= 1;
-    }
-  }
-  return;
-}
+#if 0
 
 /**************************************************************************/
-void uartSendByte (uint8_t byte)
-{
+void uartSendByte (uint8_t byte){
   /* THRE status, contain valid data */
-  while ( !(UART_U0LSR & UART_U0LSR_THRE) );
-  UART_U0THR = byte;
-
-  return;
+  while(! (theUART.LSR & theUART.LSR_THRE)) {
+  }
+  theUART.THR = byte;
 }
 
-void uartInit(uint32_t baudrate)
-{
+void uartInit(uint32_t baudrate){
   uint32_t fDiv;
   uint32_t regVal;
 
@@ -172,53 +266,50 @@ void uartInit(uint32_t baudrate)
   SCB_UARTCLKDIV = SCB_UARTCLKDIV_DIV1;     /* divided by 1 */
 
   /* 8 bits, no Parity, 1 Stop bit */
-  UART_U0LCR = (UART_U0LCR_Word_Length_Select_8Chars |
-                UART_U0LCR_Stop_Bit_Select_1Bits |
-                UART_U0LCR_Parity_Disabled |
-                UART_U0LCR_Parity_Select_OddParity |
-                UART_U0LCR_Break_Control_Disabled |
-                UART_U0LCR_Divisor_Latch_Access_Enabled);
+  theUART.LCR = (theUART.LCR_Word_Length_Select_8Chars |
+                 theUART.LCR_Stop_Bit_Select_1Bits |
+                 theUART.LCR_Parity_Disabled |
+                 theUART.LCR_Parity_Select_OddParity |
+                 theUART.LCR_Break_Control_Disabled |
+                 theUART.LCR_Divisor_Latch_Access_Enabled);
 
   /* Baud rate */
   regVal = SCB_UARTCLKDIV;
-  fDiv = (((CFG_CPU_CCLK * SCB_SYSAHBCLKDIV)/regVal)/16)/baudrate;
+  fDiv = (((CFG_CPU_CCLK * SCB_SYSAHBCLKDIV) / regVal) / 16) / baudrate;
 
-  UART_U0DLM = fDiv / 256;
-  UART_U0DLL = fDiv % 256;
+  theUART.DLM = fDiv / 256;
+  theUART.DLL = fDiv % 256;
 
   /* Set DLAB back to 0 */
-  UART_U0LCR = (UART_U0LCR_Word_Length_Select_8Chars |
-                UART_U0LCR_Stop_Bit_Select_1Bits |
-                UART_U0LCR_Parity_Disabled |
-                UART_U0LCR_Parity_Select_OddParity |
-                UART_U0LCR_Break_Control_Disabled |
-                UART_U0LCR_Divisor_Latch_Access_Disabled);
+  theUART.LCR = (theUART.LCR_Word_Length_Select_8Chars |
+                 theUART.LCR_Stop_Bit_Select_1Bits |
+                 theUART.LCR_Parity_Disabled |
+                 theUART.LCR_Parity_Select_OddParity |
+                 theUART.LCR_Break_Control_Disabled |
+                 theUART.LCR_Divisor_Latch_Access_Disabled);
 
   /* Enable and reset TX and RX FIFO. */
-  UART_U0FCR = (UART_U0FCR_FIFO_Enabled |
-                UART_U0FCR_Rx_FIFO_Reset |
-                UART_U0FCR_Tx_FIFO_Reset);
+  theUART.FCR = (theUART.FCR_FIFO_Enabled |
+                 theUART.FCR_Rx_FIFO_Reset |
+                 theUART.FCR_Tx_FIFO_Reset);
 
   /* Read to clear the line status. */
-  regVal = UART_U0LSR;
+  regVal = theUART.LSR;
 
   /* Ensure a clean start, no data in either TX or RX FIFO. */
-  while (( UART_U0LSR & (UART_U0LSR_THRE|UART_U0LSR_TEMT)) != (UART_U0LSR_THRE|UART_U0LSR_TEMT) );
-  while ( UART_U0LSR & UART_U0LSR_RDR_DATA )
-  {
-    /* Dump data from RX FIFO */
-    regVal = UART_U0RBR;
+  while((theUART.LSR & (theUART.LSR_THRE | theUART.LSR_TEMT)) != (theUART.LSR_THRE | theUART.LSR_TEMT)) {
   }
-
+  while(theUART.LSR & theUART.LSR_RDR_DATA) {
+    /* Dump data from RX FIFO */
+    regVal = theUART.RBR;
+  }
   /* Set the initialised flag in the protocol control block */
   pcb.initialised = 1;
   pcb.baudrate = baudrate;
 
   /* Enable the UART Interrupt */
   NVIC_EnableIRQ(UART_IRQn);
-  UART_U0IER = UART_U0IER_RBR_Interrupt_Enabled | UART_U0IER_RLS_Interrupt_Enabled;
+  theUART.IER = theUART.IER_RBR_Interrupt_Enabled | theUART.IER_RLS_Interrupt_Enabled;
+} // uartInit
 
-  return;
-}
-
-#endif
+#endif // if 0

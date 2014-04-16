@@ -41,7 +41,6 @@ unsigned coreHz(){
   return coreInputHz() / theSYSCON.SYSAHBCLKDIV;
 }
 
-
 //todo: if XTAL is not zero then turn on hs-external osc and use it.
 
 //  theSYSCON.PDRUNCFG &= ~(1 << 5);         /* Power-up System Osc      */
@@ -97,4 +96,6 @@ unsigned coreHz(){
 //  theSYSCON.SYSAHBCLKDIV = SYSAHBCLKDIV_Val;
 //  theSYSCON.SYSAHBCLKCTRL = AHBCLKCTRL_Val;
 //#endif // if (CLOCK_SETUP)
+
+
 

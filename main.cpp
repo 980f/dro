@@ -7,6 +7,7 @@
 #include "nvic.h" // alh
 #include "core_cmInstr.h" //cm3 intrinsics
 #include "cheapTricks.h"
+#include "functional"
 
 using namespace LPC;
 
@@ -34,6 +35,13 @@ HandleInterrupt(4){ // interrupt number and bit number coincidentally the same. 
  * polarities for each physical input
  * reverse direction
  */
+
+
+
+class BufferedSender {
+
+};
+
 int wtf(int complaint){
   static int lastWtf = 0;
   static int repeats = 0;

@@ -21,6 +21,11 @@ constexpr unsigned sysConReg(unsigned byteOffset){
   return apb0Device(18)+byteOffset;
 }
 
+/** poke a control register given documentation of its offset */
+inline SFR& makeSFR(unsigned apbdev,unsigned offset){
+  return *(reinterpret_cast<SFR*>(apb0Device(apbdev)+offset));
+}
+
 }
 #define DefineSingle(regname, addr) LPC:: regname & the ## regname(*reinterpret_cast<LPC:: regname *>(addr))
 

@@ -37,7 +37,16 @@ template <unsigned sfraddress, int pos, int width = 1> class SFRfield {
   inline SFR *sfr() const {
     return reinterpret_cast<SFR *>(sfraddress);
   }
+private:
+  SFRfield(const SFRfield&other)=delete;
+
 public:
+  SFRfield(){}
+
+  explicit SFRfield(unsigned initlizer){
+    this->operator =(initlizer);
+  }
+
   // read
   inline operator uint32_t() const {
     return (*sfr() & mask) >> pos;
@@ -56,7 +65,7 @@ template <unsigned sfraddress, int pos> class SFRbit {
   };
 
   inline SFR &sfr() const {
-    return reinterpret_cast<SFR *>(sfraddress);
+    return *reinterpret_cast<SFR *>(sfraddress);
   }
 public:
   // read
