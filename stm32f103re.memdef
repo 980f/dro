@@ -1,0 +1,7 @@
+RAMSIZE=32K;
+ROMSIZE=256K;
+RAMSTART=512M;
+/* we have a choice between 128M and 0,
+128M always works, 0 only if you don't boot to ram.
+*/
+ROMSTART=128M;

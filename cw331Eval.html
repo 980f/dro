@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type">
+    <title>cw331Eval</title>
+  </head>
+  <body>
+    <p>crosstudio 3.3.1 evaluation</p>
+    <ol>
+      <li>clicking on linker error tries to display the linker executable, the
+        linker script would seem to be a better choice (or do nothing since the
+        error is correctly marked in the ld file)</li>
+      <li>usability: could not find project property for preprocessor defines,
+        had to hack the xml and copy section from configuration block after
+        which the option appeared under the project.</li>
+      <li>RFI: would like to disable all printf/scanf/widechar functionality, or
+        at least bundle those in a subsection for easier ignoring.</li>
+      <li>RFI: "no heap" setting, no heap allocation (or symbol stuffing) and
+        stack is set to remainder of SRAM segment (via startup in my case)</li>
+      <li>RFI: precalculate ram allocations and use that to put stack at start
+        of ram segment, so that stack overflow is a hardfault.</li>
+      <li>text editor: unhandled control keys become ordinary keys: ctrl- is '-'
+        (expected font to shrink), ctrl. is '.' instead of halting execution.
+        (since 1.17!)</li>
+      <li>build: concatenation of configuration names is done with a space char,
+        making commandline file management annoying.</li>
+      <li>"Entry Symbol=none" still emits -e making next commandline arg be the
+        entry symbol. I don't need an entry symbol so I shouldn't have to dummy
+        one up.</li>
+      <li>linker invoked with --OMAGIC, I'd like to be able to control that, but
+        see "Entry Symbol" issue for why this came to my attention.</li>
+      <li>frequently prompted to find a header file, even when the file open
+        dialog has that file handy. Doesn't remember these selections very long,
+        makes debug sessions tedious. I believe I can header files to the
+        project file, but as indicated by your "open include" right click menu
+        you can find the files yourself.</li>
+      <li>RFI: allow placing backup files in another directory, instead of same
+        directory as file, to reduce clutter when browsing the source with a
+        file manager, especially useful when grepping for something- you only
+        get hits in files that matter without having to use a fancy glob ('.h'
+        or '.cpp'). The same would be nice for autosave files.</li>
+      <li>RFI: open file dialog should watch for files being added (by external
+        actions)</li>
+      <li>RFI: open file dialog should remember last file filter, or allow you
+        to configure a default. The existing default is wrong 100% of the time
+        for me, at least when invoked by ^O.</li>
+    </ol>
+    <p>previous version bugs to confirm:</p>
+    <ol>
+      <li>BUG: debug view displays base class data from address offset, rather
+        than this+offset.</li>
+      <li>gui: menu popup can be off screen, greatly reducing their utility.
+        Tested with dual monitor system with a tall monitor on the left and a
+        shorter monitor on the right. Seems to presume that the monitors are all
+        the same height.</li>
+      <li>gui: see above- case is cycle counter right click menu, all off screen
+        except for enough to tell that a menu is present.</li>
+      <li>with a large project opening up the dependent files node of the last
+        entry pushed its content off screen</li>
+      <li><br>
+      </li>
+    </ol>
+  </body>
+</html>
