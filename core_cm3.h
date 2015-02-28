@@ -55,7 +55,7 @@ namespace CM3 {
 
 
 #define __ASM            __asm                                      /*!< asm keyword for GNU Compiler          */
-#define __INLINE         inline             /*!< inline keyword for GNU Compiler       */
+#define __INLINE         inline /*!< inline keyword for GNU Compiler       */
 
 
 #include <stdint.h>                      /*!< standard types definitions                      */
@@ -602,8 +602,8 @@ struct MPU {
 #define NVIC_BASE           (SCS_BASE + 0x0100UL)                   /*!< NVIC Base Address                 */
 // #define SCB_BASE            (SCS_BASE + 0x0D00UL)                   /*!< System Control Block Base Address */
 
-//DeclareCore(InterruptType);        /*!< Interrupt Type Register           */
-//DeclareCore(SCB);       /*!< SCB configuration struct          */
+// DeclareCore(InterruptType);        /*!< Interrupt Type Register           */
+// DeclareCore(SCB);       /*!< SCB configuration struct          */
 // #define SysTick             ((SysTick_Type *) SysTick_BASE)    /*!< SysTick configuration struct      */
 // #define NVIC                ((NVIC_Type *) NVIC_BASE)       /*!< NVIC configuration struct         */
 // DeclareCore(ITM);

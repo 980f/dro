@@ -11,33 +11,33 @@
 *****************************************************************************/
 #include "lpc13xx.h"      /* LPC13xx Peripheral Registers */
 #include "gpio.h"
-#include "syscon.h" //for clock enable.
+#include "syscon.h" // for clock enable.
 using namespace LPC;
 
 
 
 /*------------- General Purpose Input/Output (GPIO) --------------------------*/
-  struct GPIO_PORT {
-    union {
-      /** address is anded with port bits, in or out */
-      volatile uint32_t MASKED_ACCESS[4096];
-      /** access all bits using final member of MASKED_ACCESS */
-      struct {
-        SKIPPED RESERVED0[4095];
-        SFR DATA;
-      };
+struct GPIO_PORT {
+  union {
+    /** address is anded with port bits, in or out */
+    volatile uint32_t MASKED_ACCESS[4096];
+    /** access all bits using final member of MASKED_ACCESS */
+    struct {
+      SKIPPED RESERVED0[4095];
+      SFR DATA;
     };
-    SKIPPED RESERVED1[4096];
-    SFR DIR;
-    SFR IS;
-    SFR IBE;
-    SFR IEV;
-
-    SFR IE;
-    SFR RIS;
-    SFR MIS;
-    SFR IC;
   };
+  SKIPPED RESERVED1[4096];
+  SFR DIR;
+  SFR IS;
+  SFR IBE;
+  SFR IEV;
+
+  SFR IE;
+  SFR RIS;
+  SFR MIS;
+  SFR IC;
+};
 
 /** to get rid of gobs of duplicated code, paired with switch statements: */
 static inline GPIO_PORT *portPointer(PortNumber portNum){
@@ -47,16 +47,16 @@ static inline GPIO_PORT *portPointer(PortNumber portNum){
 
 /** turn clock on to gpio and iocon blocks. */
 void GPIO::Init(void){
-  ClockController<6> (1);//gpio clock bit on.
-  ClockController<16>(1);//iocon has to be turned on somewhere, might as well be here.
-  //FYI: no jtag in these parts, just SWD.
+  ClockController<6>(1); // gpio clock bit on.
+  ClockController<16>(1); // iocon has to be turned on somewhere, might as well be here.
+  // FYI: no jtag in these parts, just SWD.
 }
 
 void GPIO::SetDir(PortNumber portNum, BitNumber bitPosi, bool outputter){
   if(isLegalPort(portNum )) {
     GPIO_PORT *lpcport = portPointer(portNum);
     register uint32_t bitpicker = (1 << bitPosi);
-    //for some unpubished reason we go throught the effort of only sending changes. perhaps something happens on a write to the dir even if the bit's value doesn't change?
+    // for some unpubished reason we go throught the effort of only sending changes. perhaps something happens on a write to the dir even if the bit's value doesn't change?
     if(lpcport->DIR & bitpicker) {
       if(! outputter) {
         lpcport->DIR &= ~bitpicker;

@@ -22,7 +22,7 @@
 ******************************************************************************/
 
 #include "core_cm3.h"
-//#define InitCore(regname, addr) CM3:: regname & the ## regname(*reinterpret_cast<CM3:: regname *>(addr))
+// #define InitCore(regname, addr) CM3:: regname & the ## regname(*reinterpret_cast<CM3:: regname *>(addr))
 
 
 // InitCore(CoreDebug, 0xE000EDF0UL);  /*!< Core Debug configuration struct   */
@@ -31,5 +31,3 @@
 // #define SysTick             ((SysTick_Type *) SysTick_BASE)    /*!< SysTick configuration struct      */
 // #define NVIC                ((NVIC_Type *) NVIC_BASE)       /*!< NVIC configuration struct         */
 // InitCore(ITM, ITM_BASE);
-
-

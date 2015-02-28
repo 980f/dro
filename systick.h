@@ -17,18 +17,23 @@ u64 snapLongTime(void);
 /**
  * an isr will determine that the given time has expired,
  * but the interested code will have to look at object to determine that the event occurred.
+ * IE: code after the WFE/WFI must look at the done bit.
  */
 class PolledTimer {
 public:
   bool done;
   u32 systicksRemaining;
   PolledTimer(void);
+  /** set timeout value and start the timer */
   virtual void restart(u32 ticks); // add to list if not present, never gets removed so don't add dynamic objects.
-  void restart(float seconds); // float as is often in time critical code.
+
+  /** set timeout value and start the timer */
+  void restart(float seconds); // float not double as is often in time critical code.
+  /** make it look as if time completed. Does NOT call the ondone virtual method */
   void freeze(){
     done = 1; // precludes isr touching remaining time, and onDone doesn't get called.
   }
-public: // accessors for the system timer
+public: // accessors for the system timer (presently systick, but that is encapsulated)
   static double secondsForTicks(u32 ticks);
   static double secondsForLongTime(u64 ticks);
 

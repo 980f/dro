@@ -1,61 +1,43 @@
 #ifndef FIFO_H
 #define FIFO_H
 
-
-#include "core-atomic.h"
 /** a fifo suitable for one way data flow between routines running at different nvic priorities.
-*/
-template <int quantity> class Fifo {
+ */
+class Fifo {
   unsigned count;
-  int readIndex;
-  int writeIndex;
+  unsigned char *reader;
+  unsigned char *writer;
   /** the memory*/
-  unsigned char mem[quantity];
-public:
-  Fifo(){
-    clear();
+  unsigned char *mem;
+  unsigned char *end;
+  const unsigned quantity;
+
+  /** circularly increment reader or writer */
+  inline void incrementPointer(unsigned char *&pointer){
+    if(++pointer== end) {
+      pointer= mem;
+    }
   }
+
+public:
+  Fifo(unsigned quantity,unsigned char *mem);
 
   /** forget the content */
-  void clear(){
-    readIndex=writeIndex=count=0;
-  }
+  void clear();
 
   /** forget the content AND wipe the memory, useful for debug.*/
-  void wipe(){
-    clear();
-    for(int i=count;i-->0;){
-      mem[i]=0;
-    }
-  }
-  /** try to put a byte into the memory, @return whether there was room*/
-  bool insert(unsigned char incoming){
-    if(count<quantity){
-      mem[writeIndex++]=incoming;
-      if(writeIndex==quantity){
-        writeIndex=0;
-      }
-      atomic_increment(count);
-    }
-  }
+  void wipe();
   /** @returns bytes present, but there may be more or less real soon. */
-  inline int available()const{
+  inline int available() const {
     return count;
   }
-  /** read and remove a byte from the memory, @return the byte, or -1 if there wasn't one*/
-  int remove(){
-    if(count>0){
-      int pulled=mem[readIndex++];
-      if(readIndex==quantity){
-        readIndex=0;
-      }
-      atomic_decrement(count);
-      return pulled;
-    } else {
-      return -1;
-    }
-  }
+  /** try to put a byte into the memory, @return whether there was room*/
+  bool insert(unsigned char incoming);
+  int attempt_insert(unsigned char incoming);
 
+  /** read and remove a byte from the memory, @return the byte, or -1 if there wasn't one*/
+  int remove(); // remove
+  int attempt_remove();
 };
 
 #endif // FIFO_H

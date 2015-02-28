@@ -58,18 +58,18 @@ inline u32 quanta(u32 num, u32 denom){
   return (num + denom - 1) / denom;
 }
 
-/** protect against garbage in (divide by zero) note: 0/0 is 1*/
+/** protect against garbage in (divide by zero) note: 0/0 is 0*/
 inline double ratio(double num, double denom){
   if(denom == 0) { // pathological case
-    return num; // attempt to make 0/0 be 1 gave us 1.0 cps for unmeasured spectra  may someday return signed inf.
+    return Nan; // 0/0 == 0, not 1.
   }
   return num / denom;
 }
 
-/** protect against garbage in (divide by zero) note: 0/0 is 1*/
+/** protect against garbage in (divide by zero) note: 0/0 is 0*/
 inline float ratio(float num, float denom){
   if(denom == 0) { // pathological case
-    return num == 0 ? 1 : 0; // may someday return signed inf.
+    return Nan;
   }
   return num / denom;
 }
@@ -97,23 +97,22 @@ inline double rounder(double value, double quantum){
   return quantum * chunks(value, quantum);
 }
 
-/** canonical value % cycle, minimum positive value
+/** @returns canonical @param value modulo &param cycle, the minimum positive value such that
  *  0<= return <cycle;
  *  % operator gives negative out for negative in.
  */
 int modulus(int value, unsigned cycle);
 
-
 /** standard math lib's f_r_exp does a stupid thing for some args, we wrap it here and fix that.*/
 inline int fexp(double d) ISRISH;
 inline int fexp(double d){
-  int ret;
-
   if(d == 0.0) { // frexp returns 0, which makes it look bigger than numbers between 0 and 1.
     return -1023; // one less than any non-zero number will give
+  } else {
+    int ret;
+    frexp(d, &ret);
+    return ret;
   }
-  frexp(d, &ret);
-  return ret;
 }
 
 /** @returns whether the difference of the two numbers is less than a power of two (which defaults to 2^-14) times the bigger of the two. */
@@ -137,32 +136,19 @@ template <typename floating> bool nearly(floating value, floating other, int bit
   return cf <= f1 && cf <= f2;
 } // nearly
 
+/** table of small powers of ten */
 extern const u32 Decimal1[];
-int ilog10(u32 value);
+
+/** @returns number of decimal digits needed to represent @param value, unless value is zero in which case it returns @param forzero.
+ the default value of 1 for when given a value of 0 is handy when figuring out how many characters are needed to print a number. */
+int ilog10(u32 value, int forzero=1);
 
 /** filtering in case we choose to optimize this */
-inline double pow10(int exponent){
-  return pow(10, exponent);
-}
+inline double pow10(int exponent);
 
 template <typename mathy> mathy squared(mathy x){
   return x * x;
 }
-
-/** n!/r! = n*(n-1)..*(n-r+1)
- */
-u32 Pnr(unsigned n, unsigned r);
-
-
-////#define something as needed to kill any other min/max's as needed.
-// template adandoned as the firmware rev of gcc couldn't deal with u32 vs unsigned int, i.e. it type checked  before applying typedef's
-// template <typename Scalar> Scalar min(Scalar a,Scalar b){
-//  if(a<b){
-//    return a;
-//  } else {
-//    return b;
-//  }
-// }
 
 inline u32 min(u32 a, u32 b){
   if(a < b) {
@@ -194,15 +180,14 @@ template <typename Scalar, typename S2> Scalar max(Scalar a, S2 b){
 
 template <typename Scalar> void swap(Scalar &a, Scalar &b){
   Scalar noxor; // don't trust that xor is non corrupting for all scalars.
-
   noxor = a;
   a = b;
   b = noxor;
 }
 
 extern "C" { // assembly coded in cortexm3.s, usually due to outrageously bad compilation by gcc
-  /** the time delay given by ticks is ambiguous, it depends upon processor clock. @72MHz 1000 ticks is roughly one microsecond.*/
-  void nanoSpin(unsigned ticks); // fast spinner, first used in soft I2C.
+  /** delay for at least @param nanos nanoseconds. @param nanosResolution is something that you will have to tune for your platform. */
+  void nanoSpin(unsigned nanos,unsigned nanosResolution=83);
 
   // rounded and overflow managed 'multiply by ratio'
   u32 muldivide(u32 arg, u32 num, u32 denom);
@@ -220,30 +205,26 @@ extern "C" { // assembly coded in cortexm3.s, usually due to outrageously bad co
   /** return eff * 2^pow2  where pow2 is signed. This can be done rapidly via bitfiddling*/
   float shiftScale(float eff, int pow2);
 
+  /** @returns the logarithm of @param number if the number>0 else returns 0. */
   double flog(u32 number);
+
+  /** @returns the logarithm of the ratio of @param over/ @param under except if either is 0 they are treated instead as 1.*/
   double logRatio(u32 over, u32 under);
 
+  /** @returns 65536*@param scaled, except scaled>=.9999 gives 65535 */
   u16 uround(float scaled);
+
+  /** @returns 32768*scaled, with -32768 for scaled <=-0.5, 32767 scaled >=0.499999 */
   s16 sround(float scaled);
 
   /**NB: copyObject() and fillObject() can NOT be used with objects that contain polymorphic objects*/
+  /** wrappers for memcpy, allowing platform specific optimizations */
   void copyObject(const void *source, void *target, u32 length);
+  /** wrappers for memset, allowing platform specific optimizations */
   void fillObject(void *target, u32 length, u8 fill);
 
   // EraseThing only works on non-polymorphic types. On polymorphs it also  kills the vtable!
 #define EraseThing(thing) fillObject(thing, sizeof(thing), 0);
-
-  // documenting accessible portions of microcontroller startup code:
-  void memory_copy(const void *source, void *target, void *sourceEnd);
-
-  void memory_set(void *target, void *targetEnd, u8 value);
-
-#if 0 //  fixmelater //!defined( QT_CORE_LIB ) && !defined() //std lib's differ between pc and arm.
-  // the difference of two u16's should be a signed int. test your compiler.
-  inline u16 abs(int value){
-    return value > 0 ? value : -value;
-  }
-#endif
-} // end extern C for assembly coded routines.
+} // end extern C for (potentially) assembly coded routines.
 
 #endif /* ifndef minimath_h */

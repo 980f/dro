@@ -26,13 +26,13 @@
 #ifndef __CORE_CMINSTR_H__
 #define __CORE_CMINSTR_H__
 
-/* GNU gcc specific functions */
+/* GNU gcc specific syntax */
 
 #define INTRINSICALLY __attribute__((always_inline)) static inline
 
 #if __linux__
-#define SIMPLEOP(mne) void __ ## mne(void){  }
-#define SINGLEOP(mne)  uint32_t __ ## mne(uint32_t value){ return 0;}
+#define SIMPLEOP(mne) void __ ## mne(void){}
+#define SINGLEOP(mne)  uint32_t __ ## mne(uint32_t value){ return 0; }
 
 #else
 #define SIMPLEOP(mne) INTRINSICALLY void __ ## mne(void){ __asm volatile (# mne); }
@@ -40,6 +40,9 @@
     uint32_t result; __asm volatile (# mne " %0, %1" : "=r" (result) : "r" (value));  return result; \
 }
 #endif
+
+// the above despite all the inline keywords was made into a callable function.
+#define MNE(mne) __asm volatile (# mne)
 
 /** @see cm3/arm instruction manual for what these do.*/
 SIMPLEOP(NOP)
@@ -52,10 +55,10 @@ SIMPLEOP(ISB)
 SIMPLEOP(DSB)
 SIMPLEOP(DMB)
 
-//leaving out all the load and store exclusive stuff, need to write the whole pairing in assembler to ensure always used nicely and relatively optimally.
+// leaving out all the load and store exclusive stuff, need to write the whole pairing in assembler to ensure always used nicely and relatively optimally.
 
 
-#if 0 //expose these at need.
+#if 0 // expose these at need.
 /** @returns  byte reversed value of @param value */
 SINGLEOP(REV)
 
@@ -116,6 +119,6 @@ INTRINSICALLY unsigned __CLZ(unsigned value){
 
   return result;
 }
-#endif
+#endif // if 0
 
 #endif // ifndef __CORE_CMINSTR_H__

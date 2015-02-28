@@ -1,6 +1,6 @@
 #include "core_itm.h"
 
-//very unclear as to who is supposed to write to this varble:
+// very unclear as to who is supposed to write to this varble:
 volatile int32_t ITM_RxBuffer;                    /*!< external variable to receive characters                    */
 #define ITM_RXBUFFER_EMPTY    0x5AA55AA5 /*!< value identifying ITM_RxBuffer is ready for next character */
 

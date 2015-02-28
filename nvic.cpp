@@ -102,8 +102,13 @@ struct InterruptController {
  */
 soliton(InterruptController, 0xE000ED04);
 
+constexpr volatile u32 &SFRat(unsigned address){
+  return *reinterpret_cast<volatile u32 *>(address);
+}
+
+//the below is for a 3 bit core, some processors have just 2 bits.
 void configurePriorityGrouping(int code){
-  *reinterpret_cast<u32 *>(0xE000ED0C) = ((code & 7) << 8) | 0x05FA0000;
+  SFRat(0xE000ED0C) = ((code & 7) << 8) | 0x05FA0000;
 }
 
 extern "C" { // to keep names simple for "alias" processor
@@ -163,9 +168,18 @@ extern "C" { // to keep names simple for "alias" processor
 /** sometimes pure virtual functions that aren't overloaded get called anyway,
  * such as from extended classes prophylactically calling the overloaded parent,
  *   or constructors calling their members */
-  void __cxa_pure_virtual(){  /* ignore calls to pure virtual functions */
+  void __cxa_pure_virtual(){  /* ignore calls to pure virtual functions, name might be Rowley specific as they do their own build of the gcc tools. */
     wtf(100000);
   }
+
+  void generateHardReset(void) __attribute__((weak));
+  void generateHardReset(void) {
+    while(1){//loop until hardware actually resets.
+      //AIRC register  //on stm32 1:VECTRESET worked, 4:SYSRESETREQ just looped here, at least while using rowley&jtag debugger.
+      SFRat(0xE000ED0C)= 1 | (0x05FA<<16); //hex constant is a key to help guard against random execution triggering this.
+    }
+  }
+
 } // end extern "C"
 
 // the stubs declare handler routines that deFault to unhandledInterruptHandler or unhandledFault if not otherwise declared.
@@ -255,7 +269,7 @@ stub(59);
 // todo:3 device model specific number of these
 
 
-//todo: indirect name of vectors section or alter the lpcxpresso to match rowley choice.
+// todo: indirect name of vectors section or alter the lpcxpresso to match rowley choice.
 Handler VectorTable[] __attribute__((section(".isr_vector"))) = {
   FaultName(2),
   FaultName(3),

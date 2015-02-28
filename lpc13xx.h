@@ -29,17 +29,14 @@
 #include "peripheraltypes.h"
 
 
-/*
- * ==========================================================================
- * ----------- Processor and Core Peripheral Section ------------------------
- * ==========================================================================
- */
+///* Configuration of the Cortex-M3 Processor and Core Peripherals */
+//#define __MPU_PRESENT             1         /*!< MPU present or not                               */
+//#define __NVIC_PRIO_BITS          3         /*!< Number of Bits used for Priority Levels          */
+//#define __Vendor_SysTickConfig    0         /*!< Set to 1 if different SysTick Config is used     */
 
-/* Configuration of the Cortex-M3 Processor and Core Peripherals */
-#define __MPU_PRESENT             1         /*!< MPU present or not                               */
-#define __NVIC_PRIO_BITS          3         /*!< Number of Bits used for Priority Levels          */
-#define __Vendor_SysTickConfig    0         /*!< Set to 1 if different SysTick Config is used     */
 
+/** @returns present frequency of: -1: systick source, 0:core/ahb, */
+unsigned clockRate(unsigned which);
 
 /******************************************************************************/
 /*                Device Specific Peripheral registers structures             */
@@ -47,7 +44,6 @@
 
 
 namespace LPC {
-
 /*------------- Power Management Unit (PMU) --------------------------*/
   struct PMU {
     SFR PCON;

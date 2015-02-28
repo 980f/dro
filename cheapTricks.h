@@ -20,6 +20,13 @@ template <typename Scalar> bool changed(Scalar &target, Scalar newvalue){
   }
 }
 
+/** in order to put various otherwise disparate classes into a single array of on/off entities*/
+class Boolish {
+public:
+  virtual operator bool() const =0;
+  virtual bool operator =(bool newvalue)=0;
+};
+
 /** @returns value of @param varb prior to clearing it herein */
 template <typename Scalar> Scalar flagged(Scalar &varb) ISRISH; // ISRISH attribute can't be set in definition for gcc 4.3.3, try again with later versions.
 

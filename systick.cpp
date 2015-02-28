@@ -12,7 +12,7 @@ extern u32 clockRate(int which);
 struct SysTicker {
   unsigned int enableCounting : 1; // enable counting
   unsigned int enableInterrupt : 1; // enable interrupt
-  unsigned int fullspeed : 1; // 1: main clock, 0: that divided by 8 (St's choice, ignore their naming)
+  unsigned int useCoreClock : 1; // 1: main clock, 0: vendor specific, via clockRate(-1) (stm32 fixes that at core/8)
   unsigned int : 16 - 3;
   volatile unsigned int rolledOver : 1; // indicates rollover, clears on read
   unsigned int : 32 - 17;
@@ -26,26 +26,20 @@ struct SysTicker {
   unsigned int refIsApproximate : 1;
   unsigned int noref : 1; // 1= no ref clock
 
-  bool start(u32 reloader){
+  bool start(u32 reloader,bool useCore){
     enableInterrupt = 0;
     enableCounting = 0;
-    fullspeed = 1;
-
+    useCoreClock = useCore;
     reload = reloader - 1; // for more precise periodicity
-    bool hack = rolledOver; // reading clears it
+    volatile bool hack = rolledOver; // reading clears it
     enableCounting = 1;
     enableInterrupt = 1;
-
-    return hack; // just to ensure optimizer doesn't eliminate read of rolledOver
+    return hack; // doubly ensure optimizer doesn't eliminate read of rolledOver
   } /* start */
 
   u32 ticksPerSecond(void){
     u32 effectiveDivider = reload + 1;
-
-    if(! fullspeed) {
-      effectiveDivider *= 8;
-    }
-    return rate(clockRate(-1), effectiveDivider);
+    return rate(clockRate(useCoreClock?0:-1), effectiveDivider);
   }
 
   u32 ticksForMicros(u32 us){
@@ -65,12 +59,13 @@ soliton(SysTicker, 0xE000E010);
 
 /** start ticking at the given rate.*/
 void startPeriodicTimer(u32 persecond){
-  // todo:2 fullspeed is hardcoded to 1 downstream of here, need to take care of that.
-  theSysTicker->fullspeed = 1;
-  if(! theSysTicker->fullspeed) {
-    persecond *= 8; // times 8 here instead of /8 in the rate computation.
+  u32 reload=rate(clockRate(0), persecond);//try to use core clock
+  bool useCore=reload<(1<<23);
+  if(!useCore){//then caller better have setup the custom systick source to make the rate below value.
+    reload=rate(clockRate(-1), persecond);
   }
-  theSysTicker->start(rate(clockRate(-1), persecond));
+  //and if out of range here --- user will figure it out due to horribly wrong timing.
+  theSysTicker->start(reload,useCore);
 }
 
 double PolledTimer::secondsForTicks(u32 ticks){
@@ -110,12 +105,12 @@ u32 PolledTimer::ticksForHertz(float hz){
  * an isr will determine that the given time has expired,
  * but the interested code will have to look at object to determine that the event occurred.
  * as of this note all timers are touched every cycle even if they are finished.
- * using 2 lists would make the isr faster, but all the restarts slower. that makes a lot of sense.
+ * using 2 lists would make the isr faster, but all the restarts slower.
  */
-PolledTimer *PolledTimer::active = 0;
+PolledTimer *PolledTimer::active = nullptr;
 
 void PolledTimer::onTick(void){
-  for(PolledTimer *scan = active; scan != 0; scan = scan->next) {
+  for(PolledTimer *scan = active; scan != nullptr; scan = scan->next) {
     if(! scan->done && --scan->systicksRemaining == 0) {
       scan->onDone();
     }
@@ -123,22 +118,22 @@ void PolledTimer::onTick(void){
 } /* onTick */
 
 
-PolledTimer::PolledTimer(void){
-  done = 1;
-  systicksRemaining = 0;
-  next = 0;
+PolledTimer::PolledTimer(void):
+  done(1),
+  systicksRemaining(0),
+  next(nullptr){
   // insert into list, presumes that timer service isn't started until all timer objects are constructed.
   if(active == 0) {
     active = this;
   } else {
-    for(PolledTimer *scan = active; scan != 0; scan = scan->next) {
-      if(scan->next == 0) {
+    //we do not need to lock in any sense, no isr will manipulate the list of PolledTimers as we have not provided for deleting them and they don't make sense as local objects. Creating a new one in an isr seems unuseful, but if allowed then we need to add an atomic-set-if-zero function to our cortexM3 specific code.
+    for(PolledTimer *scan = active; scan != nullptr; scan = scan->next) {//standard single-linked-list append-at-end
+      if(scan->next == nullptr) {
         scan->next = this;
         break;
       }
     }
   }
-  // unlock
 }
 
 /** typically this is overloaded if latency is important.*/
@@ -160,7 +155,7 @@ void PolledTimer::restart(float seconds){
   if(seconds <= 0) {
     return;
   }
-  restart(u32(seconds));
+  restart(ticksForSeconds(seconds));
 }
 
 u32 milliTime = 0; // storage for global tick time.

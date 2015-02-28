@@ -11,10 +11,10 @@ struct CoreDebug {
 };
 // native bit field definitions aren't used as the compiler does bad things on automatically generated insertion code, it optimizes to doing byte writes which the underlying hardware does not tolerate.
 
-//DeclareCore(CoreDebug);
+// DeclareCore(CoreDebug);
 
 /* Debug Halting Control and Status Register */
-//typedef SFRfield<SFRptr(0xE000EDF0UL, CoreDebug, DHCSR), 16, 16> DHCSR_DBGKEY; // _Pos         16                                             /*!< CoreDebug DHCSR: DBGKEY Position */
+// typedef SFRfield<SFRptr(0xE000EDF0UL, CoreDebug, DHCSR), 16, 16> DHCSR_DBGKEY; // _Pos         16                                             /*!< CoreDebug DHCSR: DBGKEY Position */
 //
 // #define CoreDebug_DHCSR_S_RESET_ST_Pos     25                                             /*!< CoreDebug DHCSR: S_RESET_ST Position */
 // #define CoreDebug_DHCSR_S_RESET_ST_Msk     (1UL << CoreDebug_DHCSR_S_RESET_ST_Pos)        /*!< CoreDebug DHCSR: S_RESET_ST Mask */
@@ -97,6 +97,3 @@ struct CoreDebug {
 #define CoreDebug_DEMCR_VC_CORERESET_Msk   (1UL << CoreDebug_DEMCR_VC_CORERESET_Pos)      /*!< CoreDebug DEMCR: VC_CORERESET Mask */
 
 /*@} end of group CMSIS_CoreDebug */
-
-
-

@@ -4,14 +4,14 @@
 /**
  *  types used for declaration of peripherals.
  *
- The SFR* template classes have a peculiar usage pattern, caused by trying to make all related code be generated inline.
-At hardware module definition time one creates a typedef for each field rather than an instance.
-At each place of use one creates an instance and then assigns to that instance to write a value or simply reference that instance for a read.
-This precludes extern'ing global instances which then must take up real data space (const so not a big cost) and then be accessed via an extra level of indirection compared to what the 'create local instance' can result in.
-If we could create a global instance in a header file but get just one actual object created we would do that.
-
+ *  The SFR* template classes have a peculiar usage pattern, caused by trying to make all related code be generated inline.
+ *  At hardware module definition time one creates a typedef for each field rather than an instance.
+ *  At each place of use one creates an instance and then assigns to that instance to write a value or simply reference that instance for a read.
+ *  This precludes extern'ing global instances which then must take up real data space (const so not a big cost) and then be accessed via an extra level of indirection compared to what the 'create local instance' can result in.
+ *  If we could create a global instance in a header file but get just one actual object created we would do that.
+ *
  */
-#include <stdint.h> //instead of eztypes, trying to not use too many andyh colloquialisms
+#include <stdint.h> // instead of eztypes, trying to not use too many andyh colloquialisms
 #include <stddef.h> // for offsetof(,) used in compile-time computing of register addresses:
 
 
@@ -38,10 +38,11 @@ template <unsigned sfraddress, int pos, int width = 1> class SFRfield {
     return reinterpret_cast<SFR *>(sfraddress);
   }
 private:
-  SFRfield(const SFRfield&other)=delete;
+  SFRfield(const SFRfield &other) = delete;
 
 public:
-  SFRfield(){}
+  SFRfield(){
+  }
 
   explicit SFRfield(unsigned initlizer){
     this->operator =(initlizer);
@@ -57,8 +58,33 @@ public:
   }
 };
 
-/** single bit, ignoring the possibility it is in bitbanded memory.
- This is NOT derived from SFRfield as we can do some optimizations that the compiler might miss (or developer might have disabled)*/
+/** a register that is only 8 bits */
+template <unsigned sfraddress> class SFRbyte {
+  inline SFR8 &sfr() const {
+    return *reinterpret_cast<SFR8 *>(sfraddress);
+  }
+  public:
+
+  // read
+  inline operator uint32_t() const {
+    return sfr();
+  }
+  // write
+  inline void operator =(uint32_t value) const {
+    sfr() = value;
+  }
+  //do nothing on declaration of instance
+  SFRbyte(){
+  }
+  //declare and initialize, often the only reference to the object.
+  explicit SFRbyte(unsigned initlizer){
+    this->operator =(initlizer);
+  }
+
+};
+
+/** single bit, ignoring the possibility it is in bitbanded memory (an stm32 special feature it seems).
+ *  This is NOT derived from SFRfield as we can do some optimizations that the compiler might miss (or developer might have disabled)*/
 template <unsigned sfraddress, int pos> class SFRbit {
   enum {
     mask = 1 << pos

@@ -28,28 +28,8 @@
 
 #include <stdint.h>
 
-//extern uint32_t SystemCoreClock;     /*!< System Clock Frequency (Core Clock)  */
-
-/**
- * Initialize the system
- *
- * @param  none
- * @return none
- *
- * @brief  Setup the microcontroller system.
- *         Initialize the System and update the SystemCoreClock variable.
+/** will get called before constructors
  */
 void SystemInit (void);
-
-/**
- * Update SystemCoreClock variable
- *
- * @param  none
- * @return none
- *
- * @brief  Updates the SystemCoreClock with current core Clock
- *         retrieved from cpu registers.
- */
-unsigned SystemCoreClockUpdate (void);
 
 #endif /* __SYSTEM_LPC13x_H */
