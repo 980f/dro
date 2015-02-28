@@ -1,14 +1,5 @@
-/* include memory layout definitions file. */
-INCLUDE stm32f103re.memdef
 
-/* we aren't using memory section references so why define them? * /
-MEMORY {
-  UNPLACED_SECTIONS (wx) : ORIGIN = 0x100000000, LENGTH = 0
-  CM3_System_Control_Space (wx) : ORIGIN = 0xe000e000, LENGTH = 4K
-  SRAM (rwx) : ORIGIN = 512M , LENGTH = 8K
-  FLASH (rx) : ORIGIN = 0, LENGTH = 32K
-}
-/**/
+INCLUDE stm32f103re.memdef
 
 /*
  sectionName logicalAddress : [AT romAddress] {
@@ -29,29 +20,31 @@ For rom stuff:
 */
 
 SECTIONS {
+/* include memory layout definitions file. */
+
 /* interrupt table */
-  .vectors ROMSTART :{
-    KEEP (*(.vectors .vectors.*))
-  }
+  .vectors ORIGIN(FLASH):{
+    KEEP (*( SORT(.vectors.*)  .vectors))
+  } >FLASH
 /* normal code */
   .text : {
     /* slh commented out segments produced by features we don't want to be using, some not available on cortexM? parts */
     *(.text .text.* /*.glue_7t .glue_7 .gnu.linkonce.t.* .gcc_except_table .ARM.extab* .gnu.linkonce.armextab.*  */)
-  }
+  } >FLASH
 
 /* atstartup()? */
   .init : {
     KEEP (*(.init .init.*));
-  }
+  } >FLASH
 
  /* static constructors, and something called init_array which seems to have the same syntax as static construction. */
   .ctors :{
     KEEP (*(SORT(.ctors.*))) KEEP (*(.ctors)) KEEP (*(.init_array)) KEEP (*(SORT(.init_array.*)))
-  }
-/* fully const'ed data, note that some things declared const end up in .data despite valiant attempts to compile tiem compute values. */
+  } >FLASH
+/* fully const'ed data, note that some things declared const end up in .data despite valiant attempts to compile time compute values. */
   .rodata :{
     *(.rodata .rodata.* .gnu.linkonce.r.*)
-  }
+  } >FLASH
 /* we have ended the purely rom stuff, to follow is the ram initialization table.*/
 
   packer = ALIGN(4); /* must follow last purely RO section */
@@ -62,23 +55,23 @@ SECTIONS {
     *(.data .data.* .gnu.linkonce.d.*)
     *(.bss .bss.* .gnu.linkonce.b.*) *(COMMON)
   }
-  __stack_size__ = RAMSIZE - SIZEOF(sizer);
+  __stack_size__ = LENGTH(SRAM) - SIZEOF(sizer);
 
     . +=__stack_size__;
     */
 /* want data initialization rom source to be aligned for faster copies */
 
-  .data : AT(packer){
+  .data : /*AT(packer)*/{
     *(.data .data.* .gnu.linkonce.d.*)
-  }
+  } >SRAM AT>FLASH
 
 /* NOLOAD is gratuitous, but is a marker that all that is occurring is data allocation */
   .bss (NOLOAD) : {
     *(.bss .bss.* .gnu.linkonce.b.*) *(COMMON)
-  }
+  } >SRAM
 
   __stack_end__ = .;  /* if SP is ever below this value we are corrupting memory. */
-  __stack_max__ = RAMSIZE - (__stack_end__ -RAMSTART); /* value to feed into start of data segment */
+  __stack_max__ = LENGTH(SRAM) - (__stack_end__ -ORIGIN(SRAM)); /* value to feed into start of data segment */
 
 /* the following symbol definitions are referencable by code, the linker puts there values into the text when writing out the files */
 
