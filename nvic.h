@@ -16,17 +16,40 @@
 #define HandleFault(faultIndex) void FaultName(faultIndex) (void)
 
 
-//the nvic is not bitbanded, these macro's access the bit associated with the Irq number.
-#define lvalue(grup) reinterpret_cast <int *> (0xE000E000 + grup + (4 * (number >> 5)))
-//this is for the registers where you write a 1 to a bit to make something happen.
-#define strobe(grup) * lvalue(grup) = 1 << (number & 0x1F)
-#define irqflag(grup) (1 & ((*lvalue(grup)) >> (number & 0x1F)))
+////the nvic is not bitbanded, these macro's access the bit associated with the Irq number.
+//#define lvalue(grup) reinterpret_cast <int *> (0xE000E000 + grup + (4 * (number >> 5)))
+////this is for the registers where you write a 1 to a bit to make something happen.
+//#define strobe(grup) * lvalue(grup) = 1 << (number & 0x1F)
+//#define irqflag(grup) (1 & ((*lvalue(grup)) >> (number & 0x1F)))
 
-class Irq {
+//const capable component:
+struct IrqAccess {
   const u8 number;
-  int locker; //tracking nested attempts to lock out the interrupt.
-public:
-  Irq(int number): number(number), locker(0){}
+  const u8 bit;
+  const u32 bias;
+  const u32 mask;
+  /* using u8 data type to check validity, need an 'explicit' somewhere to make that fully true */
+  IrqAccess(u8 number):
+    number(number),
+    bit(number & 0x1F),
+    bias(0xE000E000 + ((number>>5)<<2)),
+    mask(1<<bit){
+    /*empty*/
+  }
+
+  /** @returns reference to word related to the feature. */
+  unsigned &controlWord(unsigned grup)const{
+    return *reinterpret_cast <unsigned *> (grup | bias);
+  }
+
+  //this is for the registers where you write a 1 to a bit to make something happen.
+  void strobe(unsigned grup)const{
+    controlWord(grup) = mask;
+  }
+
+  bool irqflag(unsigned grup)const{
+    return (mask & controlWord(grup))!=0;
+  }
   /** @return previous setting while inserting new one*/
   u8 setPriority(u8 newvalue) const;
 
@@ -38,16 +61,8 @@ public:
     return irqflag(0x100);
   }
 
-  void enable(void);
-
-  void disable(void) const {
-    strobe(0x180);
-  }
-
-  void lock(void){
-    if(locker++ == 0) {
-      disable();
-    }
+  void enable(void) const {
+    strobe(0x100);
   }
 
   void fake(void) const {
@@ -58,10 +73,26 @@ public:
     strobe(0x280);
   }
 
+  void disable(void) const {
+    strobe(0x180);
+  }
+
+};
+
+class Irq: public IrqAccess {
+  int locker; //tracking nested attempts to lock out the interrupt.
+public:
+  Irq(int number): IrqAccess(number), locker(0){}
+
+  void enable(void);
+  void lock(void){
+    if(locker++ == 0) {
+      disable();
+    }
+  }
   /** clear any pending then enable, regular enable will cause an interrupt if one is pending.*/
   void prepare(void);
 
-  void uncrustWierdness(void){} //just in this file uncrust.exe was improperly formatting the last function.
 };
 
 /** disable interrupt on creation of object, enable it on destruction

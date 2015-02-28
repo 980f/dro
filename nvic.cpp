@@ -5,7 +5,46 @@
 extern "C" void generateHardReset(void);
 extern void wtf(int);
 
-volatile int CriticalSection ::nesting = 0;
+volatile int CriticalSection::nesting = 0;
+/////////////////////////////////
+
+u8 IrqAccess::setPriority(u8 newvalue) const { //one byte each, often only some high bits are implemented
+  u8 &priorityRegister(*reinterpret_cast<u8 *>(0xE000E400+number));
+  u8 oldvalue = priorityRegister;
+  priorityRegister = newvalue;
+  return oldvalue;
+}
+
+/////////////////////////////////
+
+void Irq::enable(){
+  if(locker > 0) { //if locked then reduce the lock such that the unlock will cause an enable
+    --locker;  //one level earlier than it would have. This might be surprising so an
+    //unmatched unlock might be the best enable.
+  }
+  if(locker == 0) { //if not locked then actually enable
+    IrqAccess::enable();
+  }
+}
+
+void Irq::prepare(){
+  clear(); //acknowledge to hardware
+  enable(); //allow again
+}
+
+/////////////////////////////////
+
+IRQLock::IRQLock(Irq &irq, bool inIrq): irq(irq){
+  if(!inIrq) {
+    irq.lock();
+  }
+}
+
+IRQLock::~IRQLock(){
+  irq.enable();
+}
+
+/////////////////////////////////
 
 struct InterruptController {
   //ICSR
@@ -107,66 +146,57 @@ void configurePriorityGrouping(int code){
 }
 
 extern "C" { //to keep names simple for "alias" processor
-  void unhandledFault(void){
-    register int num = theInterruptController->active;
+void unhandledFault(void){
+  register int num = theInterruptController->active;
 
-    if(num >= 4) {
-      theInterruptController->priority[num - 4] = 0xFF; //lower them as much as possible
-    }
-    switch(num) {
-    case 0: //surreal: stack pointer init rather than an interrupt
-    case 1: //reset
-      //todo:3 reset vector table base to rom.
-      break;
-    case 2: //NMI
-      //nothing to do, but pin doesn't exist on chip of interest to me
-      break;
-    case 3: //hard Fault
-      /** infinite recursion gets here, stack trashing, I've had vptr's go bad...*/
-      generateHardReset();//since we usually get into an infinite loop.
-      /* used hard reset rather than soft as my hardware module interfaces expect it.*/
-      break;
-    case 4: //memmanage
-      theInterruptController->memoryFaultEnable = 0;
-      break;
-    case 5: //bus
-      theInterruptController->busFaultEnable = 0;
-      break;
-    case 6: //usage
-      theInterruptController->usageFaultEnable = 0;
-      break;
-    case 7: //nothing
-    case 8: //nothing
-    case 9: //nothing
-    case 10: //nothing
-    case 11: //sv call
-      //do nothing
-      break;
-    case 12: //debug mon
-    case 13: //none
-    case 14: //pend SV (service requested by bit set rather than instruction
-      break;
-    case 15: //systick
-      //todo:2 disable systick interrupts
-      break;
-    } /* switch */
-  } /* unhandledFault */
+  if(num >= 4) {
+    theInterruptController->priority[num - 4] = 0xFF; //lower them as much as possible
+  }
+  switch(num) {
+  case 0: //surreal: stack pointer init rather than an interrupt
+  case 1: //reset
+    //todo:3 reset vector table base to rom.
+    break;
+  case 2: //NMI
+    //nothing to do, but pin doesn't exist on chip of interest to me
+    break;
+  case 3: //hard Fault
+    /** infinite recursion gets here, stack trashing, I've had vptr's go bad...*/
+    generateHardReset();//since we usually get into an infinite loop.
+    /* used hard reset rather than soft as my hardware module interfaces expect it.*/
+    break;
+  case 4: //memmanage
+    theInterruptController->memoryFaultEnable = 0;
+    break;
+  case 5: //bus
+    theInterruptController->busFaultEnable = 0;
+    break;
+  case 6: //usage
+    theInterruptController->usageFaultEnable = 0;
+    break;
+  case 7: //nothing
+  case 8: //nothing
+  case 9: //nothing
+  case 10: //nothing
+  case 11: //sv call
+    //do nothing
+    break;
+  case 12: //debug mon
+  case 13: //none
+  case 14: //pend SV (service requested by bit set rather than instruction
+    break;
+  case 15: //systick
+    //todo:2 disable systick interrupts
+    break;
+  } /* switch */
+} /* unhandledFault */
 
 
 /* turn it off so it doesn't happen again, and a handy breakpoint */
-  void unhandledInterruptHandler(void){
-    int irqnum = theInterruptController->active - 16;
-
-    Irq(irqnum).disable();
-  } /* unhandledInterruptHandler */
-
-/** sometimes pure virtual functions that aren't overloaded get called anyway,
-  * such as from extended classes prophylactically calling the overloaded parent,
-    or constructors calling their members */
-  void __cxa_pure_virtual(){  /* ignore calls to pure virtual functions */
-    wtf(100000);
-  }
-
+void unhandledInterruptHandler(void){
+  int irqnum = theInterruptController->active - 16;
+  Irq(irqnum).disable();
+} /* unhandledInterruptHandler */
 } //end extern "C"
 
 //the stubs declare handler routines that deFault to unhandledInterruptHandler or unhandledFault if not otherwise declared.
@@ -255,139 +285,82 @@ stub(58);
 stub(59);
 //todo:3 device model specific number of these
 
-//now in c_startup
-extern "C" void cstartup(void); //_start is in thumb_crt0.s, name is magic to Rowley linker setup
-
-
-//default for applications that predated this symbol, stm32103CB's:
-#ifndef SRAM_K
-#define SRAM_K 20
-#pragma message "setting default amount of ram"
-#endif
-//default for stm32:
-#ifndef SRAM_BASE
-#define SRAM_BASE 0x20000000
-#pragma message "setting stm32F10x ram base address."
-#endif
-
-//stack pointer: set to end of ram so as to have the maximum available.
-//todo: on devices with more than 64k stop at 64k so that all variables are bitbanded.
-//now in cstartup.cpp: u32 stacktop __attribute__((section(".vectors"))) =(SRAM_BASE+ SRAM_K*1024);
-
-//__attribute__((section(".isr_vector")))
 Handler VectorTable[] __attribute__((section(".vectors.2"))) = {
-//now in cstartup.cpp:    cstartup, //when the declaration was off by a * the compiler generated code to write to this location, causing a hard fault.
-  FaultName(2),
-  FaultName(3),
-  FaultName(4),
-  FaultName(5),
-  FaultName(6),
-  FaultName(7),
-  FaultName(8),
-  FaultName(9),
-  FaultName(10),
-  FaultName(11),
-  FaultName(12),
-  FaultName(13),
-  FaultName(14),
-  FaultName(15),
+    FaultName(2),
+    FaultName(3),
+    FaultName(4),
+    FaultName(5),
+    FaultName(6),
+    FaultName(7),
+    FaultName(8),
+    FaultName(9),
+    FaultName(10),
+    FaultName(11),
+    FaultName(12),
+    FaultName(13),
+    FaultName(14),
+    FaultName(15),
 
-  IrqName(0),
-  IrqName(1),
-  IrqName(2),
-  IrqName(3),
-  IrqName(4),
-  IrqName(5),
-  IrqName(6),
-  IrqName(7),
-  IrqName(8),
-  IrqName(9),
-  IrqName(10),
-  IrqName(11),
-  IrqName(12),
-  IrqName(13),
-  IrqName(14),
-  IrqName(15),
-  IrqName(16),
-  IrqName(17),
-  IrqName(18),
-  IrqName(19),
-  IrqName(20),
-  IrqName(21),
-  IrqName(22),
-  IrqName(23),
-  IrqName(24),
-  IrqName(25),
-  IrqName(26),
-  IrqName(27),
-  IrqName(28),
-  IrqName(29),
-  IrqName(30),
-  IrqName(31),
-  IrqName(32),
-  IrqName(33),
-  IrqName(34),
-  IrqName(35),
-  IrqName(36),
-  IrqName(37),
-  IrqName(38),
-  IrqName(39),
-  IrqName(40),
-  IrqName(41),
-  IrqName(42),
-  IrqName(43),
-  IrqName(44),
-  IrqName(45),
-  IrqName(46),
-  IrqName(47),
-  IrqName(48),
-  IrqName(49),
-  IrqName(50),
-  IrqName(51),
-  IrqName(52),
-  IrqName(53),
-  IrqName(54),
-  IrqName(55),
-  IrqName(56),
-  IrqName(57),
-  IrqName(58),
-  IrqName(59),
-//todo:3 device model specific quantity.
-};
+    IrqName(0),
+    IrqName(1),
+    IrqName(2),
+    IrqName(3),
+    IrqName(4),
+    IrqName(5),
+    IrqName(6),
+    IrqName(7),
+    IrqName(8),
+    IrqName(9),
+    IrqName(10),
+    IrqName(11),
+    IrqName(12),
+    IrqName(13),
+    IrqName(14),
+    IrqName(15),
+    IrqName(16),
+    IrqName(17),
+    IrqName(18),
+    IrqName(19),
+    IrqName(20),
+    IrqName(21),
+    IrqName(22),
+    IrqName(23),
+    IrqName(24),
+    IrqName(25),
+    IrqName(26),
+    IrqName(27),
+    IrqName(28),
+    IrqName(29),
+    IrqName(30),
+    IrqName(31),
+    IrqName(32),
+    IrqName(33),
+    IrqName(34),
+    IrqName(35),
+    IrqName(36),
+    IrqName(37),
+    IrqName(38),
+    IrqName(39),
+    IrqName(40),
+    IrqName(41),
+    IrqName(42),
+    IrqName(43),
+    IrqName(44),
+    IrqName(45),
+    IrqName(46),
+    IrqName(47),
+    IrqName(48),
+    IrqName(49),
+    IrqName(50),
+    IrqName(51),
+    IrqName(52),
+    IrqName(53),
+    IrqName(54),
+    IrqName(55),
+    IrqName(56),
+    IrqName(57),
+    IrqName(58),
+    IrqName(59),
+    //todo:3 device model specific quantity.
+    };
 
-/* end of file*/
-
-
-IRQLock::IRQLock(Irq &irq, bool inIrq): irq(irq){
-  if(!inIrq) {
-    irq.lock();
-  }
-}
-
-IRQLock::~IRQLock(){
-  irq.enable();
-}
-
-
-u8 Irq::setPriority(u8 newvalue) const { //one byte each, often only some high bits are implemented
-  u8 *pointer = reinterpret_cast <u8 *> (0xE000E400);
-  u8 oldvalue = *pointer;
-
-  *pointer = newvalue;
-  return oldvalue;
-}
-
-void Irq::enable(){
-  if(locker > 0) { //if locked then reduce the lock such that the unlock will cause an enable
-    --locker;  //one level earlier than it would have. This might be surprising so an
-    //unmatched unlock might be the best enable.
-  }
-  if(locker == 0) { //if not locked then actually enable
-    strobe(0x100);
-  }
-}
-
-void Irq::prepare(){
-  clear();
-  enable();
-}

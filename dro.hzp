@@ -4,42 +4,27 @@
     <configuration
       Name="Common"
       Placement="Flash"
-      Target="Cortex-M3"
+      Target="STM32F103RE"
       arm_architecture="v7M"
       arm_core_type="Cortex-M3"
       arm_fpu_type="None"
-      arm_keep_assembly="Yes"
-      arm_linker_gap_fill="255"
+      arm_gcc_target="arm-unknown-eabi"
       arm_linker_heap_size="0"
-      arm_linker_indirect_file="Yes"
-      arm_linker_jtag_pad_post_dr="0"
-      arm_linker_jtag_pad_post_ir="0"
       arm_linker_jtag_pad_pre_dr="1"
       arm_linker_jtag_pad_pre_ir="5"
       arm_linker_process_stack_size="0"
       arm_linker_stack_size="0"
-      arm_linker_treat_warnings_as_errors="Yes"
-      arm_simulator_memory_simulation_filename="$(TargetsDir)/Cortex_M/Cortex_MSimulatorMemory.dll"
-      arm_simulator_memory_simulation_parameter="0x00100000;0x00100000"
-      arm_simulator_run_target_loader="No"
+      arm_simulator_memory_simulation_filename="$(TargetsDir)/STM32/STM32SimulatorMemory.dll"
+      arm_simulator_memory_simulation_parameter="STM32F103RE;0x80000;0x10000"
+      arm_target_connect_with_reset="Yes"
       arm_target_debug_interface_type="ADIv5"
+      arm_target_interface_type="Default"
       arm_target_loader_applicable_loaders="Flash"
-      arm_target_loader_can_only_download_after_erase="No"
       arm_target_loader_default_loader="Flash"
-      arm_use_builtins="No"
-      build_intermediate_directory="built-$(ProjectName)-$(Configuration)"
-      build_output_directory="built-$(ProjectName)-$(Configuration)"
-      build_quietly="No"
-      c_preprocessor_definitions="MCU=&quot;stm32f103&quot;;__USE_CMSIS=0"
-      c_user_include_directories=".;lpcbase"
-      debug_initial_breakpoint_set_option="Only With No Breakpoints Set"
-      gcc_c_language_standard="c11"
-      gcc_cplusplus_language_standard="c++11"
-      gcc_dwarf_version="dwarf-3"
-      gcc_entry_point="cstartup"
-      gcc_wchar_size="16-Bit"
-      link_include_standard_libraries="No" link_symbol_definitions=""
-      linker_memory_map_file="$(TargetsDir)/Cortex_M/Cortex_M3_MemoryMap.xml"
+      arm_target_restrict_memory_accesses="Yes"
+      c_user_include_directories="lpcbase"
+      debug_register_definition_file="$(TargetsDir)/STM32/STM32F103xx_Peripherals.xml"
+      linker_memory_map_file="$(TargetsDir)/STM32/STM32F103RE_MemoryMap.xml"
       linker_printf_fmt_level="int"
       linker_printf_fp_enabled="No"
       linker_printf_width_precision_supported="No"
@@ -49,27 +34,68 @@
       linker_section_placement_file="$(StudioDir)/targets/Cortex_M/flash_placement.xml"
       project_directory=""
       project_type="Executable"
-      property_groups_file_path="$(TargetsDir)/Cortex_M/propertyGroups.xml"
-      target_reset_script="Reset()"
-      target_script_file="$(TargetsDir)/Cortex_M/Cortex_M_Target.js" />
+      property_groups_file_path="$(TargetsDir)/STM32/propertyGroups.xml"
+      target_get_partname_script="GetPartName()"
+      target_match_partname_script="MatchPartName(&quot;$(Target)&quot;)"
+      target_script_file="$(TargetsDir)/STM32/STM32_Target.js"
+      target_trace_initialize_script="EnableTrace(&quot;$(TraceInterfaceType)&quot;)" />
+    <configuration
+      Name="Flash"
+      arm_target_flash_loader_file_path="$(TargetsDir)/STM32/Release/Loader_rpc.elf"
+      arm_target_flash_loader_type="LIBMEM RPC Loader"
+      arm_target_loader_can_erase_all="Yes"
+      arm_target_loader_can_lock_all="No"
+      arm_target_loader_can_lock_range="No"
+      arm_target_loader_can_unlock_all="No"
+      arm_target_loader_can_unlock_range="No"
+      target_reset_script="FLASHReset()" />
+    <configuration Name="RAM" target_reset_script="Reset()" />
     <folder Name="Source Files">
-      <configuration Name="Common" filter="c;cpp;cxx;cc;h;s;asm;inc" />
+      <configuration Name="Common" filter="cpp;h;s" />
       <file file_name="cheapTricks.cpp" />
+      <file file_name="cheapTricks.h" />
+      <file file_name="eztypes.h" />
       <file file_name="main.cpp" />
+      <file file_name="memdef.h" />
       <file file_name="minimath.cpp" />
+      <file file_name="minimath.h" />
       <file file_name="nvic.cpp" />
-      <file file_name="systick.cpp">
-        <configuration Name="THUMB Debug" build_exclude_from_build="Yes" />
-      </file>
-      <file file_name="../lpcbase/cortexm3.s" />
-      <file file_name="../lpcbase/cstartup.cpp" />
+      <file file_name="nvic.h" />
+      <file file_name="systick.cpp" />
+      <file file_name="systick.h" />
+      <folder Name="lpcbase">
+        <file file_name="lpcbase/core_cmInstr.h" />
+        <file file_name="lpcbase/gpio.cpp" />
+        <file file_name="lpcbase/lpcperipheral.h" />
+        <file file_name="../lpcbase/cstartup.cpp" />
+      </folder>
     </folder>
     <folder Name="System Files">
       <file file_name="dro.ld" />
-      <file file_name="stm32f103re.memdef" />
+      <file file_name="../lpcbase/cortexm.ld" />
+      <file file_name="stm32f103re.ld" />
     </folder>
+    <configuration
+      Name="THUMB"
+      arm_keep_assembly="Yes"
+      arm_keep_preprocessor_output="Yes"
+      arm_linker_gap_fill="0xff"
+      arm_supply_absolute_file_path="Yes"
+      arm_use_builtins="Yes"
+      arm_use_gcc_libraries="No"
+      build_intermediate_directory="$(ProjectName)-$(Configuration)"
+      build_output_directory="$(ProjectName)-$(Configuration)"
+      debug_initial_breakpoint_set_option="Always"
+      double_is_float="Yes"
+      gcc_c_language_standard="c11"
+      gcc_cplusplus_language_standard="c++11"
+      gcc_debugging_level="Level 3"
+      gcc_entry_point="cstartup"
+      gcc_wchar_size="16-Bit"
+      link_include_standard_libraries="No"
+      project_dependencies_can_build_in_parallel="Yes" />
   </project>
-  <configuration Name="THUMB Debug" inherited_configurations="THUMB;Debug" />
+  <configuration Name="THUMB-Debug" inherited_configurations="THUMB;Debug" />
   <configuration
     Name="THUMB"
     Platform="ARM"
@@ -83,9 +109,6 @@
     gcc_debugging_level="Level 3"
     gcc_optimization_level="None"
     hidden="Yes" />
-  <configuration
-    Name="THUMB Release"
-    inherited_configurations="THUMB;Release" />
   <configuration
     Name="Release"
     c_preprocessor_definitions="NDEBUG"

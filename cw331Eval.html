@@ -10,11 +10,19 @@
       <li>clicking on linker error tries to display the linker executable, the
         linker script would seem to be a better choice (or do nothing since the
         error is correctly marked in the ld file)</li>
+      <li>usability: the error view is brought forward but is empty despite the
+        output view showing there are errors. I then have to switch to the
+        output view and drill down the tree to get to the error content.</li>
+      <li>RFI: Call Stack&nbsp; doesn't unwind past an exceptopn, presume isr is
+        the same. The 'interrupt stack frame' is well define, you should be able
+        to get us back to the line of code causing the exception (presuming it
+        is 'synchronous').</li>
       <li>usability: could not find project property for preprocessor defines,
         had to hack the xml and copy section from configuration block after
         which the option appeared under the project.</li>
-      <li>RFI: would like to disable all printf/scanf/widechar functionality, or
-        at least bundle those in a subsection for easier ignoring.</li>
+      <li>RFI: would like to easily disable all printf/scanf/widechar
+        functionality, perhaps hide them when 'use standard libraries' is
+        disabled.</li>
       <li>RFI: "no heap" setting, no heap allocation (or symbol stuffing) and
         stack is set to remainder of SRAM segment (via startup in my case)</li>
       <li>RFI: precalculate ram allocations and use that to put stack at start
@@ -23,17 +31,18 @@
         (expected font to shrink), ctrl. is '.' instead of halting execution.
         (since 1.17!)</li>
       <li>build: concatenation of configuration names is done with a space char,
-        making commandline file management annoying.</li>
-      <li>"Entry Symbol=none" still emits -e making next commandline arg be the
-        entry symbol. I don't need an entry symbol so I shouldn't have to dummy
-        one up.</li>
-      <li>linker invoked with --OMAGIC, I'd like to be able to control that, but
-        see "Entry Symbol" issue for why this came to my attention.</li>
+        making commandline file management annoying. I text edit the hzp to
+        replace the space with a dash.</li>
+      <li>bug:"Entry Symbol=none" still emits -e making next commandline arg be
+        the entry symbol. I don't need an entry symbol so I shouldn't have to
+        dummy one up.</li>
+      <li>linker invoked with --OMAGIC, I'd like to be able to control that. See
+        "Entry Symbol" issue for why this came to my attention.</li>
       <li>frequently prompted to find a header file, even when the file open
         dialog has that file handy. Doesn't remember these selections very long,
-        makes debug sessions tedious. I believe I can header files to the
+        makes debug sessions tedious. I believe I can add header files to the
         project file, but as indicated by your "open include" right click menu
-        you can find the files yourself.</li>
+        you can sometimes&nbsp; find the files yourself.</li>
       <li>RFI: allow placing backup files in another directory, instead of same
         directory as file, to reduce clutter when browsing the source with a
         file manager, especially useful when grepping for something- you only

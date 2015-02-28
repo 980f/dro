@@ -6,11 +6,9 @@ const double Infinity = std::numeric_limits<double>::infinity();
 const double Nan = std::numeric_limits<double>::quiet_NaN();;
 #else
 //firmware platform didn't have a useful limits.h so ...
-static const int64_t InfPattern=0x7FFLL<<52;
-static const int64_t NanPattern=0x7FF8LL<<48;
 
-const double Infinity=pun(const double,InfPattern);
-const double Nan=     pun(const double,NanPattern);
+const double Infinity=static_cast<const double>(0x7FFLL<<52);
+const double Nan=     static_cast<const double>(0x7FF8LL<<48);
 #endif
 
 const u32 Decimal1[] = {
