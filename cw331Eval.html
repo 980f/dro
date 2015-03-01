@@ -6,23 +6,46 @@
   </head>
   <body>
     <p>crosstudio 3.3.1 evaluation</p>
+    <p>likes</p>
     <ol>
-      <li>clicking on linker error tries to display the linker executable, the
-        linker script would seem to be a better choice (or do nothing since the
-        error is correctly marked in the ld file)</li>
+      <li>license locked to removal usb ethernet adapter. My eval computer is on
+        its last legs, it will be nice to be able to move to different
+        computers.</li>
+      <li>user interaction seems smoother than 1.17, 2.0 versions (I used
+        crossstudio extensively in 2009&amp;2010 but not much since then.)</li>
+      <li>up-to-date version of compiler: I am heavily invested in template
+        programming to do type and range checking at compile time, as opposed to
+        most of the world still using typeless #defines and trusting themselves
+        to not use wrong arguments.</li>
+      <li>similar enough to past versions that my hacks are still relevant, such
+        as rolling my own startup and linker scripts.</li>
+    </ol>
+    <p>dislikes</p>
+    <ol>
+      <li>bug: clicking on linker error tries to display the linker executable,
+        the linker script would seem to be a better choice (or do nothing since
+        the error is correctly marked in the ld file). Sometimes this attempt to
+        view the ld executable pops up automatically.</li>
       <li>usability: the error view is brought forward but is empty despite the
         output view showing there are errors. I then have to switch to the
         output view and drill down the tree to get to the error content.</li>
-      <li>RFI: Call Stack&nbsp; doesn't unwind past an exceptopn, presume isr is
-        the same. The 'interrupt stack frame' is well define, you should be able
-        to get us back to the line of code causing the exception (presuming it
-        is 'synchronous').</li>
-      <li>usability: could not find project property for preprocessor defines,
+      <li>RFI: Call Stack&nbsp; doesn't unwind past a hardware fault, presume
+        the same for regular interrupts. The 'interrupt stack frame' is well
+        defined, you should be able to get us back to the line of code causing
+        the exception (presuming it is 'synchronous').</li>
+      <li>usability: could not find project property for pre-processor defines,
         had to hack the xml and copy section from configuration block after
         which the option appeared under the project.</li>
-      <li>RFI: would like to easily disable all printf/scanf/widechar
+      <li>bug: file selection for project manager resolved symbolic links,
+        subverting the point in having such links. EG: I put a link under my
+        project source dir to point to a library that was in a different git
+        repo. I'd like to be able to move around where that other repo is via
+        changing the OS link without having to do a search and replace in my
+        project files.</li>
+      <li>RFI: would like to easily disable or hide all printf/scanf/widechar
         functionality, perhaps hide them when 'use standard libraries' is
-        disabled.</li>
+        disabled. OR build my own configuration templates so that I quit having
+        them shoved into my face when building a new project.</li>
       <li>RFI: "no heap" setting, no heap allocation (or symbol stuffing) and
         stack is set to remainder of SRAM segment (via startup in my case)</li>
       <li>RFI: precalculate ram allocations and use that to put stack at start
@@ -33,16 +56,18 @@
       <li>build: concatenation of configuration names is done with a space char,
         making commandline file management annoying. I text edit the hzp to
         replace the space with a dash.</li>
-      <li>bug:"Entry Symbol=none" still emits -e making next commandline arg be
-        the entry symbol. I don't need an entry symbol so I shouldn't have to
-        dummy one up.</li>
-      <li>linker invoked with --OMAGIC, I'd like to be able to control that. See
-        "Entry Symbol" issue for why this came to my attention.</li>
-      <li>frequently prompted to find a header file, even when the file open
-        dialog has that file handy. Doesn't remember these selections very long,
-        makes debug sessions tedious. I believe I can add header files to the
-        project file, but as indicated by your "open include" right click menu
-        you can sometimes&nbsp; find the files yourself.</li>
+      <li>bug-middling:"Entry Symbol=none" still emits -e making next
+        commandline arg be the entry symbol. I don't need an entry symbol so I
+        shouldn't have to dummy one up.</li>
+      <li>bug-minor: '-u_vector' is put into ld commandline, but I am not using
+        that for my vector table (using KEEP's instead). This used to be
+        accessible from the properties editor but I can't find it therein.</li>
+      <li>tedious: after breaking debug: frequently prompted to find a header
+        file, even when the file open dialog has that file handy. Doesn't
+        remember these selections very long, makes debug sessions tedious. I
+        believe I can add header files to the project file, but as indicated by
+        your "open include" right click menu you can sometimes&nbsp; find the
+        files yourself.</li>
       <li>RFI: allow placing backup files in another directory, instead of same
         directory as file, to reduce clutter when browsing the source with a
         file manager, especially useful when grepping for something- you only
@@ -52,7 +77,27 @@
         actions)</li>
       <li>RFI: open file dialog should remember last file filter, or allow you
         to configure a default. The existing default is wrong 100% of the time
-        for me, at least when invoked by ^O.</li>
+        for me, at least when invoked by ^O. It seems that sometimes it
+        remembers, sometimes not. It recently got obsessed with .ld files.</li>
+      <li>package error: cannot find
+        /home/andyh/.rowley_associates_limited/CrossWorks for
+        ARM/v3/packages/targets/LPC1000/lib/liblpc1000_v7m_t_le_eabi_f_swc.a: No
+        such file or directory<br>
+        'small' is present, but no 'swc' variant. I selected treat double as
+        float, don't know which other properties affect lib selection. The lib
+        wasn't useful to me at this time.</li>
+      <li>with every C level debug step the memory window was scrolled back to
+        its left margin, requiring me to yank it back each and every step to see
+        the value I wanted. You should not be automatedly fooling with window
+        scrollbars, that is extremely painful to deal with. Over the years
+        crossworks also has had a tendency to change the expansion state of a
+        tree with every step into another function and return, that also makes
+        my wrists ache during any extended debug session and is a major time
+        killer and distraction. And ditto that for the display format of members
+        of a struct or a local variable.<br>
+        Summary: View state should not be altered during a data update, view
+        state of locals should be remembered by function, not in sync with the
+        stack as it executes.</li>
     </ol>
     <p>previous version bugs to confirm:</p>
     <ol>
@@ -64,8 +109,8 @@
         the same height.</li>
       <li>gui: see above- case is cycle counter right click menu, all off screen
         except for enough to tell that a menu is present.</li>
-      <li>with a large project opening up the dependent files node of the last
-        entry pushed its content off screen</li>
+      <li>gui: with a large project opening up the dependent files node of the
+        last entry pushed its content off screen</li>
       <li><br>
       </li>
     </ol>

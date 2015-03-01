@@ -56,7 +56,6 @@
       <file file_name="cheapTricks.h" />
       <file file_name="eztypes.h" />
       <file file_name="main.cpp" />
-      <file file_name="memdef.h" />
       <file file_name="minimath.cpp" />
       <file file_name="minimath.h" />
       <file file_name="nvic.cpp" />
@@ -65,10 +64,9 @@
       <file file_name="systick.h" />
       <folder Name="lpcbase">
         <file file_name="lpcbase/core_cmInstr.h" />
-        <file file_name="lpcbase/gpio.cpp" />
-        <file file_name="lpcbase/lpcperipheral.h" />
         <file file_name="../lpcbase/cstartup.cpp" />
       </folder>
+      <folder Name="stmbase" />
     </folder>
     <folder Name="System Files">
       <file file_name="dro.ld" />

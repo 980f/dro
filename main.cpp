@@ -1,8 +1,15 @@
 /* dro project
  */
+#define useSTM32 1
+
 
 #include "core_cmInstr.h"
+#if useSTM32
+#niclude "
+#else
 #include "gpio.h" //alh
+#endif
+
 #include "nvic.h" //alh
 
 using namespace LPC;
