@@ -34,8 +34,8 @@ template <unsigned sfraddress, int pos, int width = 1> class SFRfield {
     mask = ((1 << width) - 1) << pos
   };
 
-  inline SFR *sfr() const {
-    return reinterpret_cast<SFR *>(sfraddress);
+  inline SFR &sfr() const {
+    return *reinterpret_cast<SFR *>(sfraddress);
   }
 private:
   SFRfield(const SFRfield &other) = delete;
@@ -50,11 +50,11 @@ public:
 
   // read
   inline operator uint32_t() const {
-    return (*sfr() & mask) >> pos;
+    return (sfr() & mask) >> pos;
   }
   // write
   inline void operator =(uint32_t value) const {
-    *sfr() = ((value << pos) & mask) | (*sfr() & ~mask);
+    sfr() = ((value << pos) & mask) | (sfr() & ~mask);
   }
 };
 
@@ -110,5 +110,5 @@ public:
 
 /** macro for first template argument for SFRfield and SFRbit, mates to cmsis style type declarations which can't use c bit-fields.*/
 #define SFRptr(absaddress, blocktype, member) (absaddress + offsetof(blocktype, member))
-
+//todo: constexpr version
 #endif // PERIPHERALTYPES_H
