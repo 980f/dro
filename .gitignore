@@ -4,3 +4,8 @@ dro
 dro.pro.user
 verbose.map
 dro.hzs
+cortexm
+lpcbase
+*.hzs
+ezcpp
+*unc-backup*~

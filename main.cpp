@@ -1,35 +1,46 @@
 /* dro project
  */
-#define useSTM32 0
+#define useSTM32 1
 
 
-#include "core_cmInstr.h"
 #if useSTM32
 #include "stm32.h"
 #else
-#include "gpio.h" //alh
+using namespace LPC;
 #endif
 
+#include "gpio.h" //alh
 #include "nvic.h" //alh
 
-using namespace LPC;
+#include "core_cmInstr.h"
 
+
+//For pins the stm32 lib is using const init'ed objects, LPC templated. It will take some work to reconcile how the two vendors like to describe their ports,
+//however the objects have the same usage syntax so only declarations need to be conditional on vendor.
+#if useSTM32
+Pin primePin(PB,11);
+const InputPin primePhase(primePin);
+const InputPin otherPhase(Pin(PB,12));
+
+#else
 //p0-4,p05 for qei.
 InputPin<0,4> primePhase;
 InputPin<0,5> otherPhase;
 
-//Irq's cannot be const due to having a nesting control element within.
-Irq prime(4);
-
-//#define primePhase 4
-//#define otherPhase 5
-//#define togglePhase(ph) (primePhase+otherPhase-(ph))
-
-int axis(0);
-int initme(78);
+#endif
 
 
 #define myIrq 4
+
+//Irq's cannot be const due to having a nesting control element within. If you don't want the nesting enable then you can use the baser class.
+Irq prime(myIrq);
+
+//should go up and down depending upon teh input signals;
+int axis(0);
+
+int initme(78);//testing linker
+const int constly(95);
+
 
 //prime phase interrupt
 void IrqName(myIrq)(void) {
@@ -41,20 +52,6 @@ void IrqName(myIrq)(void) {
   }
 }
 
-
-int wtf(int complaint) {
-  static int lastWtf = 0;
-  static int repeats = 0;
-  if (complaint) {
-    if (changed(lastWtf, complaint)) {
-      repeats = 0;
-      return complaint;
-    } else {
-      ++repeats;
-    }
-  }
-  return 0;
-}
 
 int main(void) {
   //soft stuff
