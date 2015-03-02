@@ -1,12 +1,51 @@
 /*all about interrupts*/
 #include "nvic.h"
 
-// vendor/chip/board specific reset generation, don't want to reset just the core.
+// in startup code:
 extern "C" void generateHardReset(void);
-// generic error reporter, need to make a header.
-extern void wtf(int code);
+extern void wtf(int);
 
-volatile int CriticalSection ::nesting = 0;
+volatile int CriticalSection::nesting = 0;
+/////////////////////////////////
+
+u8 IrqAccess::setPriority(u8 newvalue) const { // one byte each, often only some high bits are implemented
+  u8 &priorityRegister(*reinterpret_cast<u8 *>(0xE000E400 + number));
+  u8 oldvalue = priorityRegister;
+
+  priorityRegister = newvalue;
+  return oldvalue;
+}
+
+/////////////////////////////////
+
+void Irq::enable(){
+  if(locker > 0) { // if locked then reduce the lock such that the unlock will cause an enable
+    --locker;  // one level earlier than it would have. This might be surprising so an
+    // unmatched unlock might be the best enable.
+  }
+  if(locker == 0) { // if not locked then actually enable
+    IrqAccess::enable();
+  }
+}
+
+void Irq::prepare(){
+  clear(); // acknowledge to hardware
+  enable(); // allow again
+}
+
+/////////////////////////////////
+
+IRQLock::IRQLock(Irq &irq, bool inIrq): irq(irq){
+  if(! inIrq) {
+    irq.lock();
+  }
+}
+
+IRQLock::~IRQLock(){
+  irq.enable();
+}
+
+/////////////////////////////////
 
 struct InterruptController {
   // ICSR
@@ -102,21 +141,16 @@ struct InterruptController {
  */
 soliton(InterruptController, 0xE000ED04);
 
-constexpr volatile u32 &SFRat(unsigned address){
-  return *reinterpret_cast<volatile u32 *>(address);
-}
-
-//the below is for a 3 bit core, some processors have just 2 bits.
 void configurePriorityGrouping(int code){
-  SFRat(0xE000ED0C) = ((code & 7) << 8) | 0x05FA0000;
+  *reinterpret_cast<u32 *>(0xE000ED0C) = ((code & 7) << 8) | 0x05FA0000;
 }
 
 extern "C" { // to keep names simple for "alias" processor
   void unhandledFault(void){
-    register int num = theInterruptController->active;
+    register int num = theInterruptController.active;
 
     if(num >= 4) {
-      theInterruptController->priority[num - 4] = 0xFF; // lower them as much as possible
+      theInterruptController.priority[num - 4] = 0xFF; // lower them as much as possible
     }
     switch(num) {
     case 0: // surreal: stack pointer init rather than an interrupt
@@ -132,13 +166,13 @@ extern "C" { // to keep names simple for "alias" processor
       /* used hard reset rather than soft as my hardware module interfaces expect it.*/
       break;
     case 4: // memmanage
-      theInterruptController->memoryFaultEnable = 0;
+      theInterruptController.memoryFaultEnable = 0;
       break;
     case 5: // bus
-      theInterruptController->busFaultEnable = 0;
+      theInterruptController.busFaultEnable = 0;
       break;
     case 6: // usage
-      theInterruptController->usageFaultEnable = 0;
+      theInterruptController.usageFaultEnable = 0;
       break;
     case 7: // nothing
     case 8: // nothing
@@ -160,26 +194,10 @@ extern "C" { // to keep names simple for "alias" processor
 
 /* turn it off so it doesn't happen again, and a handy breakpoint */
   void unhandledInterruptHandler(void){
-    int irqnum = theInterruptController->active - 16;
+    int irqnum = theInterruptController.active - 16;
 
     Irq(irqnum).disable();
   } /* unhandledInterruptHandler */
-
-/** sometimes pure virtual functions that aren't overloaded get called anyway,
- * such as from extended classes prophylactically calling the overloaded parent,
- *   or constructors calling their members */
-  void __cxa_pure_virtual(){  /* ignore calls to pure virtual functions, name might be Rowley specific as they do their own build of the gcc tools. */
-    wtf(100000);
-  }
-
-  void generateHardReset(void) __attribute__((weak));
-  void generateHardReset(void) {
-    while(1){//loop until hardware actually resets.
-      //AIRC register  //on stm32 1:VECTRESET worked, 4:SYSRESETREQ just looped here, at least while using rowley&jtag debugger.
-      SFRat(0xE000ED0C)= 1 | (0x05FA<<16); //hex constant is a key to help guard against random execution triggering this.
-    }
-  }
-
 } // end extern "C"
 
 // the stubs declare handler routines that deFault to unhandledInterruptHandler or unhandledFault if not otherwise declared.
@@ -268,9 +286,7 @@ stub(58);
 stub(59);
 // todo:3 device model specific number of these
 
-
-// todo: indirect name of vectors section or alter the lpcxpresso to match rowley choice.
-Handler VectorTable[] __attribute__((section(".isr_vector"))) = {
+Handler VectorTable[] __attribute__((section(".vectors.2"))) = {
   FaultName(2),
   FaultName(3),
   FaultName(4),
@@ -346,7 +362,27 @@ Handler VectorTable[] __attribute__((section(".isr_vector"))) = {
   IrqName(57),
   IrqName(58),
   IrqName(59),
-// todo:3 device model specific quantity.
+  // todo:3 device model specific quantity.
 };
 
-/* end of file*/
+////asm code:
+//.global generateHardReset
+//.thumb
+//.align 2
+//.thumb_func
+
+//generateHardReset:
+////AIRC register
+//movw r0, #0xED0C
+//movt r0, #0xE000
+////1:VECTRESET worked, 4:SYSRESETREQ just loops here, using rowley&jtag debugger.
+//movw r1, #1
+//movt r1, #0x05FA
+//str r1,[r0]
+//b generateHardReset
+__attribute__((naked)) //trying to get good assembler code on this one :)
+void generateHardReset(){
+  do {
+    theInterruptController.airc=0x5FA0001;//1 worked on stm32, 4 should have worked but looped under the debugger.
+  } while (1);
+}
