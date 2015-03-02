@@ -46,7 +46,7 @@ inline unsigned int extractField(unsigned int source, unsigned int offset, unsig
 }
 
 /** for a private single instance block */
-#define soliton(type, address) type * const the ## type = reinterpret_cast <type *> (address);
+#define soliton(type, address) type & the ## type = *reinterpret_cast <type *> (address);
 
 /** instantiate one of these as a local variable at the start of a compound statement to ensure the given 'lock' bit is set to !polarity for all exit paths of that block
   */

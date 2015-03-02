@@ -66,44 +66,44 @@ soliton(SysTicker, 0xE000E010);
 /** start ticking at the given rate.*/
 void startPeriodicTimer(u32 persecond){
   //todo:2 fullspeed is hardcoded to 1 downstream of here, need to take care of that.
-  theSysTicker->fullspeed = 1;
-  if(!theSysTicker->fullspeed) {
+  theSysTicker.fullspeed = 1;
+  if(!theSysTicker.fullspeed) {
     persecond *= 8; // times 8 here instead of /8 in the rate computation.
   }
-  theSysTicker->start(rate(clockRate(-1), persecond));
+  theSysTicker.start(rate(clockRate(-1), persecond));
 }
 
 double PolledTimer::secondsForTicks(u32 ticks){
-  return ratio(double(ticks), double(theSysTicker->ticksPerSecond()));
+  return ratio(double(ticks), double(theSysTicker.ticksPerSecond()));
 }
 
 double PolledTimer::secondsForLongTime(u64 ticks){
-  return ratio(double(ticks), double(theSysTicker->ticksPerSecond()));
+  return ratio(double(ticks), double(theSysTicker.ticksPerSecond()));
 }
 
 u32 PolledTimer::ticksForSeconds(float sec){
   if(sec<=0){
     return 0;
   }
-  return theSysTicker->ticksForMillis(u32(sec * 1000));
+  return theSysTicker.ticksForMillis(u32(sec * 1000));
 }
 
 u32 PolledTimer::ticksForMillis(int ms){
   if(ms<=0){
     return 0;
   }
-  return theSysTicker->ticksForMillis(ms);
+  return theSysTicker.ticksForMillis(ms);
 }
 
 u32 PolledTimer::ticksForMicros(int ms){
   if(ms<=0){
     return 0;
   }
-  return theSysTicker->ticksForMicros(ms);
+  return theSysTicker.ticksForMicros(ms);
 }
 
 u32 PolledTimer::ticksForHertz(float hz){
-  return theSysTicker->ticksForHertz(hz);
+  return theSysTicker.ticksForHertz(hz);
 }
 
 /**
@@ -177,20 +177,20 @@ HandleFault(15){ //15: system tick
 
 /** time since last rollover, must look at clock configuration to know what the unit is. */
 u32 snapTime(void){
-  return theSysTicker->reload - theSysTicker->value; //'tis a downcounter, want time since reload.
+  return theSysTicker.reload - theSysTicker.value; //'tis a downcounter, want time since reload.
 }
 
 u32 snapTickTime(void){
-  theSysTicker->enableCounting = 0; //can't use bitlock on a field in a struct :(
-  u32 retval = ((milliTime + 1) * (theSysTicker->reload + 1)) - theSysTicker->value;
-  theSysTicker->enableCounting = 1; //todo:3 add some to systick to compensate for the dead time of this routine.
+  theSysTicker.enableCounting = 0; //can't use bitlock on a field in a struct :(
+  u32 retval = ((milliTime + 1) * (theSysTicker.reload + 1)) - theSysTicker.value;
+  theSysTicker.enableCounting = 1; //todo:3 add some to systick to compensate for the dead time of this routine.
   return retval;
 }
 
 u64 snapLongTime(void){//this presumes  little endian 64 bit integer.
-  theSysTicker->enableCounting = 0; //can't use bitlock on a field in a struct :(
+  theSysTicker.enableCounting = 0; //can't use bitlock on a field in a struct :(
   u64 retval=milliTime |(u64(macroTime)<<32);//need a hack to get compiler to be efficient here.
-  theSysTicker->enableCounting = 1; //todo:3 add some to systick to compensate for the dead time of this routine.
+  theSysTicker.enableCounting = 1; //todo:3 add some to systick to compensate for the dead time of this routine.
   return retval;
 }
 

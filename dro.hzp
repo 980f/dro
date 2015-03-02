@@ -22,7 +22,7 @@
       arm_target_loader_applicable_loaders="Flash"
       arm_target_loader_default_loader="Flash"
       arm_target_restrict_memory_accesses="Yes"
-      c_user_include_directories="lpcbase"
+      c_user_include_directories="cortexm;lpcbase"
       debug_register_definition_file="$(TargetsDir)/STM32/STM32F103xx_Peripherals.xml"
       linker_memory_map_file="$(TargetsDir)/STM32/STM32F103RE_MemoryMap.xml"
       linker_printf_fmt_level="int"
@@ -62,15 +62,15 @@
       <file file_name="nvic.h" />
       <file file_name="systick.cpp" />
       <file file_name="systick.h" />
-      <folder Name="lpcbase">
-        <file file_name="lpcbase/core_cmInstr.h" />
-        <file file_name="../lpcbase/cstartup.cpp" />
+      <folder Name="cortexm">
+        <file file_name="cortexm/core_cmInstr.h" />
+        <file file_name="cortexm/cstartup.cpp" />
       </folder>
       <folder Name="stmbase" />
     </folder>
     <folder Name="System Files">
       <file file_name="dro.ld" />
-      <file file_name="../lpcbase/cortexm.ld" />
+      <file file_name="cortexm/cortexm.ld" />
       <file file_name="stm32f103re.ld" />
     </folder>
     <configuration

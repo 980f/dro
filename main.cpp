@@ -1,11 +1,11 @@
 /* dro project
  */
-#define useSTM32 1
+#define useSTM32 0
 
 
 #include "core_cmInstr.h"
 #if useSTM32
-#niclude "
+#include "stm32.h"
 #else
 #include "gpio.h" //alh
 #endif
@@ -27,8 +27,12 @@ Irq prime(4);
 
 int axis(0);
 int initme(78);
+
+
+#define myIrq 4
+
 //prime phase interrupt
-void IrqName(4)(void) {
+void IrqName(myIrq)(void) {
   bool dirbit = otherPhase;
   if (dirbit) {
     --axis; //ignoring quarter phase for now
@@ -61,7 +65,6 @@ int main(void) {
   prime.enable();
 
   while (1) {
-    //__WFE();
     MNE(WFE);
     ++events;
   }
