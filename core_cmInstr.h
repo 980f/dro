@@ -1,4 +1,7 @@
-/**************************************************************************//**
+#ifndef __CORE_CMINSTR_H__
+#define __CORE_CMINSTR_H__
+//heavily modified by andyh for easier visual comprehension, and for cross compiling on linux for sanity checking.
+/**
 * @file     core_cmInstr.h
 * @brief    CMSIS Cortex-M Core Instruction Access Header File
 * @version  V2.01
@@ -23,9 +26,6 @@
 
 // NXP Updated to add & to prefix result for byte and half word strex functions for GNU Compatibility
 
-#ifndef __CORE_CMINSTR_H__
-#define __CORE_CMINSTR_H__
-
 /* GNU gcc specific syntax */
 
 #define INTRINSICALLY __attribute__((always_inline)) static inline
@@ -33,16 +33,17 @@
 #if __linux__
 #define SIMPLEOP(mne) void __ ## mne(void){}
 #define SINGLEOP(mne)  uint32_t __ ## mne(uint32_t value){ return 0; }
-
+#define MNE(mne)
 #else
 #define SIMPLEOP(mne) INTRINSICALLY void __ ## mne(void){ __asm volatile (# mne); }
 #define SINGLEOP(mne)  INTRINSICALLY unsigned __ ## mne(unsigned value){                             \
     uint32_t result; __asm volatile (# mne " %0, %1" : "=r" (result) : "r" (value));  return result; \
 }
+// the above despite all the inline keywords was made into a callable function,so:
+#define MNE(mne) __asm volatile (# mne)
 #endif
 
-// the above despite all the inline keywords was made into a callable function.
-#define MNE(mne) __asm volatile (# mne)
+
 
 /** @see cm3/arm instruction manual for what these do.*/
 SIMPLEOP(NOP)
