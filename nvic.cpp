@@ -2,8 +2,8 @@
 #include "nvic.h"
 
 // in startup code:
-extern "C" void generateHardReset(void);
-extern void wtf(int);
+//extern "C" void generateHardReset(void);
+
 
 volatile int CriticalSection::nesting = 0;
 /////////////////////////////////
@@ -292,7 +292,7 @@ Handler VectorTable[] __attribute__((section(".vectors.2"))) = {
   FaultName(4),
   FaultName(5),
   FaultName(6),
-  FaultName(7),
+  FaultName(7), //NB: the lpc guys have a tendency to shove a checksum here.
   FaultName(8),
   FaultName(9),
   FaultName(10),
@@ -365,24 +365,27 @@ Handler VectorTable[] __attribute__((section(".vectors.2"))) = {
   // todo:3 device model specific quantity.
 };
 
-////asm code:
-//.global generateHardReset
-//.thumb
-//.align 2
-//.thumb_func
+#if 0
+//asm code:
+.global generateHardReset
+.thumb
+.align 2
+.thumb_func
 
-//generateHardReset:
-////AIRC register
-//movw r0, #0xED0C
-//movt r0, #0xE000
-////1:VECTRESET worked, 4:SYSRESETREQ just loops here, using rowley&jtag debugger.
-//movw r1, #1
-//movt r1, #0x05FA
-//str r1,[r0]
-//b generateHardReset
+generateHardReset:
+//AIRC register
+movw r0, #0xED0C
+movt r0, #0xE000
+//1:VECTRESET worked, 4:SYSRESETREQ just loops here, using rowley&jtag debugger. //probably should try 5 in case different vendors misread the arm spec differently.
+movw r1, #1
+movt r1, #0x05FA
+str r1,[r0]
+b generateHardReset
+#endif
+
 __attribute__((naked)) //trying to get good assembler code on this one :)
 void generateHardReset(){
-  do {
+  do {//keep on hitting the bit until we reset.
     theInterruptController.airc=0x5FA0001;//1 worked on stm32, 4 should have worked but looped under the debugger.
   } while (1);
 }

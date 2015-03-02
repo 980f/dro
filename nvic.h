@@ -2,7 +2,7 @@
 #define nvicH
 #include "eztypes.h"
 
-#define resolve(arf) arf
+extern "C" void generateHardReset();
 
 //macro's for generating numbers don't work in the irqnumber slot below. Time to move on ...
 #define IrqName(irqnumber) IRQ ## irqnumber
@@ -15,12 +15,6 @@
 
 #define HandleFault(faultIndex) void FaultName(faultIndex) (void)
 
-
-////the nvic is not bitbanded, these macro's access the bit associated with the Irq number.
-//#define lvalue(grup) reinterpret_cast <int *> (0xE000E000 + grup + (4 * (number >> 5)))
-////this is for the registers where you write a 1 to a bit to make something happen.
-//#define strobe(grup) * lvalue(grup) = 1 << (number & 0x1F)
-//#define irqflag(grup) (1 & ((*lvalue(grup)) >> (number & 0x1F)))
 
 //const capable component:
 struct IrqAccess {

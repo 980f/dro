@@ -1,7 +1,7 @@
 #include "systick.h"
 
 #include "nvic.h"
-#include "clocks.h"
+#include "stm32.h"
 #include "minimath.h"
 
 /*
