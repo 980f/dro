@@ -75,6 +75,12 @@
         <file file_name="../cortexm/stm32/p103_board.cpp" />
         <file file_name="../cortexm/stm32/p103_board.h" />
         <file file_name="../cortexm/stm32/stm32.h" />
+        <file file_name="cortexm/stm32/exti.cpp" />
+        <file file_name="cortexm/stm32/exti.h" />
+        <file file_name="cortexm/stm32/flashcontrol.cpp" />
+        <file file_name="cortexm/stm32/flashcontrol.h" />
+        <file file_name="cortexm/stm32/afio.cpp" />
+        <file file_name="cortexm/stm32/afio.h" />
       </folder>
     </folder>
     <folder Name="System Files">
