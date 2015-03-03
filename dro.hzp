@@ -65,16 +65,16 @@
         <file file_name="cortexm/nvic.h" />
         <file file_name="cortexm/systick.cpp" />
         <file file_name="cortexm/systick.h" />
-        <file file_name="../cortexm/wtf.cpp" />
-        <file file_name="../cortexm/wtf.h" />
+        <file file_name="cortexm/wtf.cpp" />
+        <file file_name="cortexm/wtf.h" />
       </folder>
       <folder Name="stm">
         <file file_name="cortexm/stm32/gpio.cpp" />
         <file file_name="cortexm/stm32/gpio.h" />
-        <file file_name="../cortexm/stm32/stm32.cpp" />
-        <file file_name="../cortexm/stm32/p103_board.cpp" />
-        <file file_name="../cortexm/stm32/p103_board.h" />
-        <file file_name="../cortexm/stm32/stm32.h" />
+        <file file_name="cortexm/stm32/stm32.cpp" />
+        <file file_name="cortexm/stm32/p103_board.cpp" />
+        <file file_name="cortexm/stm32/p103_board.h" />
+        <file file_name="cortexm/stm32/stm32.h" />
         <file file_name="cortexm/stm32/exti.cpp" />
         <file file_name="cortexm/stm32/exti.h" />
         <file file_name="cortexm/stm32/flashcontrol.cpp" />
@@ -86,7 +86,7 @@
     <folder Name="System Files">
       <file file_name="dro.ld" />
       <file file_name="cortexm/cortexm.ld" />
-      <file file_name="../cortexm/stm32/f103rb.ld" />
+      <file file_name="cortexm/stm32/f103rb.ld" />
     </folder>
     <configuration
       Name="THUMB"
