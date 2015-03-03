@@ -45,7 +45,8 @@ SOURCES +=\
     cortexm/stm32/p103_board.cpp \
     cortexm/stm32/stm32.cpp \
     cortexm/stm32/flashcontrol.cpp \
-    ../cortexm/stm32/clocks.cpp
+    ../cortexm/stm32/clocks.cpp \
+    cortexm/cstartup.cpp
 
 DISTFILES += \
     cortexm/stm32/f103re.ld \

@@ -62,6 +62,11 @@
       <li>bug-minor: '-u_vector' is put into ld commandline, but I am not using
         that for my vector table (using KEEP's instead). This used to be
         accessible from the properties editor but I can't find it therein.</li>
+      <li>Flash can be at two different addresses, either 0 or 128M on my stm32
+        part. Apparently you enforce values from your xml target description,
+        rather than trusting the linker. It would be handy if this check could
+        be suppressed, or I shall experiment with adding another section to see
+        if that is good enough.</li>
       <li>tedious: after breaking debug: frequently prompted to find a header
         file, even when the file open dialog has that file handy. Doesn't
         remember these selections very long, makes debug sessions tedious. I
@@ -79,12 +84,17 @@
         to configure a default. The existing default is wrong 100% of the time
         for me, at least when invoked by ^O. It seems that sometimes it
         remembers, sometimes not. It recently got obsessed with .ld files.</li>
+      <li>can't set breakpoint while download is going on. I understand that the
+        interface is a bit busy, but you could allow the local set of
+        breakpoints to be edited while the download is proceeding. It is very
+        normal that I hit "F5:Start Debug" *then* realize I need to set a
+        breakpoint before execution begins (or restart the debug session).</li>
       <li>package error: cannot find
         /home/andyh/.rowley_associates_limited/CrossWorks for
         ARM/v3/packages/targets/LPC1000/lib/liblpc1000_v7m_t_le_eabi_f_swc.a: No
         such file or directory<br>
-        'small' is present, but no 'swc' variant. I selected treat double as
-        float, don't know which other properties affect lib selection. The lib
+        'small' is present, but no 'swc' variant. I selected 'treat double as
+        float', don't know which other properties affect lib selection. The lib
         wasn't useful to me at this time.</li>
       <li>with every C level debug step the memory window was scrolled back to
         its left margin, requiring me to yank it back each and every step to see

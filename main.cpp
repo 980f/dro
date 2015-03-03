@@ -18,6 +18,7 @@ using namespace LPC;
 //For pins the stm32 lib is using const init'ed objects, LPC templated. It will take some work to reconcile how the two vendors like to describe their ports,
 //however the objects have the same usage syntax so only declarations need to be conditional on vendor.
 #if useSTM32
+#include "p103_board.h"
 Pin primePin(PB,11);
 const InputPin primePhase(primePin);
 const InputPin otherPhase(Pin(PB,12));
@@ -52,6 +53,7 @@ void IrqName(myIrq)(void) {
   }
 }
 
+P103_board board;
 
 int main(void) {
   //soft stuff

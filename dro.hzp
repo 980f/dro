@@ -4,7 +4,7 @@
     <configuration
       Name="Common"
       Placement="Flash"
-      Target="STM32F103RE"
+      Target="STM32F103RB"
       arm_architecture="v7M"
       arm_core_type="Cortex-M3"
       arm_fpu_type="None"
@@ -15,16 +15,16 @@
       arm_linker_process_stack_size="0"
       arm_linker_stack_size="0"
       arm_simulator_memory_simulation_filename="$(TargetsDir)/STM32/STM32SimulatorMemory.dll"
-      arm_simulator_memory_simulation_parameter="STM32F103RE;0x80000;0x10000"
+      arm_simulator_memory_simulation_parameter="STM32F103RB;0x20000;0x5000"
       arm_target_connect_with_reset="Yes"
       arm_target_debug_interface_type="ADIv5"
       arm_target_interface_type="Default"
       arm_target_loader_applicable_loaders="Flash"
       arm_target_loader_default_loader="Flash"
       arm_target_restrict_memory_accesses="Yes"
-      c_user_include_directories="cortexm;lpcbase"
+      c_user_include_directories="cortexm;cortexm/stm32;ezcpp"
       debug_register_definition_file="$(TargetsDir)/STM32/STM32F103xx_Peripherals.xml"
-      linker_memory_map_file="$(TargetsDir)/STM32/STM32F103RE_MemoryMap.xml"
+      linker_memory_map_file="$(TargetsDir)/STM32/STM32F103RB_MemoryMap.xml"
       linker_printf_fmt_level="int"
       linker_printf_fp_enabled="No"
       linker_printf_width_precision_supported="No"
@@ -52,26 +52,35 @@
     <configuration Name="RAM" target_reset_script="Reset()" />
     <folder Name="Source Files">
       <configuration Name="Common" filter="cpp;h;s" />
-      <file file_name="cheapTricks.cpp" />
-      <file file_name="cheapTricks.h" />
-      <file file_name="eztypes.h" />
+      <file file_name="ezcpp/cheapTricks.cpp" />
+      <file file_name="ezcpp/cheapTricks.h" />
+      <file file_name="ezcpp/eztypes.h" />
       <file file_name="main.cpp" />
-      <file file_name="minimath.cpp" />
-      <file file_name="minimath.h" />
-      <file file_name="nvic.cpp" />
-      <file file_name="nvic.h" />
-      <file file_name="systick.cpp" />
-      <file file_name="systick.h" />
+      <file file_name="ezcpp/minimath.cpp" />
+      <file file_name="ezcpp/minimath.h" />
       <folder Name="cortexm">
         <file file_name="cortexm/core_cmInstr.h" />
         <file file_name="cortexm/cstartup.cpp" />
+        <file file_name="cortexm/nvic.cpp" />
+        <file file_name="cortexm/nvic.h" />
+        <file file_name="cortexm/systick.cpp" />
+        <file file_name="cortexm/systick.h" />
+        <file file_name="../cortexm/wtf.cpp" />
+        <file file_name="../cortexm/wtf.h" />
       </folder>
-      <folder Name="stmbase" />
+      <folder Name="stm">
+        <file file_name="cortexm/stm32/gpio.cpp" />
+        <file file_name="cortexm/stm32/gpio.h" />
+        <file file_name="../cortexm/stm32/stm32.cpp" />
+        <file file_name="../cortexm/stm32/p103_board.cpp" />
+        <file file_name="../cortexm/stm32/p103_board.h" />
+        <file file_name="../cortexm/stm32/stm32.h" />
+      </folder>
     </folder>
     <folder Name="System Files">
       <file file_name="dro.ld" />
       <file file_name="cortexm/cortexm.ld" />
-      <file file_name="stm32f103re.ld" />
+      <file file_name="../cortexm/stm32/f103rb.ld" />
     </folder>
     <configuration
       Name="THUMB"
