@@ -34,8 +34,6 @@ I have made it convenient to swap around the order of the sections without havin
 */
 
 SECTIONS {
-/* include memory layout definitions file. */
-
 /* interrupt table */
   .vectors ORIGIN(FLASH):{
     LONG( ORIGIN(SRAM)+LENGTH(SRAM))  /* set initial stack pointer to top of sram */
@@ -44,8 +42,9 @@ SECTIONS {
 
 /* normal code */
   .text : {
-    /* alh commented out segments produced by features he doesn't want to be using, some of which are not available on cortexM? parts */
-    *(.text .text.* /*.glue_7t .glue_7 .gnu.linkonce.t.* .gcc_except_table .ARM.extab* .gnu.linkonce.armextab.*  */)
+    *(.text .text.*)
+     /* alh commented out segments produced by features he doesn't want to be using, some of which are not available on cortexM? parts */
+     /**(.glue_7t .glue_7 .gnu.linkonce.t.* .gcc_except_table .ARM.extab* .gnu.linkonce.armextab.*)  */
   } >FLASH
 
 /* things that should be called before main():*/
@@ -66,7 +65,7 @@ SECTIONS {
   } >FLASH
 
 /* zero initialized data */
-  .bss (NOLOAD) : {/* NOLOAD is gratuitous, but is a marker that all that is occurring is data allocation.*/
+  .bss (NOLOAD) : {/* NOLOAD is gratuitous, but is a reminder that all that is occurring is data allocation.*/
     *(.bss .bss.* .gnu.linkonce.b.*) *(COMMON)
   } >SRAM
   .startupClear : {/* the following initializes what my cstartup.cpp calls 'struct RamBlock' */
@@ -91,9 +90,7 @@ SECTIONS {
   .findEnd :{ /* cute trick to get the total SRAM used. This trick keeps us from having to move the __stack_end__ assignment into whichever ram block becomes the last.*/
     __stack_end__ = .;  /* if SP is ever below this value we are corrupting memory. */
   } >SRAM
-
-
-  __stack_max__ = LENGTH(SRAM) - (__stack_end__ - ORIGIN(SRAM)); /* value to feed into start of data segment */
-
+  /* value to someday feed into start of data segment should we ever figure out how to put the stack first so that we get a fault instead of wild behavior */
+  __stack_max__ = LENGTH(SRAM) - (__stack_end__ - ORIGIN(SRAM)); 
 }
 

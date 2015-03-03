@@ -1,6 +1,6 @@
 /*all about interrupts*/
 #include "nvic.h"
-
+#include "eztypes.h"
 #include "peripheral.h"
 
 volatile int CriticalSection::nesting = 0;
