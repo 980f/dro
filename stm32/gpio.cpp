@@ -58,6 +58,8 @@ void Pin::output(unsigned int code, unsigned int mhz, bool openDrain) const {
   configureAs(code);
 }
 
+Pin::Pin(const Port &port, const unsigned int bitnum): bitnum(bitnum), port(port){/*empty*/}
+
 const Pin &Pin::AI() const {
   configureAs(0);
   return *this;
@@ -112,6 +114,10 @@ OutputPin::OutputPin(const Pin &pin, bool lowactive, unsigned int mhz, bool open
   /*empty*/
 }
 
+
+bool Port::isOutput(unsigned pincode){
+  return (pincode&3)!=0;//if so then code is Alt/Open
+}
 
 Port::Port(const char letter): APBdevice(2, 2 + letter - 'A'){}
 

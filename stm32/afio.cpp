@@ -1,10 +1,10 @@
 #include "afio.h"
 #include "bitbanger.h"
 
-AfioManager theAfioManager InitStep(InitHardware); //same as ports and pins
+AfioManager theAfioManager InitStep(InitHardware-1); //just before ports and pins
 AfioManager ::AfioManager():
   APBdevice(2, 0),
-  b(*reinterpret_cast <AfioBand *> (getBand())),
+  b(*reinterpret_cast <AfioBand *> (bandAddress)),
   remap(registerAddress(4)){
   init();
 }

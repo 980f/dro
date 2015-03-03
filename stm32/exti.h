@@ -18,6 +18,7 @@ If bit n of one port is watched then no other ports' bit n can be watched.
 #include "nvic.h" //return irq reference
 class Exti :public APBdevice {
   static Irq irqsome[];
+public: //
   static unsigned irqIndex(unsigned pinnumber);
 
 public:

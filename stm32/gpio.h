@@ -10,9 +10,7 @@
   */
 
 struct Port /*Manager*/ : public APBdevice {
-  static bool isOutput(unsigned pincode){
-    return (pincode&3)!=0;//if so then code is Alt/Open
-  }
+  static bool isOutput(unsigned pincode);
 
   /** a contiguous set of bits in a a single Port */
   struct Field {
@@ -40,6 +38,7 @@ struct Port /*Manager*/ : public APBdevice {
     */
   void configure(unsigned bitnum, unsigned code) const;
   volatile u16 &odr(void) const;
+
 };
 
 
@@ -62,7 +61,7 @@ struct Pin /*Manager*/ {
 
   void output(unsigned int code, unsigned int mhz, bool openDrain) const; /* output */
 
-  Pin(const Port &port, const unsigned int bitnum): bitnum(bitnum), port(port){/*empty*/}
+  Pin(const Port &port, const unsigned int bitnum);
   /** @returns this after configuring it for analog input */
   const Pin& AI(void) const;
   /** @returns bitband address for input after configuring as digital input, pull <u>U</u>p, pull <u>D</u>own, or leave <u>F</u>loating*/
@@ -110,7 +109,7 @@ class InputPin :public LogicalPin {
 public:
   InputPin(const Pin &pin, char UDF = 'D', bool lowactive=false);
   InputPin(const Pin &pin,bool lowactive);  //pull the opposite way of the 'active' level.
-//maydo: add method to change pullup/pulldown bias while running
+  //maydo: add method to change pullup/pulldown bias while running
 
 };
 

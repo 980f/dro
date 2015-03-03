@@ -17,6 +17,7 @@ void APBdevice::setClockEnable(bool on) const {
 }
 
 bool APBdevice::isEnabled() const {
+//  (reset on forces the clock off (I think) so we only have to check one bit)
   sfrbit(clocker, rccBase(24), slot);
   return *clocker;
 }

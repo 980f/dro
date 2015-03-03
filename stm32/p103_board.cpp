@@ -4,8 +4,9 @@
 const u32 EXTERNAL_HERTZ=8000000;
 
 P103_board::P103_board():
-  led(Pin(PC,12)),
-  button(Pin(PA,0))
-{
+  ledPin(PC,12),
+  led(ledPin),
+  buttonPin(PA,0),
+  button(buttonPin){
   /*empty*/
 }
