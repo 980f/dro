@@ -1,6 +1,6 @@
 #include "clocks.h"
+#include "peripheral.h"
 #include "gpio.h"
-
 #include "flashcontrol.h"
 
 #define HSI_Hz 8000000

@@ -2,6 +2,7 @@
 #define AFIO_H
 
 #include "stm32.h"
+#include "gpio.h"
 
 struct AfioBand {
   unsigned int event[32]; //skipping event selector
@@ -52,12 +53,14 @@ struct AfioRemap {
 };
 
 #include "shadow.h"
-class AfioManager : public APBdevice,public Shadowed<AfioRemap,u32> {
+class AfioManager : public APBdevice {
 public:
   AfioBand &b;
+  Shadowed<AfioRemap,u32> remap;
 public:
   AfioManager(void);
-
+  /* make @param pin 's port the source for the pin's bitnumber's event, blowing off any previous selection for this exti channel */
+  void selectEvent(const Pin &pin);
 };
 extern AfioManager theAfioManager;//named per soliton() but address is computed via constructor so we aren't using that macro
 

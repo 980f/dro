@@ -1,4 +1,5 @@
 #include "flashcontrol.h"
+#include "peripheral.h"
 
 //OptionByte * const UserOption = reinterpret_cast <OptionByte *> (0x1FFFF800);
 

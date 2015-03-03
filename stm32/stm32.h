@@ -70,5 +70,10 @@ public:
     return APB_Band(bus2, slot)+(offset<<5)+(bit<<2);
   }
 
+  u32 &bit(unsigned offset, unsigned bit){
+    return *(APB_Band(bus2, slot)+(offset<<5)+(bit<<2));
+  }
+
+
 };
 #endif /* ifndef stm32H */

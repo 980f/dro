@@ -113,8 +113,7 @@ OutputPin::OutputPin(const Pin &pin, bool lowactive, unsigned int mhz, bool open
 }
 
 
-Port::Port(const char letter): APBdevice(2, 2 + letter - 'A'){
-}
+Port::Port(const char letter): APBdevice(2, 2 + letter - 'A'){}
 
 void Port::configure(unsigned bitnum, unsigned code) const {
   if(! isEnabled()) { // deferred init, so we don't have to sequence init routines.

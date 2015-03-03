@@ -4,10 +4,10 @@
 
 extern "C" void generateHardReset();
 
-//macro's for generating numbers don't work in the irqnumber slot below. Time to move on ...
+//macro's for generating numbers don't work in the irqnumber slot below. The argument must be a simple digit string, no math or lookups or evenconsexpre's
 #define IrqName(irqnumber) IRQ ## irqnumber
 
-//object based interrupt handlers can simply jump to the handler code once 'this' has been init.
+//object based interrupt handlers need some glue:
 #define ObjectInterrupt(objCall, irqnumber) void IrqName(irqnumber) (void) { objCall; }
 
 #define FaultName(faultIndex) FAULT ## faultIndex

@@ -1,9 +1,7 @@
 /*all about interrupts*/
 #include "nvic.h"
 
-// in startup code:
-//extern "C" void generateHardReset(void);
-
+#include "peripheral.h"
 
 volatile int CriticalSection::nesting = 0;
 /////////////////////////////////
