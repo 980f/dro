@@ -28,9 +28,15 @@ const InputPin primePhase(primePin);
 Pin otherPin(PB,12);
 const InputPin otherPhase(otherPin);
 
-
 #define myIrq 40
 
+Irq &pushButton(Exti::enablePin(board.buttonPin,false,true));
+//todo: figure out a way to get this declared without manual look up
+#define pbIrq 6
+
+void IrqName(pbIrq) (void){
+  board.led=!board.led;
+}
 
 #else
 //p0-4,p05 for qei.
@@ -45,6 +51,7 @@ InputPin<0,5> otherPhase;
 //should go up and down depending upon the input signals;
 int axis(0);
 
+//define myIRQ as the encoder's interrupt
 //prime phase interrupt
 void IrqName(myIrq)(void) {
   bool dirbit = otherPhase;
@@ -67,7 +74,7 @@ int main(void) {
 
 
   prime.enable();
-
+  pushButton.enable();
   while (1) {
     MNE(WFE);
     ++events;
