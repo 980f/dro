@@ -22,7 +22,7 @@ QMAKE_CXXFLAGS += -Wno-error=unused-function
 #for debug of macros:
 #QMAKE_CXXFLAGS += -save-temps
 
-INCLUDEPATH += ../cortexm ../cortexm/stm32 ../ezcpp
+INCLUDEPATH += cortexm cortexm/stm32 ezcpp
 
 HEADERS +=\
     cortexm/nvic.h\
