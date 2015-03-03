@@ -25,28 +25,36 @@ QMAKE_CXXFLAGS += -Wno-error=unused-function
 INCLUDEPATH += ../cortexm ../cortexm/stm32 ../ezcpp
 
 HEADERS +=\
-  nvic.h\
-  systick.h\
-  cortexm/core_cmInstr.h \
-  cortexm/stm32/gpio.h \
-    cortexm/wtf.h \
+    cortexm/nvic.h\
+    cortexm/systick.h\
+    cortexm/core_cmInstr.h \
+    cortexm/stm32/gpio.h \
     cortexm/stm32/p103_board.h \
-    ../cortexm/stm32/clocks.h \
+    cortexm/stm32/clocks.h \
     cortexm/stm32/stm32.h \
-    ezcpp/eztypes.h
+    cortexm/stm32/afio.h \
+    cortexm/stm32/exti.h \
+    cortexm/wtf.h \
+    ezcpp/eztypes.h \
+    cortexm/peripheral.h
+
 
 SOURCES +=\
-  cortexm/systick.cpp\
-  cortexm/nvic.cpp\
-  ezcpp/minimath.cpp\
-  main.cpp \
-  cortexm/stm32/gpio.cpp \
-    cortexm/wtf.cpp \
+    main.cpp \
     cortexm/stm32/p103_board.cpp \
+    cortexm/stm32/gpio.cpp \
     cortexm/stm32/stm32.cpp \
     cortexm/stm32/flashcontrol.cpp \
-    ../cortexm/stm32/clocks.cpp \
-    cortexm/cstartup.cpp
+    cortexm/stm32/clocks.cpp \
+    cortexm/stm32/afio.cpp \
+    cortexm/stm32/exti.cpp \
+    cortexm/systick.cpp \
+    cortexm/nvic.cpp \
+    cortexm/cstartup.cpp \
+    cortexm/wtf.cpp \
+    ezcpp/minimath.cpp \
+    cortexm/peripheral.cpp
+
 
 DISTFILES += \
     cortexm/stm32/f103re.ld \
@@ -54,3 +62,4 @@ DISTFILES += \
     dro.hzp
 
 
+#end of file.

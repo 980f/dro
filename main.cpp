@@ -1,47 +1,49 @@
 /* dro project
  */
 #define useSTM32 1
-
+//having to use my stm32P103 dev kit as I can't get an SWD downloader any time soon.
 
 #if useSTM32
-#include "stm32.h"
+#include "gpio.h"
+#include "exti.h"
+
 #else
 using namespace LPC;
 #endif
 
-#include "gpio.h" //alh
-#include "nvic.h" //alh
+#include "gpio.h"
+#include "nvic.h"
 
-#include "core_cmInstr.h"
+#include "core_cmInstr.h"  //wfe OR wfi
 
 
 //For pins the stm32 lib is using const init'ed objects, LPC templated. It will take some work to reconcile how the two vendors like to describe their ports,
 //however the objects have the same usage syntax so only declarations need to be conditional on vendor.
 #if useSTM32
 #include "p103_board.h"
+P103_board board;
+
 Pin primePin(PB,11);
 const InputPin primePhase(primePin);
-const InputPin otherPhase(Pin(PB,12));
+Pin otherPin(PB,12);
+const InputPin otherPhase(otherPin);
+
+
+#define myIrq 40
+
 
 #else
 //p0-4,p05 for qei.
 InputPin<0,4> primePhase;
 InputPin<0,5> otherPhase;
 
-#endif
-
 
 #define myIrq 4
 
-//Irq's cannot be const due to having a nesting control element within. If you don't want the nesting enable then you can use the baser class.
-Irq prime(myIrq);
+#endif
 
-//should go up and down depending upon teh input signals;
+//should go up and down depending upon the input signals;
 int axis(0);
-
-int initme(78);//testing linker
-const int constly(95);
-
 
 //prime phase interrupt
 void IrqName(myIrq)(void) {
@@ -53,19 +55,23 @@ void IrqName(myIrq)(void) {
   }
 }
 
-P103_board board;
 
 int main(void) {
   //soft stuff
-  int events=initme;
-  //hw stuff
-  //GPIOInit();
-  //interrupt defaults to edge sensitive
+  int events=0;
+  board.led=0;
+
+
+//  Exti::enablePin(otherPin);
+  Irq &prime(Exti::enablePin(primePin,true,true));
+
+
   prime.enable();
 
   while (1) {
     MNE(WFE);
     ++events;
+    board.led=events&1;
   }
   return 0;
 }

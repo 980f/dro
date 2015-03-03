@@ -54,7 +54,8 @@
         the point in having such links. EG: I put a link under my project source
         dir to point to a library that was in a different git repo. I'd like to
         be able to move around where that other repo is via changing the OS link
-        without having to do a search and replace in my project files.</li>
+        without having to do a search and replace in my project files. Similar
+        to "Make projects portable" request.</li>
       <li>Flash can be at two different addresses, either 0 or 128M on my stm32
         part. Apparently you enforce values from your xml target description,
         rather than trusting the linker. It would be handy if this check could
@@ -70,8 +71,8 @@
         crossworks also has had a tendency to change the expansion state of a
         tree with every step into another function and return, that also makes
         my wrists ache during any extended debug session and is a major time
-        killer and distraction. And ditto that for the display format of members
-        of a struct or a local variable.<br>
+        killer and distraction. (web: And ditto that for the display format of
+        members of a struct or a local variable.) (web: "stable windows setup")<br>
         Summary: View state should not be altered during a data update, view
         state of locals should be remembered by function, not in sync with the
         stack as it executes.</li>
@@ -93,7 +94,7 @@
         same for regular interrupts. The 'interrupt stack frame' is well
         defined, you should be able to get us back to the line of code causing
         the exception (presuming it is 'synchronous').</li>
-      <li>allow placing backup files in another directory, instead of same
+      <li>web: allow placing backup files in another directory, instead of same
         directory as file, to reduce clutter when browsing the source with a
         file manager, especially useful when grepping for something- you only
         get hits in files that matter without having to use a fancy glob ('.h'
@@ -104,6 +105,9 @@
         configure a default. The existing default is wrong 100% of the time for
         me, at least when invoked by ^O. It seems that sometimes it remembers,
         sometimes not. It recently got obsessed with .ld files.</li>
+      <li>An option for the files view to follow 1:1 the file system Eclipse
+        added that pretty early on. Having to manually place files into folders
+        reproducing the layout of the file system is tedious.</li>
       <li>build: concatenation of configuration names is done with a space char,
         making commandline file management annoying. I text edit the hzp to
         replace the space with a dash.</li>
@@ -122,9 +126,32 @@
         disabled. OR tell me how to build my own configuration templates so that
         I quit having
         things I never use urged on me when building a new project.</li>
+      <li>Editable keymap.Many of your key assignments are stolen by the unity
+        desktop requiring me to use the mouse to get to the feature.</li>
     </ol>
-    <p><br>
-    </p>
+    <p>FYI: Why I use my own linker scripts and startup:</p>
+    <ol>
+      <li>I sort the various init items so that I get full control over
+        initialization order. </li>
+      <li>I use a very different approach to the interrupt table, so I don't
+        have to hunt down spellings in some file. Since I need the number of the
+        irq to enable and disable etc. I use a macro to generate an interrupt
+        request alias and then the table itself is just weak versions of the
+        numerical name. Now all I need to know about an interrupt is its number,
+        not someone else's idea of what a good name for it should be. <br>
+        This is especially handy when moving about which uart I am using for a
+        feature, as I don't have to edit a uart-specific isr function name, I
+        can change just one #defined number and both the irq control and the
+        name of the handler are taken care of.</li>
+      <li>My init code is all C++, except where the compiler produces such ugly
+        code that I write some asm.</li>
+      <li>I pack all the copy-to-init segments together and do a single block
+        copy from rom to ram.</li>
+      <li>I trust that gcc's alignment commands that are in the input sections
+        are adequate for output alignment. This makes for a very readable (and
+        small) script.</li>
+      <li>I am old and set in my ways, or at least ornery.</li>
+    </ol>
     <p>previous version bugs to confirm:</p>
     <ol>
       <li>BUG: debug view displays base class data from address offset, rather
