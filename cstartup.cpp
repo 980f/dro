@@ -1,26 +1,26 @@
 int wtf(int complaint);
 
 extern "C" {
- //inlined  void __libc_init_array(void); // The entry point for the C++ library startup
-  void SystemInit(void); // __USE_CMSIS __USE_LPCOPEN
-  int main(void); // entry point
-  void generateHardReset(void); // doesn't return! supplied by nvic.cpp as that is where reset hardware happens to reside.
+//inlined  void __libc_init_array(void); // The entry point for the C++ library startup
+void SystemInit(void); // __USE_CMSIS __USE_LPCOPEN
+int main(void); // entry point
+void generateHardReset(void); // doesn't return! supplied by nvic.cpp as that is where reset hardware happens to reside.
 
-  /** these structs will be created via LONG(...) directives in the ld file.
+/** these structs will be created via LONG(...) directives in the ld file.
    That way only one symbol needs to be shared between the ld and this file for each block,
    and the machine code reduction makes up for the explicit storing of these values in the rom .*/
-  struct RamBlock {
-    unsigned int *address;
-    unsigned int length;
-  };
+struct RamBlock {
+  unsigned int *address;
+  unsigned int length;
+};
 
-  struct RamInitBlock {
-    const unsigned int *rom;
-    RamBlock ram;
-  };
+struct RamInitBlock {
+  const unsigned int *rom;
+  RamBlock ram;
+};
 
-const extern RamInitBlock __data_segment__;
-const extern RamBlock __bss_segment__;
+const extern RamInitBlock __data_segment__;//name coordinated with cortexm.ld
+const extern RamBlock __bss_segment__;  //name coordinated with cortexm.ld
 
 
 /** NB: this startup presumes 32 bit aligned, 32bit padded structures, but linker gives byte addresses and counts */
@@ -55,7 +55,7 @@ that pushes arguments and then calls a normal routine. EG:
   &initClassyThing,
 */
 typedef void (*InitRoutine)(void) ;
-const extern InitRoutine __init_table__[];
+const extern InitRoutine __init_table__[];//name coordinated with cortexm.ld
 
 /** this implementation trusts the linker to null terminate the table */
 void run_init( const InitRoutine * table){
@@ -68,18 +68,20 @@ void run_init( const InitRoutine * table){
 
 // instead of tracking #defined symbols just dummy up the optional routines:
 __attribute__ ((weak,optimize(3))) void SystemInit(void) {
-
+  wtf(100001);
 }
 
 /** sometimes pure virtual functions that aren't overloaded get called anyway,
   * such as from extended classes prophylactically calling the overloaded parent,
     or constructors calling their pure virtual members */
-  void __cxa_pure_virtual(){  /* upon call of pure virtual function */
-    wtf(100000); /* ignore it */
-  }
+void __cxa_pure_virtual(){  /* upon call of pure virtual function */
+  wtf(100000); /* ignore it */
+}
 
 __attribute__ ((weak,naked,noreturn,optimize(3))) void generateHardReset(){
-  while(1);
+  while(1){
+    wtf(100002);
+  }
 }
 
 /*****************************************************************************
@@ -90,14 +92,13 @@ extern "C" void cstartup(void);
 __attribute__ ((naked,noreturn)) void cstartup(void){
 
   // initialize static variables
-    data_init(__data_segment__);
+  data_init(__data_segment__);
   // Zero other static variables.
-    bss_init(__bss_segment__);
+  bss_init(__bss_segment__);
   // a hook:
   SystemInit(); // stuff that C++ construction might need, like turning on hardware modules (e.g. LPC::GPIO::Init())
-  //todo: run constructors here
-  // a hook
-//incorporated by linker int run_init  __libc_init_array(); // C++ library initialization (? constructors for static objects?)
+  run_init(__init_table__);
+  //incorporated by linker into our run_init  __libc_init_array(); // C++ library initialization (? constructors for static objects?)
   main();
   // todo: theoretically could find and execute destructors for static objects.
   generateHardReset(); // auto restart on problems, design your system to tolerate spontaneous power cycles on fatal firmware error
@@ -107,3 +108,9 @@ __attribute__ ((naked,noreturn)) void cstartup(void){
 void (*resetVector)(void) __attribute__((section(".vectors.1"))) = cstartup;
 // rest of table is in nvic.cpp, trusting linker script to order files correctly for now. Need to extend the section names for safety.
 
+#ifdef __linux__
+const RamInitBlock __data_segment__={0,0,0};//(&__data_segment__,&__data_segment__,0);//name coordinated with cortexm.ld
+const RamBlock __bss_segment__={0,0};//(&__bss_segment__,0);  //name coordinated with cortexm.ld
+const InitRoutine __init_table__[]={nullptr};//name coordinated with cortexm.ld
+
+#endif
