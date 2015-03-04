@@ -52,8 +52,7 @@ SOURCES +=\
     cortexm/nvic.cpp \
     cortexm/cstartup.cpp \
     cortexm/wtf.cpp \
-    ezcpp/minimath.cpp \
-    cortexm/peripheral.cpp
+    ezcpp/minimath.cpp
 
 
 DISTFILES += \

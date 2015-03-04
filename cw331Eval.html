@@ -73,7 +73,10 @@
       <li>disabling startup breakpoint is often ignored. I set 'initial
         breakpoint' to "never", changed the function that it would stop on and
         the next debug session start it stopped at the new location (ie didn't
-        simply fail to unset a previous breakpoint).</li>
+        simply fail to unset a previous breakpoint). Erasing the name prevented
+        the initial breakpoint from happening.</li>
+      <li><br>
+      </li>
     </ol>
     <p>UI annoyances:</p>
     <ol>
@@ -100,6 +103,11 @@
         breakpoints to be edited while the download is proceeding. It is very
         normal that I hit "F5/Start Debug" *then* realize I need to set a
         breakpoint before execution begins (or restart the debug session).</li>
+      <li>Find in editor doesn't have any access to change "whole word" "case"
+        options, unlike find in files. It can be set globally but I want to be
+        able to change it for a search underway and for each search as I get to
+        it. Configured defaults is fine, but quick access to overrides is&nbsp;
+        needed.</li>
     </ol>
     <p>Feature Requests</p>
     <ol>
@@ -112,6 +120,14 @@
         file manager, especially useful when grepping for something- you only
         get hits in files that matter without having to use a fancy glob ('.h'
         or '.cpp'). The same would be nice for autosave files.</li>
+      <li>stm32 bitband addresses show as 0xFEFEFEFE instead of a 0 or a 1. This
+        is a processor specific thing, but arm supplies it for vendors to use so
+        it might not be particularly vendor specific. This should be reasonable
+        to control with a section in the memory def file.</li>
+      <li>displaying binary values: a gap or some other mark every 4 bits (like
+        the latest C spec accepts as input).</li>
+      <li>local view of 'this' has an extra level of tree to open. Open this and
+        you get a '*' and you have to then open that.</li>
       <li>open file dialog: should watch for files being added (by external
         actions)</li>
       <li>open file dialog: should remember last file filter, or allow you to
@@ -134,6 +150,8 @@
       <li>An option for "maximum stack", drops all the stack stuff from the
         linker other than setting the stack init value in the vector table to
         top of ram.</li>
+      <li>Call Stack TOS on top of view instead of bottom. Show 'em in the order
+        that you unwind them!</li>
       <li>precalculate ram allocations and use that to put stack at start of ram
         segment, so that stack overflow is a hardfault. I haven't yet been able
         to convince the linker to do that for me, attempts to size the data

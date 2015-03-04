@@ -31,10 +31,8 @@ const InputPin otherPhase(otherPin);
 #define myIrq 40
 
 Irq &pushButton(Exti::enablePin(board.buttonPin,false,true));
-//todo: figure out a way to get this declared without manual look up
-#define pbIrq 6
 
-void IrqName(pbIrq) (void){
+void IrqName(6) (void){
   board.led=!board.led;
 }
 
@@ -53,7 +51,7 @@ int axis(0);
 
 //define myIRQ as the encoder's interrupt
 //prime phase interrupt
-void IrqName(myIrq)(void) {
+void IrqName(40)(void) {
   bool dirbit = otherPhase;
   if (dirbit) {
     --axis; //ignoring quarter phase for now
