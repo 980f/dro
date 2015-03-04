@@ -6,20 +6,20 @@ volatile u32 *bandFor(volatile void *dcb, unsigned int bitnum){ //5: 2^5 bits pe
 }
 
 void APBdevice::reset() const {
-  sfrbit(resetter, rccBase(12), slot);
-  *resetter = 1;
-  *resetter = 0; //manual is ambiguous as to whether reset is a command or a state.
+  u32 &resetter(rccBit(0x0C));
+  resetter = 1;
+  resetter = 0; //manual is ambiguous as to whether reset is a command or a state.
 }
 
 void APBdevice::setClockEnable(bool on) const {
-  sfrbit(clocker, rccBase(24), slot);
-  *clocker = on;
+  u32 &clocker(rccBit(0x18));
+  clocker = on;
 }
 
 bool APBdevice::isEnabled() const {
 //  (reset on forces the clock off (I think) so we only have to check one bit)
-  sfrbit(clocker, rccBase(24), slot);
-  return *clocker;
+  u32 &clocker(rccBit(0x18));
+  return clocker;
 }
 
 void APBdevice::init() const { //frequently used combination of reset then enable clock.

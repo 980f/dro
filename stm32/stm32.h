@@ -4,22 +4,15 @@
 /* stm family common stuff */
 #include "eztypes.h"
 #include "clocks.h"
-/** @return bitband address for given bit (default 0) of given ram address*/
-//deprecated: volatile u32 *bandFor(volatile void *dcb, unsigned int bitnum = 0);
-
-///*
-//  * bits are assigned via *name= boolean expression  else !!(non-boolean expression), the double bang turns a non-zero value into a 1 bit.
-//  */
-#define sfrbit(name, offset, bitoffset)  volatile unsigned int *name = reinterpret_cast <volatile unsigned *> (0x42000000 | ((offset) << 5) | ((bitoffset) << 2))
+#include "stm32/peripheral.h" //too many files have almost the same name so we force a directory here so include path doesn't need to be carefully ordered.
 
 #ifdef __linux__  //faking it
 extern u32 fakeram[2][1024];
 #define APB_Block(bus2, slot) (&fakeram[bus2 != 0][0x10 * slot])
 #define APB_Band(bus2, slot)   (&fakeram[bus2 != 0][0x100 * slot])
 #else
-constexpr u32 * APB_Block(unsigned bus2, unsigned slot) { return reinterpret_cast <u32 *> (0x40000000 | bus2 << 16 | slot << 10);}
-constexpr u32 * APB_Band(unsigned bus2, unsigned slot) { return reinterpret_cast <u32 *> (0x42000000 | bus2 << 21 | slot << 15);}
-
+constexpr u32 * APB_Block(unsigned bus2, unsigned slot) { return atAddress(stmPeripheralBase | bus2 << 16 | slot << 10);}//extracted from stm'2 doc
+constexpr u32 * APB_Band(unsigned bus2, unsigned slot)  { return atAddress(stmPeripheralBand | bus2 << 21 | slot << 15);}//bit band ~ 32 * base
 #endif
 
 //#def'd for the sake of (eventual) macro's to force inline allocations.
@@ -40,12 +33,12 @@ struct APBdevice {
   /** base bit band address */
   u32 * const bandAddress;
   /** base used for calculating this devices bits in RCC device. */
-  u32  const rccBitter;
+  u32 const rccBitter;
 
 protected:
   /** @return bit address given the register address of the apb2 group*/
-  u32 rccBase(unsigned int basereg) const {
-    return rccBitter + basereg;
+  inline u32 &rccBit(unsigned basereg) const {
+    return *reinterpret_cast<u32 *>(rccBitter | (basereg<<5));
   }
   /** this class is cheap enough to allow copies, but why should we?: because derived classes sometimes want to be copied eg Port into pin).*/
   APBdevice(const APBdevice &other)=default;
@@ -57,7 +50,7 @@ public:
     slot(slot),
     blockAddress(APB_Block(bus2, slot)),
     bandAddress(APB_Band(bus2, slot)),
-    rccBitter(RCCBASE + (bus2 ? 0 : 4))
+    rccBitter(stmPeripheralBand | (RCCBASE | (bus2 ? 0 : 4))<<5) //bus 2 is the first of a pair of which bus1 is the second. ST doesn't like consistency.
   {}
   /** activate and release the module reset */
   void reset(void) const;
@@ -74,11 +67,11 @@ public:
     return &blockAddress[offset >> 2]; //compiler sees offset as an array index .
   }
   /** @returns bit band address of bit of a register, @param offset is value from st's manual (byte address) */
-  u32 *getBit(unsigned offset, unsigned bit){
+  u32 *getBit(unsigned offset, unsigned bit)const{
     return &bandAddress[(offset<<5)+(bit<<2)];
   }
   /** @returns bit band address of bit of a register, @param offset is value from st's manual (byte address) */
-  u32 &bit(unsigned offset, unsigned bit){
+  u32 &bit(unsigned offset, unsigned bit)const{
     return bandAddress[(offset<<5)+(bit<<2)];
   }
 };

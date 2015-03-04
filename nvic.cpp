@@ -140,7 +140,7 @@ struct InterruptController {
 soliton(InterruptController, 0xE000ED04);
 
 void configurePriorityGrouping(int code){
-  *reinterpret_cast<u32 *>(0xE000ED0C) = ((code & 7) << 8) | 0x05FA0000;
+  *atAddress(0xE000ED0C) = ((code & 7) << 8) | 0x05FA0000; //5FA is a guard against random writes.
 }
 
 extern "C" { // to keep names simple for "alias" processor
@@ -375,7 +375,7 @@ generateHardReset:
 movw r0, #0xED0C
 movt r0, #0xE000
 //1:VECTRESET worked, 4:SYSRESETREQ just loops here, using rowley&jtag debugger. //probably should try 5 in case different vendors misread the arm spec differently.
-movw r1, #1
+movw r1, #5
 movt r1, #0x05FA
 str r1,[r0]
 b generateHardReset
@@ -384,6 +384,6 @@ b generateHardReset
 __attribute__((naked)) //trying to get good assembler code on this one :)
 void generateHardReset(){
   do {//keep on hitting the bit until we reset.
-    theInterruptController.airc=0x5FA0001;//1 worked on stm32, 4 should have worked but looped under the debugger.
+    theInterruptController.airc=0x5FA0005;//1 worked on stm32, 4 should have worked but looped under the debugger.
   } while (1);
 }

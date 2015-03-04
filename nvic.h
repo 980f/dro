@@ -10,6 +10,9 @@ extern "C" void generateHardReset();
 //object based interrupt handlers need some glue:
 #define ObjectInterrupt(objCall, irqnumber) void IrqName(irqnumber) (void) { objCall; }
 
+//put this between your function declaration and its opening brace:
+#define HandlesInterrupt(irqnumber)  __attribute__((alias( "IRQ" # irqnumber)))
+
 #define FaultName(faultIndex) FAULT ## faultIndex
 #define FaultHandler(name, faultIndex) void name(void) __attribute__((alias("FAULT" # faultIndex)))
 

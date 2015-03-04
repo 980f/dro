@@ -1,5 +1,5 @@
 #include "gpio.h"
-
+#include "peripheral.h" //deprecated bandFor
 #include "bitbanger.h"
 // priority must be such that these get created before any application objects.
 
@@ -97,7 +97,7 @@ volatile u32 &Pin::writer() const { // volatile to prevent removal by optimizer
   return *bandFor(port.registerAddress(12), bitnum);
 }
 
-
+//////////////////////////////////
 
 InputPin::InputPin(const Pin &pin, char UDF, bool lowactive): LogicalPin(pin.DI(UDF),lowactive){
   /*empty*/
@@ -107,7 +107,7 @@ InputPin::InputPin(const Pin &pin, bool lowactive): InputPin(pin,lowactive, lowa
   /*empty*/
 }
 
-
+//////////////////////////////////
 
 OutputPin::OutputPin(const Pin &pin, bool lowactive, unsigned int mhz, bool openDrain):
   LogicalPin(pin.DO(mhz, openDrain),lowactive){
@@ -122,13 +122,13 @@ bool Port::isOutput(unsigned pincode){
 Port::Port(const char letter): APBdevice(2, 2 + letter - 'A'){}
 
 void Port::configure(unsigned bitnum, unsigned code) const {
-  if(! isEnabled()) { // deferred init, so we don't have to sequence init routines.
-    init();
-  } // must have the whole port running before we can modify a config of any pin.
-  volatile u32 &confword = *registerAddress((bitnum >= 8) ? 4 : 0);
+  if(! isEnabled()) { // deferred init, so we don't have to sequence init routines, and so we can statically create objects wihtout wasting power if they aren't needed.
+    init(); // must have the whole port running before we can modify a config of any pin.
+  }
+  u32 &confword = *registerAddress((bitnum >= 8) ? 4 : 0);
   bitnum &= 7; // modulo 8, number of conf blocks in a 32 bit word.
   bitnum *= 4; // 4 bits each block.
-  confword = insertField(confword, code, bitnum, 4); // can't use bitfield insert, position is not a constant.
+  mergeBits(confword, code, bitnum, 4); // can't use bitfield insert, position is not a constant.
 }
 
 volatile u16 &Port::odr() const {
@@ -137,7 +137,7 @@ volatile u16 &Port::odr() const {
 
 
 LogicalPin::LogicalPin(volatile u32 &registerAddress, bool inverted):
-bitbanger(registerAddress),
-lowactive(inverted?1:0){
-/*empty*/
+  bitbanger(registerAddress),
+  lowactive(inverted?1:0){
+  /*empty*/
 }

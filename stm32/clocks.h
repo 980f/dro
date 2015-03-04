@@ -2,9 +2,9 @@
 #define CLOCKS_H
 
 #include "eztypes.h"
-#include "peripheraltypes.h"
-extern const u32 EXTERNAL_HERTZ;
+#include "peripheral.h"
 
+extern const u32 EXTERNAL_HERTZ;
 
 //clock rate:
 /** bus is: 0:ahb; 1:apb1; 2:apb2; 3:adc; -1:sysclock;*/
