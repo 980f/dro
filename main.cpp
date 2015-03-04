@@ -33,7 +33,9 @@ const InputPin otherPhase(otherPin);
 Irq &pushButton(Exti::enablePin(board.buttonPin,false,true));
 
 void IrqName(6) (void){
-  board.led=!board.led;
+//polarity check is pointless when we are just toggling:--  board.led=1-board.led; // 1-x is faster than !x as the latter does tests and skipping
+  board.ledPin=1-board.ledPin;
+  Exti::clearPending(board.buttonPin);
 }
 
 #else
@@ -72,7 +74,7 @@ int main(void) {
   prime.enable();
   pushButton.enable();
 
-  EnableInterrupts; 
+  EnableInterrupts;
 
   while (1) {
     MNE(WFI);

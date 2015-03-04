@@ -24,6 +24,7 @@
       arm_target_restrict_memory_accesses="Yes"
       c_user_include_directories="cortexm;cortexm/stm32;ezcpp"
       debug_register_definition_file="$(TargetsDir)/STM32/STM32F103xx_Peripherals.xml"
+      gcc_optimization_level="Debug"
       linker_memory_map_file="$(TargetsDir)/STM32/STM32F103RB_MemoryMap.xml"
       linker_printf_fmt_level="int"
       linker_printf_fp_enabled="No"
@@ -60,7 +61,9 @@
       <file file_name="ezcpp/minimath.h" />
       <folder Name="cortexm">
         <file file_name="cortexm/core_cmInstr.h" />
-        <file file_name="cortexm/cstartup.cpp" />
+        <file file_name="cortexm/cstartup.cpp">
+          <configuration Name="Common" gcc_optimization_level="Debug" />
+        </file>
         <file file_name="cortexm/nvic.cpp" />
         <file file_name="cortexm/nvic.h" />
         <file file_name="cortexm/systick.cpp" />
