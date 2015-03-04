@@ -76,7 +76,7 @@ volatile u32 &Pin::highDriver() const { // volatile to prevent removal by optimi
   volatile u32 *confword = port.registerAddress((bitnum >= 8) ? 4 : 0);
   int bitoff = (bitnum & 7) * 4 + 2;
 
-  return *bandFor(confword, bitoff);
+  return *bandAddress(confword, bitoff);
 }
 
 volatile u32 &Pin::DO(unsigned int mhz, bool openDrain) const { // volatile to prevent removal by optimizer
@@ -90,11 +90,11 @@ const Pin &Pin::FN(unsigned int mhz, bool openDrain) const {
 }
 
 volatile u32 &Pin::reader() const {
-  return *bandFor(port.registerAddress(8), bitnum);
+  return *bandAddress(port.registerAddress(8), bitnum);
 }
 
 volatile u32 &Pin::writer() const { // volatile to prevent removal by optimizer
-  return *bandFor(port.registerAddress(12), bitnum);
+  return *bandAddress(port.registerAddress(12), bitnum);
 }
 
 //////////////////////////////////
@@ -126,14 +126,14 @@ void Port::configure(unsigned bitnum, unsigned code) const {
   if(! isEnabled()) { // deferred init, so we don't have to sequence init routines, and so we can statically create objects wihtout wasting power if they aren't needed.
     init(); // must have the whole port running before we can modify a config of any pin.
   }
-  u32 &confword(*registerAddress((bitnum & 8) ? 4 : 0));
+  volatile u32 &confword(*registerAddress((bitnum & 8) ? 4 : 0));
   bitnum &= 7; // modulo 8, number of conf blocks in a 32 bit word.
   // 4 bits each block, apply to offset and to width:
   mergeBits(confword, code, bitnum<<2, 4); // can't use bitfield insert, position is not a constant.
 }
 
 volatile u16 &Port::odr() const {
-  return *reinterpret_cast<u16 *>(registerAddress(12));
+  return *reinterpret_cast<volatile u16 *>(registerAddress(12));
 }
 
 

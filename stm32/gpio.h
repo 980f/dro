@@ -79,6 +79,20 @@ struct Pin /*Manager*/ {
 
   /** for special cases, try to use one of the above which all call this one with well checked argument */
   void configureAs(unsigned int code) const;
+
+  /** raw access convenience. @see InputPin for business logic version of a pin */
+  inline operator bool(void)const{
+    return reader();
+  }
+
+  /** @returns pass through @param truth after setting pin to that value.
+ @see OutputPin for business logic version */
+  inline bool operator = (bool truth)const{
+    writer()=truth;
+    return truth;//don't reread the pin, nor its actual, keep this as a pass through
+  }
+
+
 };
 
 /** base class for InputPin and OutputPin that adds polaarity at construction time */

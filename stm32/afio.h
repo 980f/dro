@@ -21,12 +21,6 @@ struct AfioBand {
   //more when we get around to needing them
 };
 
-struct AfioEvent {
-  unsigned evPin:4;
-  unsigned evPort:3; //letter for port -'A'
-  unsigned evEnable:1;
-  unsigned :24;
-};
 
 struct AfioRemap {
   unsigned spi1:1;
@@ -55,7 +49,7 @@ struct AfioRemap {
 #include "shadow.h"
 class AfioManager : public APBdevice {
 public:
-  AfioBand &b;
+  volatile AfioBand &b;
   Shadowed<AfioRemap,u32> remap;
 public:
   AfioManager(void);
