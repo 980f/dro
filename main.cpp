@@ -69,12 +69,13 @@ int main(void) {
 
 //  Exti::enablePin(otherPin);
   Irq &prime(Exti::enablePin(primePin,true,true));
-
-
   prime.enable();
   pushButton.enable();
+
+  EnableInterrupts; 
+
   while (1) {
-    MNE(WFE);
+    MNE(WFI);
     ++events;
     board.led=events&1;
   }
