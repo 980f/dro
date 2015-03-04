@@ -64,15 +64,15 @@ public:
   u32 getClockRate(void) const;
   /** @returns address of a register, @param offset is value from st's manual (byte address) */
   u32 *registerAddress(unsigned int offset) const {
-    return &blockAddress[offset >> 2]; //compiler sees offset as an array index .
+    return &blockAddress[offset>>2]; //compiler sees offset as an array index .
   }
   /** @returns bit band address of bit of a register, @param offset is value from st's manual (byte address) */
   u32 *getBit(unsigned offset, unsigned bit)const{
-    return &bandAddress[(offset<<5)+(bit<<2)];
+    return &bandAddress[(offset<<3)+bit];
   }
   /** @returns bit band address of bit of a register, @param offset is value from st's manual (byte address) */
   u32 &bit(unsigned offset, unsigned bit)const{
-    return bandAddress[(offset<<5)+(bit<<2)];
+    return bandAddress[(offset<<3)+bit];//compiler adds another shift of 2 places
   }
 };
 #endif /* ifndef stm32H */

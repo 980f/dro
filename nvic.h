@@ -113,7 +113,7 @@ void setFaultHandlerPriority(int faultIndex, u8 level);
   * cstm32 only implements the 4 msbs of the logic so values 3,2,1 are same as 0*/
 void configurePriorityGrouping(int code); //cortexm3.s or stm32.cpp
 
-#ifdef ALH_SIM //just compiling for syntax checking
+#ifdef __linux__ //just compiling for syntax checking
 #define EnableInterrupts
 #define DisableInterrupts
 #define LOCK(somename)
@@ -122,8 +122,8 @@ class CriticalSection { //#this stub needed as we don't want to bother #ifdef ar
   static volatile int nesting;
 };
 #else
-#define EnableInterrupts asm ("  CPSIE f")
-#define DisableInterrupts asm ("  CPSID f")
+#define EnableInterrupts __asm volatile ("CPSIE f")
+#define DisableInterrupts __asm volatile ("CPSID f")
 
 /** creating one of these in a function (or blockscope) disables interrupts until said function (or blockscope) exits.
   * By using this fanciness you can't accidentally leave interrupts disabled. */

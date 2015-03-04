@@ -114,6 +114,7 @@ OutputPin::OutputPin(const Pin &pin, bool lowactive, unsigned int mhz, bool open
   /*empty*/
 }
 
+/////////////////////////////////
 
 bool Port::isOutput(unsigned pincode){
   return (pincode&3)!=0;//if so then code is Alt/Open
@@ -125,10 +126,10 @@ void Port::configure(unsigned bitnum, unsigned code) const {
   if(! isEnabled()) { // deferred init, so we don't have to sequence init routines, and so we can statically create objects wihtout wasting power if they aren't needed.
     init(); // must have the whole port running before we can modify a config of any pin.
   }
-  u32 &confword = *registerAddress((bitnum >= 8) ? 4 : 0);
+  u32 &confword(*registerAddress((bitnum & 8) ? 4 : 0));
   bitnum &= 7; // modulo 8, number of conf blocks in a 32 bit word.
-  bitnum *= 4; // 4 bits each block.
-  mergeBits(confword, code, bitnum, 4); // can't use bitfield insert, position is not a constant.
+  // 4 bits each block, apply to offset and to width:
+  mergeBits(confword, code, bitnum<<2, 4); // can't use bitfield insert, position is not a constant.
 }
 
 volatile u16 &Port::odr() const {
