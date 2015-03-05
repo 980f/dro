@@ -18,11 +18,11 @@ u64 snapLongTime(void);
   * an isr will determine that the given time has expired,
   * but the interested code will have to look at object to determine that the event occurred.
   */
-class PolledTimer {
+class Gropued {
 public:
   bool done;
   u32 systicksRemaining;
-  PolledTimer(void);
+  Gropued(void);
   virtual void restart(u32 ticks); //add to list if not present, never gets removed so don't add dynamic objects.
   void restart(float seconds);//float as is often in time critical code.
   void freeze(){
@@ -40,8 +40,8 @@ public: //accessors for the system timer
   static u32 ticksForHertz(float hz); //approximate since we know a divide is required.
 private:
   //singly linked list
-  PolledTimer *next;
-  static PolledTimer *active; //isr needs to know where the list is.
+  Gropued *next;
+  static Gropued *active; //isr needs to know where the list is.
 public:
   static void onTick(void); //to be called periodically, expects to be called in an isr.
   //extend and overload to have something done within the timer interrupt service routine:
@@ -49,7 +49,7 @@ public:
 };
 
 /** automatic restart. If you are slow at polling it it may become done again while you are handling a previous done.*/
-class CyclicTimer : public PolledTimer {
+class CyclicTimer : public Gropued {
 protected:
   u32 period;
   u32 fired;
@@ -66,11 +66,11 @@ public:
 
   void retrigger(void){
     //leave fired as is.
-    PolledTimer::restart(period);
+    Gropued::restart(period);
   }
 
   void restart(u32 ticks){
-    PolledTimer::restart(period = ticks);
+    Gropued::restart(period = ticks);
   }
 
   virtual void onDone(void){

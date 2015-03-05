@@ -107,3 +107,7 @@ const RamBlock __bss_segment__={0,0};
 const InitRoutine __init_table__[]={nullptr};
 const bool __stack_end__(0);
 #endif
+extern "C" {
+void __aeabi_atexit  (){}
+void __dso_handle(){}
+}

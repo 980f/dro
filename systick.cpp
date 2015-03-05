@@ -74,36 +74,36 @@ void startPeriodicTimer(u32 persecond){
   theSysTicker.start(rate(clockRate(-1), persecond));
 }
 
-double PolledTimer::secondsForTicks(u32 ticks){
+double Gropued::secondsForTicks(u32 ticks){
   return ratio(double(ticks), double(theSysTicker.ticksPerSecond()));
 }
 
-double PolledTimer::secondsForLongTime(u64 ticks){
+double Gropued::secondsForLongTime(u64 ticks){
   return ratio(double(ticks), double(theSysTicker.ticksPerSecond()));
 }
 
-u32 PolledTimer::ticksForSeconds(float sec){
+u32 Gropued::ticksForSeconds(float sec){
   if(sec<=0){
     return 0;
   }
   return theSysTicker.ticksForMillis(u32(sec * 1000));
 }
 
-u32 PolledTimer::ticksForMillis(int ms){
+u32 Gropued::ticksForMillis(int ms){
   if(ms<=0){
     return 0;
   }
   return theSysTicker.ticksForMillis(ms);
 }
 
-u32 PolledTimer::ticksForMicros(int ms){
+u32 Gropued::ticksForMicros(int ms){
   if(ms<=0){
     return 0;
   }
   return theSysTicker.ticksForMicros(ms);
 }
 
-u32 PolledTimer::ticksForHertz(float hz){
+u32 Gropued::ticksForHertz(float hz){
   return theSysTicker.ticksForHertz(hz);
 }
 
@@ -113,10 +113,10 @@ u32 PolledTimer::ticksForHertz(float hz){
   * as of this note all timers are touched every cycle even if they are finished.
   * using 2 lists would make the isr faster, but all the restarts slower. that makes a lot of sense.
   */
-PolledTimer *PolledTimer::active = 0;
+Gropued *Gropued::active = 0;
 
-void PolledTimer::onTick(void){
-  for(PolledTimer *scan = active; scan != 0; scan = scan->next) {
+void Gropued::onTick(void){
+  for(Gropued *scan = active; scan != 0; scan = scan->next) {
     if(!scan->done && --scan->systicksRemaining == 0) {
       scan->onDone();
     }
@@ -124,7 +124,7 @@ void PolledTimer::onTick(void){
 } /* onTick */
 
 
-PolledTimer::PolledTimer(void){
+Gropued::Gropued(void){
   done = 1;
   systicksRemaining = 0;
   next = 0;
@@ -132,7 +132,7 @@ PolledTimer::PolledTimer(void){
   if(active == 0) {
     active = this;
   } else {
-    for(PolledTimer *scan = active; scan != 0; scan = scan->next) {
+    for(Gropued *scan = active; scan != 0; scan = scan->next) {
       if(scan->next == 0) {
         scan->next = this;
         break;
@@ -143,11 +143,11 @@ PolledTimer::PolledTimer(void){
 }
 
 /** typically this is overloaded if latency is important.*/
-void PolledTimer::onDone(void){
+void Gropued::onDone(void){
   done = true;
 }
 
-void PolledTimer::restart(u32 value){
+void Gropued::restart(u32 value){
   systicksRemaining = value + 1; //to ensure minimum wait even if tick fires while we are in this code.
   if(value > 0) {
     done = 0; //this makes this retriggerable
@@ -157,7 +157,7 @@ void PolledTimer::restart(u32 value){
   }
 } /* restart */
 
-void PolledTimer::restart(float seconds){
+void Gropued::restart(float seconds){
   if(seconds<=0){
     return;
   }
@@ -173,7 +173,7 @@ HandleFault(15){ //15: system tick
     //we have rolled over and anything waiting on an particular value will have failed
     ++macroTime;//but rollover of this is not going to happen for decades.
   }
-  PolledTimer::onTick();
+  Gropued::onTick();
 }
 
 /** time since last rollover, must look at clock configuration to know what the unit is. */
