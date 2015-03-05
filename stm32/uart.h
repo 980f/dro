@@ -1,5 +1,4 @@
-#ifndef usartH
-#define usartH
+#pragma once
 
 #include "stm32.h"
 #include "nvic.h"
@@ -150,10 +149,10 @@ struct UartBand {
 
 };
 
-struct Uart {
-  UartBand *b;
-  USART_DCB *dcb;
-  APBdevice apb;
+struct Uart:public APBdevice {
+  volatile UartBand &b;
+  volatile USART_DCB &dcb;
+
   Irq irq;
   unsigned int zluno;
   unsigned int altpins;
@@ -177,11 +176,7 @@ struct Uart {
   /** hard reset then setParams*/
   void reconfigure(unsigned int baud = 19200U, unsigned int numbits = 8, char parityNEO = 'N', bool longStop = false, bool shortStop = false); //19200,n,8,1
 
-  void init(unsigned int baud = 19200U, char parityNEO = 'N', unsigned int numbits = 8){
-    reconfigure(baud, numbits, parityNEO);
-    takePins(true, true); //after reconfigure as that reset's all usart settings including the ones this fiddles with.
-    irq.enable(); //the reconfigure disables all interrupt sources, so enabling interrupts here won't cause any.
-  }
+  void init(unsigned int baud = 19200U, char parityNEO = 'N', unsigned int numbits = 8);
 
   /** part of char time calculation, includes stop and start and parity, not just payload bits */
   u32 bitsPerByte(void) const;
@@ -190,17 +185,9 @@ struct Uart {
   /** timer ticks required to move the given number of chars. Involves numbits and baud etc.*/
   u32 ticksForChars(unsigned charcount) const;
 
-  void beReceiving(bool yes = true){
-    b->dataAvailableIE = yes; //which is innocuous if interrupts aren't enabled and it is cheaper to set it then to test whether it should be set.
-    b->enableReceiver = yes;
-    b->enable = yes || b->enableTransmitter;
-  }
+  void beReceiving(bool yes = true);
 
-  void beTransmitting(bool yes = true){ //NB: do not call this when the last character might be on the wire.
-    b->transmitCompleteIE = 0;  //so that we only check this on the last character of a packet.
-    b->enable = yes || b->enableReceiver;
-    b->transmitAvailableIE = yes; //and the isr will send the first char, we don't need to 'prime' DR here.
-  }
+  void beTransmitting(bool yes = true);
 };
 
 #endif /* ifndef usartH */

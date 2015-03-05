@@ -5,19 +5,19 @@ void Uart::setBaudrate(unsigned int desired){
   //note: the ST manuals are chocked full of nonsense with respect to baud rate setting.
   // just take the input clock rate and divide by the baud rate, round to the nearest integer, and put that value into the 16 bit BRR as if it were a simple integer.
   // you can ignore all the jabber about fractional baudrate and all the dicing and splicing, which under close inspection of ST's code does absolutely nothing.
-  unsigned int osc = apb.getClockRate();
+  unsigned int osc = getClockRate();
   unsigned int newbaud = rate(osc, desired);
 
-  if(newbaud != dcb->BRR) {
-    b->enable = 0;
-    dcb->BRR = newbaud;
+  if(newbaud != dcb.BRR) {
+    b.enable = 0;
+    dcb.BRR = newbaud;
   }
 } /* setBaudrate */
 
 
 u32 Uart::bitsPerSecond() const {
-  u32 divisor = dcb->BRR;
-  unsigned int osc = apb.getClockRate();
+  u32 divisor = dcb.BRR;
+  unsigned int osc = getClockRate();
 
   return rate(osc, divisor);
 }
@@ -27,13 +27,13 @@ u32 Uart::bitsPerSecond() const {
   * So: 9 if sending 9 bits and no parity or 8 bits with parity. Set to 8 for 7 bits with parity.
   */
 void Uart::setParams(unsigned int baud, unsigned int numbits, char parityNEO, bool longStop, bool shortStop){ //19200,8,n,1
-  b->enable = 0;
+  b.enable = 0;
   //decode char to the control bits:
-  b->parityOdd = parityNEO & (1 << 1); //bit 1 is high for Oh versus low for E
-  b->parityEnable = parityNEO & 1; ////lsb is 1 for E or Oh, 0 for N.
-  b->_9bits = numbits == 9 || (numbits == 8 && b->parityEnable);
-  b->halfStop = shortStop;
-  b->doubleStop = longStop;
+  b.parityOdd = parityNEO & (1 << 1); //bit 1 is high for Oh versus low for E
+  b.parityEnable = parityNEO & 1; ////lsb is 1 for E or Oh, 0 for N.
+  b._9bits = numbits == 9 || (numbits == 8 && b.parityEnable);
+  b.halfStop = shortStop;
+  b.doubleStop = longStop;
   setBaudrate(baud);
 }
 
@@ -41,13 +41,13 @@ void Uart::setParams(unsigned int baud, unsigned int numbits, char parityNEO, bo
 u32 Uart::bitsPerByte(void) const {
   u32 bits = 1; //the start bit
 
-  if(b->doubleStop) {
+  if(b.doubleStop) {
     bits += 2;
   }
-  if(b->halfStop) { //sorry, not rigged to deal with 1.5 stop bits,
+  if(b.halfStop) { //sorry, not rigged to deal with 1.5 stop bits,
     bits -= 0; //should be decreasing by 0.5 bits.
   }
-  if(b->_9bits) {
+  if(b._9bits) {
     return bits + 9;
   }
   return bits + 8; //todo:2 7 bits no parity!
@@ -55,17 +55,39 @@ u32 Uart::bitsPerByte(void) const {
 
 /** timer ticks required to move the given number of chars. Involves numbits and baud etc.*/
 u32 Uart::ticksForChars(unsigned charcount) const {
-  return charcount * bitsPerByte() * dcb->BRR;
+  return charcount * bitsPerByte() * dcb.BRR;
+}
+
+void Uart::beReceiving(bool yes){
+  b.dataAvailableIE = yes; //which is innocuous if interrupts aren't enabled and it is cheaper to set it then to test whether it should be set.
+  b.enableReceiver = yes;
+  b.enable = yes || b.enableTransmitter;
+}
+
+void Uart::beTransmitting(bool yes){ //NB: do not call this when the last character might be on the wire.
+  b.transmitCompleteIE = 0;  //so that we only check this on the last character of a packet.
+  b.enable = yes || b.enableReceiver;
+  b.transmitAvailableIE = yes; //and the isr will send the first char, we don't need to 'prime' DR here.
 }
 
 void Uart::reconfigure(unsigned int baud, unsigned int numbits, char parityNEO, bool longStop, bool shortStop){ //19200,8,n,1
-  apb.init();
+  APBdevice::init();
   setParams(baud, numbits, parityNEO, longStop, shortStop);
 }
 
-Uart::Uart(unsigned int zluno, unsigned int alt): apb(zluno ? 1: 2, zluno ? (zluno + 16): 14), irq((zluno < 3 ? 37: 49) + zluno), zluno(zluno), altpins(alt){
-  dcb = reinterpret_cast <USART_DCB *> (apb.getAddress());
-  b = reinterpret_cast <UartBand *> (apb.getBand());
+void Uart::init(unsigned int baud, char parityNEO, unsigned int numbits){
+  reconfigure(baud, numbits, parityNEO);
+  takePins(true, true); //after reconfigure as that reset's all usart settings including the ones this fiddles with.
+  irq.enable(); //the reconfigure disables all interrupt sources, so enabling interrupts here won't cause any.
+}
+
+//uart0 is on bus2, others on bus 1    slot is 14 for uart0  16+luno for others
+Uart::Uart(unsigned int zluno, unsigned int alt): APBdevice(zluno ? 1: 2, zluno ? (zluno + 16): 14),
+  b  (*reinterpret_cast <volatile UartBand *> (bandAddress)),
+  dcb (*reinterpret_cast <volatile USART_DCB *> (blockAddress)),
+  irq((zluno < 3 ? 37: 49) + zluno),
+  zluno(zluno),
+  altpins(alt){
   //not grabbing pins quite yet as we may be using a spare uart internally as a funky timer.
 }
 
@@ -77,15 +99,21 @@ should actively configure the pin's presence and not rely upon our weak pullup.
 //got tired of finesse:
 #define makeTxPin(P,b) Pin(P, b).FN(rxtxSpeedRange)
 
-#define pinMux(stnum) theAfioManager.field.uart##stnum=altpins;theAfioManager.update()
+void  grabInput(const Port &PX,int bn, char udf) {
+//assignment is to get compiler to not prune the code (although it kindly warned us that it did).
+  Pin(PX, bn).DI(udf)=1;
+}
+
+#define pinMux(stnum) theAfioManager.remap.uart##stnum=altpins;theAfioManager.remap.update()
 
 void Uart::takePins(bool tx, bool rx, bool hsout, bool hsin){
   int rxtxSpeedRange=bitsPerSecond()>460e3?10:2;
+
   switch(zluno) {
   case 0: //st's 1
     pinMux(1);
     if(hsin) {
-      Pin(PA, 11).DI('U');
+      grabInput(PA, 11,'U');
     }
     if(hsout) {
       Pin(PA, 12).FN();
@@ -96,7 +124,7 @@ void Uart::takePins(bool tx, bool rx, bool hsout, bool hsin){
         makeTxPin(PA, 9);
       }
       if(rx) {
-        Pin(PA, 10).DI('F');
+        grabInput(PA, 10,'F');
       }
       break;
     case 1 :
@@ -104,7 +132,7 @@ void Uart::takePins(bool tx, bool rx, bool hsout, bool hsin){
         makeTxPin(PB, 6);
       }
       if(rx) {
-        Pin(PB, 7).DI('F');
+        grabInput(PB, 7,'F');
       }
       break;
     } /* switch */
@@ -117,10 +145,10 @@ void Uart::takePins(bool tx, bool rx, bool hsout, bool hsin){
         makeTxPin(PA, 2);
       }
       if(rx) {
-        Pin(PA, 3).DI('F');
+        grabInput(PA, 3,'F');
       }
       if(hsin) {
-        Pin(PA, 0).DI('U');
+        grabInput(PA, 0,'U');
       }
       if(hsout) {
         Pin(PA, 1).FN();
@@ -132,10 +160,10 @@ void Uart::takePins(bool tx, bool rx, bool hsout, bool hsin){
         makeTxPin(PD, 5);
       }
       if(rx) {
-        Pin(PD, 6).DI('F');
+        grabInput(PD, 6,'F');
       }
       if(hsin) {
-        Pin(PD, 3).DI('U');
+        grabInput(PD, 3,'U');
       }
       if(hsout) {
         Pin(PD, 4).FN();
@@ -152,7 +180,7 @@ void Uart::takePins(bool tx, bool rx, bool hsout, bool hsin){
         makeTxPin(PB, 10);
       }
       if(rx) {
-        Pin(PB, 11).DI('F');
+        grabInput(PB, 11,'F');
       }
       break;
     case 1:
@@ -160,7 +188,7 @@ void Uart::takePins(bool tx, bool rx, bool hsout, bool hsin){
         makeTxPin(PC, 10);
       }
       if(rx) {
-        Pin(PC, 11).DI('F');
+        grabInput(PC, 11,'F');
       }
       break;
     case 3:
@@ -168,14 +196,14 @@ void Uart::takePins(bool tx, bool rx, bool hsout, bool hsin){
         makeTxPin(PD, 8);
       }
       if(rx) {
-        Pin(PD, 9).DI('F');
+        grabInput(PD, 9,'F');
       }
       break;
     } /* switch */
     break;
     //todo:3 uarts 4 and 5, which don't suffer from remap options.
   } /* switch */
-  b->enableTransmitter = tx; //else the tx pin floats!
+  b.enableTransmitter = tx; //else the tx pin floats!
   //... would only dynamically play with this for single wire half duplexing as in some SPI modes, better to use a transceiver and
   //... a gpio pin than to play with the chip's own pin.
 } /* takePins */
