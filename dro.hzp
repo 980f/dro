@@ -26,12 +26,6 @@
       debug_register_definition_file="$(TargetsDir)/STM32/STM32F103xx_Peripherals.xml"
       gcc_optimization_level="Debug"
       linker_memory_map_file="$(TargetsDir)/STM32/STM32F103RB_MemoryMap.xml"
-      linker_printf_fmt_level="int"
-      linker_printf_fp_enabled="No"
-      linker_printf_width_precision_supported="No"
-      linker_scanf_character_group_matching_enabled="No"
-      linker_scanf_fmt_level="int"
-      linker_scanf_fp_enabled="No"
       linker_section_placement_file="$(StudioDir)/targets/Cortex_M/flash_placement.xml"
       project_directory=""
       project_type="Executable"
@@ -84,10 +78,14 @@
         <file file_name="cortexm/stm32/flashcontrol.h" />
         <file file_name="cortexm/stm32/afio.cpp" />
         <file file_name="cortexm/stm32/afio.h" />
+        <file file_name="../cortexm/stm32/clocks.cpp" />
+        <file file_name="../cortexm/stm32/clocks.h" />
       </folder>
       <folder Name="ezcpp">
         <file file_name="../ezcpp/bundler.cpp" />
         <file file_name="../ezcpp/bundler.h" />
+        <file file_name="../ezcpp/polledtimer.cpp" />
+        <file file_name="../ezcpp/polledtimer.h" />
       </folder>
     </folder>
     <folder Name="System Files">
@@ -112,7 +110,7 @@
       gcc_debugging_level="Level 3"
       gcc_entry_point="cstartup"
       gcc_wchar_size="16-Bit"
-      link_include_standard_libraries="No"
+      link_include_standard_libraries="Yes"
       project_dependencies_can_build_in_parallel="Yes" />
   </project>
   <configuration Name="THUMB-Debug" inherited_configurations="THUMB;Debug" />
@@ -133,6 +131,31 @@
     Name="Release"
     c_preprocessor_definitions="NDEBUG"
     gcc_debugging_level="Level 1"
-    gcc_optimization_level="Level 1"
+    gcc_optimization_level="Level 3"
     hidden="Yes" />
+  <configuration
+    Name="Common"
+    arm_architecture="v7M"
+    arm_instruction_set="Thumb"
+    arm_keep_assembly="Yes"
+    arm_keep_preprocessor_output="Yes"
+    arm_library_instruction_set="Thumb"
+    arm_linker_fiq_stack_size="0"
+    arm_linker_gap_fill="0xff"
+    arm_linker_irq_stack_size="0"
+    arm_supply_absolute_file_path="Yes"
+    arm_use_builtins="Yes"
+    double_is_float="Yes"
+    file_codec="UTF-8"
+    gcc_c_language_standard="c99"
+    gcc_cplusplus_language_standard="c++11"
+    gcc_entry_point="noentry"
+    gcc_optimization_level="Debug"
+    gcc_wchar_size="16-Bit"
+    linker_printf_fmt_level="int"
+    linker_printf_fp_enabled="No"
+    linker_printf_width_precision_supported="No"
+    linker_scanf_character_group_matching_enabled="No"
+    linker_scanf_fmt_level="int"
+    linker_scanf_fp_enabled="No" />
 </solution>

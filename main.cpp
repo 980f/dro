@@ -4,18 +4,22 @@
 //having to use my stm32P103 dev kit as I can't get an SWD downloader any time soon.
 
 #if useSTM32
-#include "gpio.h"
 #include "exti.h"
-
 #else
 using namespace LPC;
 #endif
 
 #include "gpio.h"
 #include "nvic.h"
+#include "clocks.h"
+ClockStarter startup InitStep(InitHardware/2) (false,0,1000);
+
+#include "systick.h"
+using namespace SystemTimer;
+
+#include "polledtimer.h"
 
 #include "core_cmInstr.h"  //wfe OR wfi
-
 
 //For pins the stm32 lib is using const init'ed objects, LPC templated. It will take some work to reconcile how the two vendors like to describe their ports,
 //however the objects have the same usage syntax so only declarations need to be conditional on vendor.
@@ -33,8 +37,7 @@ const InputPin otherPhase(otherPin);
 Irq &pushButton(Exti::enablePin(board.buttonPin,false,true));
 
 void IrqName(6) (void){
-//polarity check is pointless when we are just toggling:--  board.led=1-board.led; // 1-x is faster than !x as the latter does tests and skipping
-  board.ledPin=1-board.ledPin;
+  board.toggleLed();
   Exti::clearPending(board.buttonPin);
 }
 
@@ -51,7 +54,7 @@ InputPin<0,5> otherPhase;
 //should go up and down depending upon the input signals;
 int axis(0);
 
-//define myIRQ as the encoder's interrupt
+
 //prime phase interrupt
 void IrqName(40)(void) {
   bool dirbit = otherPhase;
@@ -60,14 +63,21 @@ void IrqName(40)(void) {
   } else {
     ++axis; //will be +/-4 here
   }
+  Exti::clearPending(primePin);
 }
 
 
 int main(void) {
+  warp9(false /* false: let clock code figure out fastest */); //test clock system
+  startPeriodicTimer(1000);//ms timer
+
+  CyclicTimer slowToggle;
+  slowToggle.restart(ticksForSeconds(3));
+
+
   //soft stuff
   int events=0;
   board.led=0;
-
 
 //  Exti::enablePin(otherPin);
   Irq &prime(Exti::enablePin(primePin,true,true));
@@ -79,7 +89,9 @@ int main(void) {
   while (1) {
     MNE(WFI);
     ++events;
-    board.led=events&1;
+    if(slowToggle.hasFired()){
+     board.toggleLed();
+    }
   }
   return 0;
 }

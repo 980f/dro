@@ -37,7 +37,8 @@ HEADERS +=\
     cortexm/wtf.h \
     ezcpp/eztypes.h \
     cortexm/peripheral.h \
-    ezcpp/bundler.h
+    ezcpp/bundler.h \
+    ezcpp/polledtimer.h
 
 
 SOURCES +=\
@@ -54,7 +55,8 @@ SOURCES +=\
     cortexm/cstartup.cpp \
     cortexm/wtf.cpp \
     ezcpp/minimath.cpp \
-    ezcpp/bundler.cpp
+    ezcpp/bundler.cpp \
+    ezcpp/polledtimer.cpp
 
 
 DISTFILES += \
