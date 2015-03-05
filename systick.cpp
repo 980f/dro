@@ -1,14 +1,28 @@
 #include "systick.h"
+
 #include "peripheral.h"
 
 #include "nvic.h"
 #include "clocks.h"
 #include "minimath.h"
 
-/*
-  * removing expired timers from list in the isr was not threadsafe, and pretty much 100% of the time
-  * the item was restored to the list within a tick so removing it wasn't much of an optimzation.
-  */
+extern void PolledTimerServer();
+
+//namespace SystemTimer {
+static u32 milliTime(0); //storage for global tick time.
+static u32 macroTime(0);   //extended range tick time
+//}
+
+HandleFault(15){ //15: system tick
+  ++milliTime;
+  if(milliTime == 0) {
+    //we have rolled over and anything waiting on an particular value will have failed
+    ++macroTime;//but rollover of this is not going to happen for decades.
+  }
+  PolledTimerServer();
+}
+
+
 struct SysTicker {
   unsigned int enableCounting : 1; //enable counting
   unsigned int enableInterrupt : 1; //enable interrupt
@@ -64,6 +78,8 @@ struct SysTicker {
 
 soliton(SysTicker, 0xE000E010);
 
+namespace SystemTimer {
+
 /** start ticking at the given rate.*/
 void startPeriodicTimer(u32 persecond){
   //todo:2 fullspeed is hardcoded to 1 downstream of here, need to take care of that.
@@ -74,106 +90,37 @@ void startPeriodicTimer(u32 persecond){
   theSysTicker.start(rate(clockRate(-1), persecond));
 }
 
-double Gropued::secondsForTicks(u32 ticks){
+double secondsForTicks(u32 ticks){
   return ratio(double(ticks), double(theSysTicker.ticksPerSecond()));
 }
 
-double Gropued::secondsForLongTime(u64 ticks){
+double secondsForLongTime(u64 ticks){
   return ratio(double(ticks), double(theSysTicker.ticksPerSecond()));
 }
 
-u32 Gropued::ticksForSeconds(float sec){
+u32 ticksForSeconds(float sec){
   if(sec<=0){
     return 0;
   }
   return theSysTicker.ticksForMillis(u32(sec * 1000));
 }
 
-u32 Gropued::ticksForMillis(int ms){
+u32 ticksForMillis(int ms){
   if(ms<=0){
     return 0;
   }
   return theSysTicker.ticksForMillis(ms);
 }
 
-u32 Gropued::ticksForMicros(int ms){
+u32 ticksForMicros(int ms){
   if(ms<=0){
     return 0;
   }
   return theSysTicker.ticksForMicros(ms);
 }
 
-u32 Gropued::ticksForHertz(float hz){
+u32 ticksForHertz(float hz){
   return theSysTicker.ticksForHertz(hz);
-}
-
-/**
-  * an isr will determine that the given time has expired,
-  * but the interested code will have to look at object to determine that the event occurred.
-  * as of this note all timers are touched every cycle even if they are finished.
-  * using 2 lists would make the isr faster, but all the restarts slower. that makes a lot of sense.
-  */
-Gropued *Gropued::active = 0;
-
-void Gropued::onTick(void){
-  for(Gropued *scan = active; scan != 0; scan = scan->next) {
-    if(!scan->done && --scan->systicksRemaining == 0) {
-      scan->onDone();
-    }
-  }
-} /* onTick */
-
-
-Gropued::Gropued(void){
-  done = 1;
-  systicksRemaining = 0;
-  next = 0;
-  //insert into list, presumes that timer service isn't started until all timer objects are constructed.
-  if(active == 0) {
-    active = this;
-  } else {
-    for(Gropued *scan = active; scan != 0; scan = scan->next) {
-      if(scan->next == 0) {
-        scan->next = this;
-        break;
-      }
-    }
-  }
-  //unlock
-}
-
-/** typically this is overloaded if latency is important.*/
-void Gropued::onDone(void){
-  done = true;
-}
-
-void Gropued::restart(u32 value){
-  systicksRemaining = value + 1; //to ensure minimum wait even if tick fires while we are in this code.
-  if(value > 0) {
-    done = 0; //this makes this retriggerable
-  } else { //negative waits are instantly done.
-    done = 1;
-    //#shall we call onDone()? no- that needs to be called from an ISR
-  }
-} /* restart */
-
-void Gropued::restart(float seconds){
-  if(seconds<=0){
-    return;
-  }
-  restart(u32(seconds));
-}
-
-u32 milliTime = 0; //storage for global tick time.
-u32 macroTime=0;   //extended range tick time
-
-HandleFault(15){ //15: system tick
-  ++milliTime;
-  if(milliTime == 0) {
-    //we have rolled over and anything waiting on an particular value will have failed
-    ++macroTime;//but rollover of this is not going to happen for decades.
-  }
-  Gropued::onTick();
 }
 
 /** time since last rollover, must look at clock configuration to know what the unit is. */
@@ -193,6 +140,7 @@ u64 snapLongTime(void){//this presumes  little endian 64 bit integer.
   u64 retval=milliTime |(u64(macroTime)<<32);//need a hack to get compiler to be efficient here.
   theSysTicker.enableCounting = 1; //todo:3 add some to systick to compensate for the dead time of this routine.
   return retval;
+}
 }
 
 //end of file

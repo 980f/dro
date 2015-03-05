@@ -2,7 +2,8 @@
 #define CLOCKS_H
 
 #include "eztypes.h"
-#include "peripheral.h"
+
+/** processor oscillator setp and support */
 
 extern const u32 EXTERNAL_HERTZ;
 
@@ -15,5 +16,15 @@ void warp9(bool internal);
 /**MCO pin configuration (to snoop on internal clock)*/
 void setMCO(unsigned int mode);
 
+/** this class exists to run clock setup code at a user selectable init level.
+ Usage:
+ClockStarter InitStep(InitHardware-100) (false,0,1000);
+*/
+struct ClockStarter {
+  const bool intosc;//hs oscillator selection
+  const u32 coreHertz;
+  const u32 sysHertz;
+  ClockStarter(bool intosc,u32 coreHertz,u32 sysHertz);
+};
 
 #endif // CLOCKS_H

@@ -114,6 +114,10 @@ OutputPin::OutputPin(const Pin &pin, bool lowactive, unsigned int mhz, bool open
   /*empty*/
 }
 
+void OutputPin::toggle(){
+  bitbanger=1-bitbanger;//we cah ignore polarity stuff :)
+}
+
 /////////////////////////////////
 
 bool Port::isOutput(unsigned pincode){

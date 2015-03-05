@@ -16,6 +16,8 @@ struct P103_board {
   //PA4 spi1 ss
   //PB15 sdcard miso
   P103_board();
+  /** toggle it so that we see activity without having to externally track its state */
+  void toggleLed();
 };
 
 #endif // P103_BOARD_H

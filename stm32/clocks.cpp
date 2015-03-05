@@ -2,6 +2,7 @@
 #include "peripheral.h"
 #include "gpio.h"
 #include "flashcontrol.h"
+#include "systick.h"  //so that we can start it.
 
 #define HSI_Hz 8000000
 
@@ -172,7 +173,7 @@ void setMCO(unsigned int mode){
   Pin MCO(PA, 8); //depends on mcu family ...
 
   if(mode >= 4) { //bit 2 is 'enable'
-    MCO.FN(50);
+    MCO.FN(50); //else we round off the signal.
   } else {
     MCO.configureAs(4);//set to floating input
   }
@@ -181,4 +182,20 @@ void setMCO(unsigned int mode){
 
 u32 clockRate(unsigned int bus){
   return theClockControl.clockRate(bus);
+}
+
+
+ClockStarter::ClockStarter(bool intosc, u32 coreHertz, u32 sysHertz):
+  intosc(intosc),
+  coreHertz(coreHertz),
+  sysHertz(sysHertz)
+{
+  if(coreHertz){
+    //todo: actually honor it!
+  } else {
+    warp9(intosc);
+  }
+  if(sysHertz){
+    SystemTimer::startPeriodicTimer(sysHertz);
+  }
 }

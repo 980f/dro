@@ -16,11 +16,8 @@ constexpr volatile u32 * APB_Band(unsigned bus2, unsigned slot)  { return atAddr
 #endif
 
 //#def'd for the sake of (eventual) macro's to force inline allocations.
-#ifdef __linuux__
-#define RCCBASE pun(u32, fakeram)
-#else
-#define RCCBASE 0x40021000
-#endif
+const u32 RCCBASE (0x40021000);
+
 
 
 /** each peripheral's reset pin, clock enable, and bus address are calculable from 2 simple numbers.
@@ -28,9 +25,9 @@ working our way up to a template. */
 struct APBdevice {
   const u8 bus2; //boolean, packed
   const u8 slot; //max 32 items (value is 0..31)
-  /** base device address */
+  /** base device address @see registerAddress() for multibit control */
   volatile u32 * const blockAddress;
-  /** base bit band address */
+  /** base bit band address. @see bit() to access a single bit control */
   volatile u32 * const bandAddress;
   /** base used for calculating this devices bits in RCC device. */
   volatile u32 * const rccBitter;
@@ -60,10 +57,6 @@ public:
   volatile u32 *registerAddress(unsigned int offset) const {
     return &blockAddress[offset>>2]; //compiler sees offset as an array index .
   }
-//  /** @returns bit band address of bit of a register, @param offset is value from st's manual (byte address) */
-//  u32 *getBit(unsigned offset, unsigned bit)const{
-//    return &bandAddress[(offset<<3)+bit];
-//  }
   /** @returns bit band address of bit of a register, @param offset is value from st's manual (byte address) */
   volatile u32 &bit(unsigned offset, unsigned bit)const{
     volatile u32 &bitter(bandAddress[(offset<<3)+bit]);//compiler adds another shift of 2 places

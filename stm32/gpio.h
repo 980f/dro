@@ -155,6 +155,9 @@ public:
   inline bool actual() const {
     return polarized((&bitbanger)[-32]);//idr is register preceding odr, hence 32 bits lower in address
   }
+
+  /** actually invert the present state of the pin */
+  void toggle();
 };
 
 #endif // GPIO_H

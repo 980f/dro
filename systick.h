@@ -1,7 +1,17 @@
-#ifndef systickH
-#define systickH
+#pragma once
+
 #include "eztypes.h"
-#include "cheapTricks.h"
+
+/**
+system timer service (a not so fast timer)
+
+Somewhere you must declare:
+void SystemTickServer();
+
+which will get called FROM AN ISR periodically.
+
+*/
+namespace SystemTimer {
 /** start ticking at the given rate.
   * presumes system clock is already programmed and that it is the clock source*/
 void startPeriodicTimer(u32 persecond);
@@ -14,71 +24,13 @@ u32 snapTickTime(void);
 /** much much longer time range, with a range greater than the life of the instrument., call secondsForLongTime()*/
 u64 snapLongTime(void);
 
-/**
-  * an isr will determine that the given time has expired,
-  * but the interested code will have to look at object to determine that the event occurred.
-  */
-class Gropued {
-public:
-  bool done;
-  u32 systicksRemaining;
-  Gropued(void);
-  virtual void restart(u32 ticks); //add to list if not present, never gets removed so don't add dynamic objects.
-  void restart(float seconds);//float as is often in time critical code.
-  void freeze(){
-    done=1;//precludes isr touching remaining time, and onDone doesn't get called.
-  }
-public: //accessors for the system timer
-  static double secondsForTicks(u32 ticks);
-  static double secondsForLongTime(u64 ticks);
+double secondsForTicks(u32 ticks);
+double secondsForLongTime(u64 ticks);
 
-  /** ticks necesary to get a delay of @param sec seconds*/
-  static u32 ticksForSeconds(float sec);
-  static u32 ticksForMillis(int ms);
-  static u32 ticksForMicros(int us);
-  /** ticks necessary to get a periodic interrupt at the @param hz rate*/
-  static u32 ticksForHertz(float hz); //approximate since we know a divide is required.
-private:
-  //singly linked list
-  Gropued *next;
-  static Gropued *active; //isr needs to know where the list is.
-public:
-  static void onTick(void); //to be called periodically, expects to be called in an isr.
-  //extend and overload to have something done within the timer interrupt service routine:
-  virtual void onDone(void);
-};
-
-/** automatic restart. If you are slow at polling it it may become done again while you are handling a previous done.*/
-class CyclicTimer : public Gropued {
-protected:
-  u32 period;
-  u32 fired;
-public:
-  bool hasFired(void){
-    //maydo: LOCK, present intended uses can miss a tick without harm so we don't bother.
-    ClearOnExit <u32> z(fired); //trivial usage of ClearOnExit, for testing that.
-    return fired != 0;
-  }
-
-  operator bool (void){
-    return hasFired();
-  }
-
-  void retrigger(void){
-    //leave fired as is.
-    Gropued::restart(period);
-  }
-
-  void restart(u32 ticks){
-    Gropued::restart(period = ticks);
-  }
-
-  virtual void onDone(void){
-    ++fired;
-    //pointless: PolledTimer::onDone();
-    retrigger();
-  }
-
-};
-
-#endif /* ifndef systickH */
+/** ticks necessary to get a delay of @param sec seconds*/
+u32 ticksForSeconds(float sec);
+u32 ticksForMillis(int ms);
+u32 ticksForMicros(int us);
+/** ticks necessary to get a periodic interrupt at the @param hz rate*/
+u32 ticksForHertz(float hz); //approximate since we know a divide is required.
+}

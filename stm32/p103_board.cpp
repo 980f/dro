@@ -10,3 +10,7 @@ P103_board::P103_board():
   button(buttonPin){
   /*empty*/
 }
+
+void P103_board::toggleLed(){
+  led.toggle();//low level access has optimal way of doing this.
+}
