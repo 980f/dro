@@ -85,6 +85,10 @@
         <file file_name="cortexm/stm32/afio.cpp" />
         <file file_name="cortexm/stm32/afio.h" />
       </folder>
+      <folder Name="ezcpp">
+        <file file_name="../ezcpp/bundler.cpp" />
+        <file file_name="../ezcpp/bundler.h" />
+      </folder>
     </folder>
     <folder Name="System Files">
       <file file_name="dro.ld" />

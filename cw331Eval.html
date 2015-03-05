@@ -51,6 +51,9 @@
       <li>BUG: build failed to notice a change to a header file that was a few
         levels of inclusion away. Note: all dependencies nodes nuder each source
         file in my project are empty.</li>
+      <li>CRASH: segfault in dynamic cast, looks like an attempt to access
+        typeinfo at address 2. After restart got to the same place during debug
+        and it didn't fault. Prior run had many small files opened in editors.</li>
     </ol>
     <p>annoyances:</p>
     <ol>
@@ -81,6 +84,10 @@
       <li>click on a function reference "goto definition" and was brought to the
         declaration. click on definition "goto definition" I get "function not
         found". Simple C++ member function.</li>
+      <li>breakpoint in statically called constructor and there is no 'this' in
+        the Locals window. Actually there are no locals at all (now that I
+        stopped in a base class that had a variable local to the constructor
+        function)</li>
     </ol>
     <p>UI annoyances:</p>
     <ol>
@@ -205,8 +212,6 @@
     </ol>
     <p>previous version bugs to confirm:</p>
     <ol>
-      <li>BUG: debug view displays base class data from address offset, rather
-        than this+offset.</li>
       <li>gui: menu popup can be off screen, greatly reducing their utility.
         Tested with dual monitor system with a tall monitor on the left and a
         shorter monitor on the right. Seems to presume that the monitors are all

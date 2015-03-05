@@ -36,7 +36,8 @@ HEADERS +=\
     cortexm/stm32/exti.h \
     cortexm/wtf.h \
     ezcpp/eztypes.h \
-    cortexm/peripheral.h
+    cortexm/peripheral.h \
+    ezcpp/bundler.h
 
 
 SOURCES +=\
@@ -52,7 +53,8 @@ SOURCES +=\
     cortexm/nvic.cpp \
     cortexm/cstartup.cpp \
     cortexm/wtf.cpp \
-    ezcpp/minimath.cpp
+    ezcpp/minimath.cpp \
+    ezcpp/bundler.cpp
 
 
 DISTFILES += \
