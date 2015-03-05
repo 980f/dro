@@ -1,5 +1,4 @@
-#ifndef GPIO_H
-#define GPIO_H
+#pragma once
 
 #include "stm32.h"
 
@@ -159,5 +158,3 @@ public:
   /** actually invert the present state of the pin */
   void toggle();
 };
-
-#endif // GPIO_H

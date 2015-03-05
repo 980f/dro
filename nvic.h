@@ -1,5 +1,5 @@
-#ifndef nvicH
-#define nvicH
+#pragma once
+
 #include "eztypes.h"
 
 extern "C" void generateHardReset();
@@ -18,13 +18,17 @@ extern "C" void generateHardReset();
 
 #define HandleFault(faultIndex) void FaultName(faultIndex) (void)
 
-
-//const capable component:
+/** base class to Irq which can be const'ed or even templated. */
 struct IrqAccess {
+  /** offical number per st documents */
   const u8 number;
+  /** which member of group of 32 this is */
   const u8 bit;
+  /** memory offset for which group of 32 this is in */
   const u32 bias;
+  /** bit pattern to go with @see bit index, for anding or oring into 32 bit grouped registers blah blah.*/
   const u32 mask;
+
   /* using u8 data type to check validity, need an 'explicit' somewhere to make that fully true */
   IrqAccess(u8 number):
     number(number),
@@ -34,15 +38,19 @@ struct IrqAccess {
     /*empty*/
   }
 
+protected:
+
   /** @returns reference to word related to the feature. */
   unsigned &controlWord(unsigned grup)const{
     return *reinterpret_cast <unsigned *> (grup | bias);
   }
 
-  //this is for the registers where you write a 1 to a bit to make something happen.
+  /** this is for the registers where you write a 1 to a bit to make something happen. */
   void strobe(unsigned grup)const{
     controlWord(grup) = mask;
   }
+
+public:
 
   bool irqflag(unsigned grup)const{
     return (mask & controlWord(grup))!=0;
@@ -150,6 +158,3 @@ public:
 #define IRQLOCK(irqVarb) IRQLock IRQLCK ## irqVarb(irqVarb)
 #endif /* ifdef ALH_SIM */
 
-//#undef strobe
-//#undef lvalue
-#endif /* ifndef nvicH */

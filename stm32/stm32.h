@@ -1,5 +1,4 @@
-#ifndef stm32H
-#define stm32H
+#pragma once
 
 /* stm family common stuff */
 #include "eztypes.h"
@@ -63,4 +62,3 @@ public:
     return bitter;
   }
 };
-#endif /* ifndef stm32H */

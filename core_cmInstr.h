@@ -1,5 +1,5 @@
-#ifndef __CORE_CMINSTR_H__
-#define __CORE_CMINSTR_H__
+#pragma once
+
 //heavily modified by andyh for easier visual comprehension, and for cross compiling on linux for sanity checking.
 /**
 * @file     core_cmInstr.h
@@ -121,5 +121,3 @@ INTRINSICALLY unsigned __CLZ(unsigned value){
   return result;
 }
 #endif // if 0
-
-#endif // ifndef __CORE_CMINSTR_H__

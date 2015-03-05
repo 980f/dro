@@ -1,5 +1,4 @@
-#ifndef AFIO_H
-#define AFIO_H
+#pragma once
 
 #include "stm32.h"
 #include "gpio.h"
@@ -56,6 +55,7 @@ public:
   /* make @param pin 's port the source for the pin's bitnumber's event, blowing off any previous selection for this exti channel */
   void selectEvent(const Pin &pin);
 };
-extern AfioManager theAfioManager;//named per soliton() but address is computed via constructor so we aren't using that macro
 
-#endif // AFIO_H
+/** there can be only one, might as well publish it */
+extern AfioManager theAfioManager;
+

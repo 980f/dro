@@ -1,5 +1,4 @@
-#ifndef EXTI_H
-#define EXTI_H
+#pragma once
 
 #include "stm32.h"
 /**
@@ -13,7 +12,7 @@ If bit n of one port is watched then no other ports' bit n can be watched.
 
 */
 
-/* refs gpio port so that enable an interrupt reconfigures the pin to be an input */
+/* refs gpio port so that enabling an interrupt reconfigures the pin to be an input */
 #include "gpio.h"
 #include "nvic.h" //return irq reference
 class Exti :public APBdevice {
@@ -31,5 +30,3 @@ you can set both rising and falling, then check the level directly to figure out
   static void clearPending(const Pin &pin);
 };
 
-
-#endif // EXTI_H

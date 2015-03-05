@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef P103_BOARD_H
 #define P103_BOARD_H
 

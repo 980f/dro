@@ -1,5 +1,4 @@
-#ifndef CLOCKS_H
-#define CLOCKS_H
+#pragma once
 
 #include "eztypes.h"
 
@@ -27,4 +26,3 @@ struct ClockStarter {
   ClockStarter(bool intosc,u32 coreHertz,u32 sysHertz);
 };
 
-#endif // CLOCKS_H
