@@ -2,6 +2,7 @@
 #include "nvic.h"
 #include "eztypes.h"
 #include "peripheral.h"
+#include "cruntime.h"
 
 volatile int CriticalSection::nesting = 0;
 /////////////////////////////////

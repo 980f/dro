@@ -190,4 +190,3 @@ struct Uart:public APBdevice {
   void beTransmitting(bool yes = true);
 };
 
-#endif /* ifndef usartH */

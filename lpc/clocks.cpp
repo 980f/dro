@@ -2,6 +2,21 @@
 #include "syscon.h"
 #include "wdt.h"
 
+#include "bitbanger.h"
+
+//#include "target.h"
+
+//LPC common IR frequency
+#define LPC_IRC_OSC_CLK     (12000000)    /* Internal RC oscillator frequency */
+
+/*----------------------------------------------------------------------------
+ *  Define clocks
+ *----------------------------------------------------------------------------*/
+#ifndef TARGET_XTAL
+#warning "TARGET_XTAL not defined, setting it same as internal RC just to get code to compile."
+#define TARGET_XTAL LPC_IRC_OSC_CLK
+#endif
+
 using namespace LPC;
 
 static DefineSingle(SYSCON, sysConReg(0));
@@ -32,7 +47,7 @@ unsigned coreInputHz(){
     return LPC::WDT::osc_hz(theSYSCON.WDTOSCCTRL);
 
   case 3: /* System PLL Clock Out               */
-    if(theSYSCON.SYSPLLCTRL & 0x180) {
+    if(theSYSCON.SYSPLLCTRL &bitm) {
       return pllInputHz();
     } else {
       return pllInputHz() * 1 + (theSYSCON.SYSPLLCTRL & 0x01F);
@@ -110,5 +125,5 @@ unsigned clockRate(int which){
     return coreHz();
 //  case 1: //
   }
-  return 12000000;//stub
+  return LPC_IRC_OSC_CLK;
 }

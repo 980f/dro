@@ -172,7 +172,7 @@ public:
 };
 
 /** simple digital output */
-template <PortNumber portNum, BitNumber bitPosition> class OutputPin: public GpioPin<portNum, bitPosition>, public Boolish {
+template <PortNumber portNum, BitNumber bitPosition> class OutputPin: public GpioPin<portNum, bitPosition>{
 public:
   /** @param yanker controls pull-up modality */
   OutputPin(PinBias yanker = BusLatch): GpioPin<portNum, bitPosition>(this->ioconPattern(yanker)){

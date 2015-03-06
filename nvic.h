@@ -2,7 +2,6 @@
 
 #include "eztypes.h"
 
-extern "C" void generateHardReset();
 
 //macro's for generating numbers don't work in the irqnumber slot below. The argument must be a simple digit string, no math or lookups or evenconsexpre's
 #define IrqName(irqnumber) IRQ ## irqnumber

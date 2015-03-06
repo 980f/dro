@@ -1,4 +1,5 @@
-#ifndef SYSCON_H
+#pragma once
+
 #define SYSCON_H
 
 #include "lpcperipheral.h"
@@ -102,4 +103,3 @@ public:
   };
 } // namespace LPC
 
-#endif // SYSCON_H

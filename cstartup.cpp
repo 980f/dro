@@ -1,24 +1,14 @@
 #include "wtf.h"
+#include "cruntime.h" //to validate it, herein lay default implementations of it.
 
 void SystemInit(void); // __USE_CMSIS __USE_LPCOPEN
 int main(void); // entry point
 void generateHardReset(void); // doesn't return! supplied by nvic.cpp as that is where reset hardware happens to reside.
 
-/** these structs are created via LONG(...) directives in the ld file.
-   That way only one symbol needs to be shared between the ld and this file for each block,
-   and the machine code reduction makes up for the explicit storing of these values in the rom .*/
-struct RamBlock {
-  unsigned int *address;
-  unsigned int length;
-};
-
-struct RamInitBlock {
-  const unsigned int *rom;
-  RamBlock ram;
-};
 
 const extern RamInitBlock __data_segment__;//name coordinated with cortexm.ld
 const extern RamBlock __bss_segment__;  //name coordinated with cortexm.ld
+const extern InitRoutine __init_table__[];//name coordinated with cortexm.ld
 
 /** NB: this startup presumes 32 bit aligned, 32bit padded structures, but linker gives byte addresses and counts */
 void data_init(const RamInitBlock &block) /*ISRISH*/ {
@@ -102,7 +92,7 @@ void stackFault(){
 }
 
 #ifdef __linux__
-const RamInitBlock __data_segment__={0,0,0};
+const RamInitBlock __data_segment__={0,{0,0}};
 const RamBlock __bss_segment__={0,0};
 const InitRoutine __init_table__[]={nullptr};
 const bool __stack_end__(0);
