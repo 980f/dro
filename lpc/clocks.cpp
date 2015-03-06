@@ -1,10 +1,8 @@
 #include "clocks.h"
+
 #include "syscon.h"
 #include "wdt.h"
-
 #include "bitbanger.h"
-
-//#include "target.h"
 
 //LPC common IR frequency
 #define LPC_IRC_OSC_CLK     (12000000)    /* Internal RC oscillator frequency */
@@ -126,4 +124,9 @@ unsigned clockRate(int which){
 //  case 1: //
   }
   return LPC_IRC_OSC_CLK;
+}
+
+
+void warp9(bool internal){
+ //todo: RTFM
 }

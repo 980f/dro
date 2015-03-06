@@ -1,11 +1,6 @@
-/*
- * P1343devkit.cpp
- *
- *  Created on: Apr 14, 2014
- *      Author: andyh
- */
 
-#include "P1343devkit.h"
+#include "p1343_board.h"
+
 using namespace LPC;
 
 P1343devkit::P1343devkit():
@@ -27,19 +22,22 @@ int P1343devkit::operator =(int lamp){
   return lamp;
 }
 
+void P1343devkit::toggleLed(unsigned /*which*/){
+  led0=1-led0;
+}
 
-Boolish &P1343devkit::led(unsigned which)
-{
-  switch(which){
-  default:
-  case 0: return led0;
-  case 1: return led1;
-  case 2: return led2;
-  case 3: return led3;
-  case 4: return led4;
-  case 5: return led5;
-  case 6: return led6;
-  case 7: return led7;
-  }
+
+//Boolish &P1343devkit::led(unsigned which){
+//  switch(which){
+//  default:
+//  case 0: return led0;
+//  case 1: return led1;
+//  case 2: return led2;
+//  case 3: return led3;
+//  case 4: return led4;
+//  case 5: return led5;
+//  case 6: return led6;
+//  case 7: return led7;
+//  }
 
 }

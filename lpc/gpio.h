@@ -10,6 +10,8 @@
 
 #include "lpcperipheral.h"
 #include "cheapTricks.h"
+#include "boolish.h"
+
 /** the ports are numbered from 0. Making them unsigned gives us a quick bounds check via a single compare*/
 typedef unsigned PortNumber;
 
@@ -105,12 +107,16 @@ enum PinBias {
 
 // and now for the modern approach:
 /** to configure a pin for a dedicated function one must merely construct a GpioPin with template args for which pin and constructor arg of control pattern*/
-template <PortNumber portNum, BitNumber bitPosition> class GpioPin {
+template <PortNumber portNum, BitNumber bitPosition> class GpioPin: public BoolishRef {
+public:
+  enum {
+    pini = pinIndex(portNum, bitPosition)
+};
+
 protected: // for simple gpio you must use an extended class that defines read vs read-write capability.
   enum {
     mask = 1 << bitPosition, // used for port control register access
     base = portBase(portNum), // base for port control
-    pini = pinIndex(portNum, bitPosition),
     // 6 pins are special on reset
     doa = (portNum == 0 && (bitPosition == 0 || bitPosition == 10 || bitPosition == 11)) || // 0.0 0.10 0.11
     (portNum == 1 && (bitPosition < 4)), // 1.0 1.1 1.2 1.3
@@ -130,6 +136,7 @@ protected: // for simple gpio you must use an extended class that defines read v
     return *reinterpret_cast<uint32_t *>(GpioPin<portNum, bitPosition>::pinn);
   }
 public:
+
   /** only special pins should use this directly. */
   inline GpioPin(uint32_t pattern){
     setIocon(pattern);
@@ -150,25 +157,26 @@ public:
     // bit 7 is a zero for analog selection
     return (1 << 6) | (doa?2:1);
   }
+
+  /** use the pin as if it were a boolean variable. */
+  inline operator bool() const {
+    return GpioPin<portNum, bitPosition>::pin() != 0; // need to check assembler, a shift might be better.
+  }
+
 };
 
 
 /** simple digital input */
 template <PortNumber portNum, BitNumber bitPosition> class InputPin: public GpioPin<portNum, bitPosition> {
 private:
-  void operator =(bool) const; // private because this is a read-only entity.
+  bool operator =(bool)const {return false;} // private because this is a read-only entity.
 
 public:
-
-
   /** @param yanker controls pullup modality */
   InputPin(PinBias yanker = BusLatch): GpioPin<portNum, bitPosition>(this->ioconPattern(yanker)){
     // nothing to do.
   }
-  /** use the pin as if it were a boolean variable. */
-  inline operator bool() const {
-    return GpioPin<portNum, bitPosition>::pin() != 0; // need to check assembler, a shift might be better.
-  }
+
 };
 
 /** simple digital output */
@@ -178,12 +186,8 @@ public:
   OutputPin(PinBias yanker = BusLatch): GpioPin<portNum, bitPosition>(this->ioconPattern(yanker)){
     // todo: coerce making it an input.
   }
-  /** use the pin as if it were a boolean variable. */
-  operator bool() const {
-    return GpioPin<portNum, bitPosition>::pin() != 0;
-  }
 
-  bool operator =(bool newvalue){
+  bool operator =(bool newvalue)const{
     GpioPin<portNum, bitPosition>::pin() = newvalue ? ~0 : 0; // don't need to mask or shift, just present all ones or all zeroes and let the hardware 'mask with address' take care of business.
     return newvalue;
   }

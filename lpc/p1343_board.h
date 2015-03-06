@@ -1,12 +1,4 @@
-/*
- * P1343devkit.h
- *
- *  Created on: Apr 14, 2014
- *      Author: andyh
- */
-
-#ifndef P1343DEVKIT_H_
-#define P1343DEVKIT_H_
+#pragma once
 
 #include "gpio.h" // to declare buttons and lamps.
 
@@ -22,11 +14,11 @@ public:
   LPC::OutputPin<2, 6> led6;
   LPC::OutputPin<2, 7> led7;
   P1343devkit();
-  virtual ~P1343devkit();
+  ~P1343devkit();
   /** set lamps as an 8-bit number, not particular swift in execution since they are scattered about the i/o space*/
   int operator =(int lamp );
   /** set led by ordinal.*/
-  Boolish & led(unsigned which);
+  void led(unsigned which);
+  /** invert state of one led */
+  void toggleLed(unsigned which=0);
 };
-
-#endif /* P1343DEVKIT_H_ */
