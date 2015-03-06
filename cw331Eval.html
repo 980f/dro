@@ -8,7 +8,7 @@
     <p>crosstudio 3.3.1 evaluation</p>
     <p>likes</p>
     <ol>
-      <li>debugger actually works. <br>
+      <li>debugger actually works:<br>
         eclipse+openOCD tools just give me a dull stare when I try to debug. <br>
         Qtcreator "bare metal" mode has never worked for me, always complains
         about yet another configuration item without explaining where it is or
@@ -21,8 +21,8 @@
         programming to do type and range checking at compile time, as opposed to
         most of the world still using typeless #defines and trusting themselves
         to not use wrong arguments.</li>
-      <li>similar enough to past versions that my hacks are still relevant, such
-        as rolling my own startup and linker scripts.</li>
+      <li>similar enough to past versions that my experience with those is still
+        relevant, such as how to use my own startup and linker scripts.</li>
     </ol>
     <p>actual bugs:</p>
     <ol>
@@ -50,35 +50,38 @@
         float', don't know which other properties affect lib selection. The lib
         wasn't useful to me at this time.</li>
       <li>BUG: build failed to notice a change to a header file that was a few
-        levels of inclusion away. Note: all dependencies nodes nuder each source
+        levels of inclusion away. Note: all dependencies nodes under each source
         file in my project are empty.</li>
       <li>CRASH: segfault in dynamic cast, looks like an attempt to access
         typeinfo at address 2. After restart got to the same place during debug
-        and it didn't fault. Prior run had many small files opened in editors.</li>
+        and it didn't fault. Prior run had many small files opened in editors.
+        Have had a few other instances of going silent then crashing, as if in
+        an infinite loop that eventually exhausts the stack.</li>
     </ol>
     <p>annoyances:</p>
     <ol>
       <li>could not find project property for pre-processor defines, had to hack
-        the xml and copy section from configuration block after which the option
-        appeared under the project.</li>
+        the xml and copy line from a "hidden" configuration block after which
+        the option appeared under the project.</li>
       <li>file selection for project manager resolved symbolic links, subverting
         the point in having such links. EG: I put a link under my project source
         dir to point to a library that was in a different git repo. I'd like to
         be able to move around where that other repo is via changing the OS link
         without having to do a search and replace in my project files. Similar
         to "Make projects portable" request.</li>
-      <li>Flash can be at two different addresses, either 0 or 128M on my stm32
-        part. Apparently you enforce values from your xml target description,
-        rather than trusting the linker. It would be handy if this check could
-        be suppressed, or I shall experiment with adding another section to see
-        if that is good enough. <br>
-        =&gt;&nbsp; arm_target_restrict_memory_accesses="Yes"</li>
-      <li>in symbol browser all symbols from __crossworks.h appear but I can't
-        find anything I have included that includes that.</li>
-      <li>In symbol browser constructors appear twice.</li>
+      <li>STM32 Flash can be at two different addresses, either 0 or 128M on my
+        stm32 part. Apparently you enforce values from your xml target
+        description, rather than trusting the linker. It would be handy if this
+        check could be suppressed, or I shall experiment with adding another
+        section to see if that is good enough. <br>
+        =&gt;&nbsp; I shall try to alter:
+        arm_target_restrict_memory_accesses="Yes"</li>
+      <li>strange: in symbol browser all symbols from __crossworks.h appear but
+        I can't find anything I have included that includes that.</li>
+      <li>bug: In symbol browser constructors appear twice.</li>
       <li>white text on tangerine background is basically invisible to me, 'goto
         function' completion selection highlight.</li>
-      <li>disabling startup breakpoint is often ignored. I set 'initial
+      <li>bug: disabling startup breakpoint is often ignored. I set 'initial
         breakpoint' to "never", changed the function that it would stop on and
         the next debug session start it stopped at the new location (ie didn't
         simply fail to unset a previous breakpoint). Erasing the name prevented
@@ -87,7 +90,7 @@
         declaration. click on definition "goto definition" I get "function not
         found". Simple C++ member function.</li>
       <li>breakpoint in statically called constructor and there is no 'this' in
-        the Locals window. Actually there are no locals at all (now that I
+        the Locals window. Actually there are no locals at all (noted now that I
         stopped in a base class that had a variable local to the constructor
         function)</li>
     </ol>
@@ -121,6 +124,8 @@
         able to change it for a search underway and for each search as I get to
         it. Configured defaults is fine, but quick access to overrides is&nbsp;
         needed.</li>
+      <li>(trivial bug): File menu continues to display single file options
+        (Save,Save as) even when all editors and projects are closed.</li>
     </ol>
     <p>Feature Requests</p>
     <ol>

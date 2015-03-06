@@ -20,7 +20,9 @@ QMAKE_CXXFLAGS += -Wno-error=unused-parameter
 QMAKE_CXXFLAGS += -Wno-error=unused-function
 
 #for debug of macros:
-#QMAKE_CXXFLAGS += -save-temps
+QMAKE_CXXFLAGS += -save-temps
+
+DEFINES += useSTM32=1
 
 INCLUDEPATH += cortexm cortexm/stm32 ezcpp
 
@@ -38,7 +40,8 @@ HEADERS +=\
     ezcpp/eztypes.h \
     cortexm/peripheral.h \
     ezcpp/bundler.h \
-    ezcpp/polledtimer.h
+    ezcpp/polledtimer.h \
+    cortexm/cruntime.h
 
 
 SOURCES +=\

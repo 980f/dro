@@ -24,7 +24,7 @@
       build_intermediate_directory="$(ProjectName)-$(Configuration)"
       c_only_additional_options="-fms-extensions"
       c_preprocessor_definitions="USE_PROCESS_STACK"
-      c_user_include_directories="lpcbase;$(TargetsDir)/LPC1000/include/CMSIS;$(TargetsDir)/CMSIS_3/CMSIS/Include;$(TargetsDir)/LPC1000/include"
+      c_user_include_directories="cortexm;cortexm/lpc;ezcpp"
       debug_initial_breakpoint_set_option="Always"
       double_is_float="Yes"
       gcc_c_language_standard="c99"
@@ -32,7 +32,8 @@
       gcc_entry_point="cstartup"
       gcc_wchar_size="16-Bit"
       link_include_standard_libraries="No"
-      link_include_startup_code="No" linker_additional_files=""
+      link_include_startup_code="No"
+      linker_additional_files=""
       linker_memory_map_file="$(TargetsDir)/LPC1000/LPC1343_MemoryMap.xml"
       linker_printf_fmt_level="int"
       linker_printf_fp_enabled="No"
@@ -60,58 +61,34 @@
       target_reset_script="SRAMReset()" />
     <folder Name="Source Files">
       <configuration Name="Common" filter="cpp;h;s" />
-      <file file_name="cheapTricks.cpp" />
-      <file file_name="cheapTricks.h" />
-      <file file_name="eztypes.h" />
       <file file_name="main.cpp" />
-      <file file_name="minimath.cpp" />
-      <file file_name="minimath.h" />
-      <file file_name="nvic.cpp" />
-      <file file_name="nvic.h" />
-      <file file_name="systick.cpp" />
-      <file file_name="systick.h" />
-      <folder Name="lpcbase">
-        <file file_name="lpcbase/core_cmInstr.h" />
-        <file file_name="lpcbase/gpio.cpp" />
-        <file file_name="lpcbase/lpcperipheral.h" />
-        <file file_name="../lpcbase/cstartup.cpp" />
+      <folder Name="ezcpp">
+        <file file_name="ezcpp/cheapTricks.cpp" />
+        <file file_name="ezcpp/cheapTricks.h" />
+        <file file_name="ezcpp/eztypes.h" />
+        <file file_name="ezcpp/minimath.cpp" />
+        <file file_name="ezcpp/minimath.h" />
       </folder>
-    </folder>
-    <folder Name="System Files">
-      <file file_name="$(StudioDir)/source/thumb_crt0.s">
-        <configuration
-          Name="THUMB Flash Debug"
-          build_exclude_from_build="Yes" />
-        <configuration
-          Name="THUMB-Flash-Debug"
-          build_exclude_from_build="Yes" />
-      </file>
-      <file file_name="$(TargetsDir)/LPC1000/LPC1300_Startup.s">
-        <configuration
-          Name="THUMB Flash Debug"
-          build_exclude_from_build="Yes" />
-        <configuration
-          Name="THUMB-Flash-Debug"
-          build_exclude_from_build="Yes" />
-      </file>
-      <file file_name="$(TargetsDir)/LPC1000/LPC1300_Target.js">
-        <configuration Name="Common" file_type="Reset Script" />
-      </file>
-      <file file_name="dro.ld" />
-      <file file_name="lpcbase/cortexm.ld" />
-      <file file_name="lpcbase/lpc1343.ld" />
-    </folder>
-    <folder Name="CMSIS Files">
-      <file file_name="$(TargetsDir)/LPC1000/include/CMSIS/LPC13xx.h" />
-      <file file_name="$(TargetsDir)/LPC1000/include/CMSIS/system_LPC13xx.h" />
-      <file file_name="$(TargetsDir)/LPC1000/include/CMSIS/system_LPC13xx.c">
-        <configuration
-          Name="THUMB Flash Debug"
-          build_exclude_from_build="Yes" />
-        <configuration
-          Name="THUMB-Flash-Debug"
-          build_exclude_from_build="Yes" />
-      </file>
+      <folder Name="cortexm">
+        <file file_name="cortexm/cstartup.cpp" />
+        <file file_name="cortexm/nvic.cpp" />
+        <file file_name="cortexm/nvic.h" />
+        <file file_name="cortexm/systick.cpp" />
+        <file file_name="cortexm/systick.h" />
+        <file file_name="cortexm/core_cmInstr.h" />
+      </folder>
+      <folder Name="lpc">
+        <file file_name="cortexm/lpc/gpio.cpp" />
+        <file file_name="cortexm/lpc/lpcperipheral.h" />
+      </folder>
+      <folder Name="System Files">
+        <file file_name="$(TargetsDir)/LPC1000/LPC1300_Target.js">
+          <configuration Name="Common" file_type="Reset Script" />
+        </file>
+        <file file_name="dro.ld" />
+        <file file_name="lpcbase/cortexm.ld" />
+        <file file_name="lpcbase/lpc1343.ld" />
+      </folder>
     </folder>
   </project>
   <configuration

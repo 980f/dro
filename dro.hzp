@@ -22,9 +22,12 @@
       arm_target_loader_applicable_loaders="Flash"
       arm_target_loader_default_loader="Flash"
       arm_target_restrict_memory_accesses="Yes"
+      arm_use_gcc_libraries="No"
       c_user_include_directories="cortexm;cortexm/stm32;ezcpp"
       debug_register_definition_file="$(TargetsDir)/STM32/STM32F103xx_Peripherals.xml"
       gcc_optimization_level="Debug"
+      link_include_standard_libraries="No"
+      linker_additional_files="$(StudioDir)/lib/libm_v7m_t_le_eabi_f_swc.a"
       linker_memory_map_file="$(TargetsDir)/STM32/STM32F103RB_MemoryMap.xml"
       linker_section_placement_file="$(StudioDir)/targets/Cortex_M/flash_placement.xml"
       project_directory=""
@@ -103,6 +106,7 @@
       arm_use_gcc_libraries="No"
       build_intermediate_directory="$(ProjectName)-$(Configuration)"
       build_output_directory="$(ProjectName)-$(Configuration)"
+      c_preprocessor_definitions="useSTM32=1"
       debug_initial_breakpoint_set_option="Always"
       double_is_float="Yes"
       gcc_c_language_standard="c11"
@@ -112,6 +116,7 @@
       gcc_wchar_size="16-Bit"
       link_include_standard_libraries="Yes"
       project_dependencies_can_build_in_parallel="Yes" />
+    <configuration Name="THUMB-Debug" link_include_standard_libraries="No" />
   </project>
   <configuration Name="THUMB-Debug" inherited_configurations="THUMB;Debug" />
   <configuration
