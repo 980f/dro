@@ -25,7 +25,7 @@
       c_only_additional_options="-fms-extensions"
       c_preprocessor_definitions="USE_PROCESS_STACK"
       c_user_include_directories="cortexm;cortexm/lpc;ezcpp"
-      debug_initial_breakpoint_set_option="Always"
+      debug_initial_breakpoint_set_option="Never"
       double_is_float="Yes"
       gcc_c_language_standard="c99"
       gcc_cplusplus_language_standard="c++11"
@@ -80,20 +80,22 @@
         <file file_name="cortexm/core_cmInstr.h" />
         <file file_name="../cortexm/cortexm3.s" />
         <file file_name="../cortexm/wtf.cpp" />
+        <file file_name="../cortexm/clockstarter.cpp" />
       </folder>
       <folder Name="lpc">
         <file file_name="cortexm/lpc/gpio.cpp" />
         <file file_name="cortexm/lpc/lpcperipheral.h" />
         <file file_name="../cortexm/lpc/p1343_board.cpp" />
         <file file_name="../cortexm/lpc/clocks.cpp" />
+        <file file_name="../cortexm/lpc/gpio.h" />
       </folder>
       <folder Name="System Files">
         <file file_name="$(TargetsDir)/LPC1000/LPC1300_Target.js">
           <configuration Name="Common" file_type="Reset Script" />
         </file>
         <file file_name="dro-lpc.ld" />
-        <file file_name="lpcbase/cortexm.ld" />
-        <file file_name="lpcbase/lpc1343.ld" />
+        <file file_name="../cortexm/lpc/lpc1343.ld" />
+        <file file_name="../cortexm/cortexm.ld" />
       </folder>
     </folder>
   </project>

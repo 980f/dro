@@ -14,13 +14,11 @@ using namespace SystemTimer;
 
 #include "core_cmInstr.h"  //wfe OR wfi
 #include "cruntime.h"
+ClockStarter startup InitStep(InitHardware/2) (false,0,1000);
 
 //For pins the stm32 lib is using const init'ed objects, LPC templated. It will take some work to reconcile how the two vendors like to describe their ports,
 //however the objects have the same usage syntax so only declarations need to be conditional on vendor.
 #if useSTM32
-ClockStarter startup InitStep(InitHardware/2) (false,0,1000);
-
-
 #include "exti.h"  //interrupts only tangentially coupled to i/o pins.
 #include "p103_board.h"
 P103_board board;
@@ -44,7 +42,8 @@ Irq &prime(Exti::enablePin(primePin,true,true));
 #else
 
 #include "p1343_board.h"
-P1343devkit board;
+//InitStep(InitApplication)
+P1343devkit board;//construction of this turns on internal peripherals and configures pins.
 
 
 Irq pushButton(board.button.pini);

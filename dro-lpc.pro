@@ -52,7 +52,8 @@ SOURCES +=\
     ezcpp/boolish.cpp \
     cortexm/lpc/p1343_board.cpp \
     cortexm/lpc/clocks.cpp \
-    cortexm/lpc/gpio.cpp
+    cortexm/lpc/gpio.cpp \
+    cortexm/clockstarter.cpp
 
 
 DISTFILES += \

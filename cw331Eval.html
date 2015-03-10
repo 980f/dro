@@ -14,12 +14,16 @@
         eclipse+openOCD tools just give me a dull stare when I try to debug. <br>
         Qtcreator "bare metal" mode has never worked for me, always complains
         about yet another configuration item without explaining where it is or
-        what values it takes.</li>
+        what values it takes.<br>
+        Keil (haven't tried since ~2007) has such an annoying user interface I
+        quit evaluating it, IAR pretty much the same.</li>
       <li>license locked to usb ethernet adapter. My eval computer is on its
         last legs, it will be nice to be able to move to different computers.</li>
+      <li>LPC13xx family "checksum in fault 7" implemented with no effort on my
+        part.</li>
       <li>user interaction seems more responsive than 1.17, 2.x versions (I used
         Crossstudio extensively in 2009&amp;2010 but not much since then.)</li>
-      <li>up-to-date version of compiler: I am heavily invested in template
+      <li>recent version of compiler: I am heavily invested in template
         programming to do type and range checking at compile time, as opposed to
         most of the world still using typeless #defines and trusting themselves
         to not use wrong arguments. Other tools seem to be well behind on
@@ -53,9 +57,11 @@
         float', don't know which other properties affect lib selection. I don't
         need that lib so this is not an immediate problem (all I am doing is
         twiddling peripherals to get pins to wiggle).</li>
-      <li>BUG: build failed to notice a change to a header file that was a few
-        levels of inclusion away. Note: all dependencies nodes under each source
-        file in my project are empty.</li>
+      <li>BUG: build failed to notice a change to a header file. This actually
+        seems to happen frequently, even when the .h file is explicitly included
+        in the project. <br>
+        Note: all dependencies nodes under each source file in my project are
+        empty.</li>
       <li>CRASHES: one was a segfault in dynamic cast, looks like an attempt to
         access typeinfo at address 2. After a restart I got to the same place
         during debug and it didn't fault. Prior run had many small files opened
@@ -108,6 +114,9 @@
         files. If the debug mechanism of the chip is unaware of bit band then
         I'll make a request to have a module that recognizes stm32 chips and
         simulates that.</li>
+      <li>Refresh buttons on debug displays often greyed out, need some
+        documentation as to why since it is often quite inconvenient to not get
+        an update, or to not trust that the display is current.</li>
     </ol>
     <p>UI annoyances:</p>
     <ol>
