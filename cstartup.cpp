@@ -48,7 +48,7 @@ __attribute__ ((weak,optimize(3))) void SystemInit(void) {
 /** sometimes pure virtual functions that aren't overloaded get called anyway,
   * such as from extended classes prophylactically calling the overloaded parent,
     or constructors calling their pure virtual members */
-void __cxa_pure_virtual(){  /* upon call of pure virtual function */
+extern "C" void __cxa_pure_virtual(){  /* upon call of pure virtual function */
   wtf(100000); /* ignore it */
 }
 

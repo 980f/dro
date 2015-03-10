@@ -2,18 +2,21 @@
 
 #include "eztypes.h"
 
-/** processor oscillator setp and support */
+/** processor oscillator setup and support */
 
+/**
+instantiate this in a project specific file:
+*/
 extern const u32 EXTERNAL_HERTZ;
 
 //clock rate:
-/** bus is: 0:ahb; 1:apb1; 2:apb2; 3:adc; -1:sysclock;*/
-u32 clockRate(unsigned int bus);
+/** stm32: bus is: -1:sysclock; 0:ahb/core; 1:apb1; 2:apb2; 3:adc;
+ * lpc13xx: -1:sysclock; 0:ahb/core; 1:apb1;
+*/
+u32 clockRate(int bus);
 
 /**set system clocks to the fastest possible*/
 void warp9(bool internal);
-/**MCO pin configuration (to snoop on internal clock)*/
-void setMCO(unsigned int mode);
 
 /** this class exists to run clock setup code at a user selectable init level.
  Usage:
@@ -23,6 +26,7 @@ struct ClockStarter {
   const bool intosc;//hs oscillator selection
   const u32 coreHertz;
   const u32 sysHertz;
+  /** by declaring an explicit constructor the compiler arranges for it to be called even if we use {} initializer */
   ClockStarter(bool intosc,u32 coreHertz,u32 sysHertz);
 };
 

@@ -1,10 +1,10 @@
 #include "systick.h"
 
-#include "peripheral.h"
+#include "peripheraltypes.h"
 
 #include "nvic.h"
 #include "clocks.h"
-#include "minimath.h"
+#include "minimath.h"  //safe division functions
 
 extern void PolledTimerServer();
 

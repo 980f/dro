@@ -1,5 +1,5 @@
 #include "stm32.h"
-
+#include "clocks.h"
 ///** return the bitband address of a bit of a given address*/
 //volatile u32 *bandFor(volatile void *dcb, unsigned int bitnum){ //5: 2^5 bits per word. The 0xE0.. and 0x02 .. are cortex-M3 architecture values.
 //  return reinterpret_cast <u32 *> ((bitnum << 2) | (((u32) dcb) << 5) | ((((u32) dcb) & 0xE0000000) | 0x02000000));

@@ -1,5 +1,7 @@
-#ifndef PERIPHERALTYPES_H
-#define PERIPHERALTYPES_H  1
+#pragma once
+
+#include "eztypes.h"
+#include "boolish.h"
 
 /**
  *  types used for declaration of peripherals.
@@ -9,20 +11,31 @@
  *  At each place of use one creates an instance and then assigns to that instance to write a value or simply reference that instance for a read.
  *  This precludes extern'ing global instances which then must take up real data space (const so not a big cost) and then be accessed via an extra level of indirection compared to what the 'create local instance' can result in.
  *  If we could create a global instance in a header file but get just one actual object created we would do that.
- *
- */
-#include <stdint.h> // instead of eztypes, trying to not use too many andyh colloquialisms
-#include <stddef.h> // for offsetof(,) used in compile-time computing of register addresses:
+ * Volatile is used to keep the compiler from optimizing away accesses that have physical side effects.
+I am working on replacing *'s with &'s, its a statisitcal thing herein as to which is better.
+*/
 
+/** @returns byte address argument as a pointer to that byte */
+inline constexpr volatile u32* atAddress(u32 address){
+  return reinterpret_cast<u32 *>(address);
+}
 
-typedef volatile uint32_t SFR;
-typedef const uint32_t SKIPPED;
+/** for a private single instance block */
+#define soliton(type, address) type & the ## type = *reinterpret_cast <type *> (address);
+
+/** the following are mostly markers, but often it is tedious to insert the 'volatile' and dangerous to leave it out. */
+typedef volatile u32 SFR;
+/** marker for non-occupied memory location */
+typedef const u32 SKIPPED;
 // packable byte:
-typedef volatile uint8_t SFR8;
-typedef volatile uint16_t SFR16;
+typedef volatile u8 SFR8;
+typedef volatile u16 SFR16;
 // todo: 16 bit ones, with word spacers.
 // todo: macro for skip block
 
+
+/** most cortex devices follow arm's suggestion of using this block for peripherals */
+const u32 PeripheralBase(0x40000000);
 
 
 /** Multiple contiguous bits in a register
@@ -31,6 +44,7 @@ typedef volatile uint16_t SFR16;
  */
 template <unsigned sfraddress, int pos, int width = 1> class SFRfield {
   enum {
+    /** mask positioned */
     mask = ((1 << width) - 1) << pos
   };
 
@@ -42,6 +56,7 @@ private:
 
 public:
   SFRfield(){
+    //this constructor is needed due to use of explict on the other constructor
   }
 
   explicit SFRfield(unsigned initlizer){
@@ -52,40 +67,17 @@ public:
   inline operator uint32_t() const {
     return (sfr() & mask) >> pos;
   }
+
   // write
   inline void operator =(uint32_t value) const {
     sfr() = ((value << pos) & mask) | (sfr() & ~mask);
   }
 };
 
-/** a register that is only 8 bits */
-template <unsigned sfraddress> class SFRbyte {
-  inline SFR8 &sfr() const {
-    return *reinterpret_cast<SFR8 *>(sfraddress);
-  }
-  public:
-
-  // read
-  inline operator uint32_t() const {
-    return sfr();
-  }
-  // write
-  inline void operator =(uint32_t value) const {
-    sfr() = value;
-  }
-  //do nothing on declaration of instance
-  SFRbyte(){
-  }
-  //declare and initialize, often the only reference to the object.
-  explicit SFRbyte(unsigned initlizer){
-    this->operator =(initlizer);
-  }
-
-};
 
 /** single bit, ignoring the possibility it is in bitbanded memory (an stm32 special feature it seems).
  *  This is NOT derived from SFRfield as we can do some optimizations that the compiler might miss (or developer might have disabled)*/
-template <unsigned sfraddress, int pos> class SFRbit {
+template <unsigned sfraddress, int pos> class SFRbit : public BoolishRef {
   enum {
     mask = 1 << pos
   };
@@ -99,16 +91,16 @@ public:
     return (sfr() & mask) != 0;
   }
   // write
-  inline void operator =(bool value){
+  inline bool operator =(bool value) const{
     if(value) {
       sfr() |= mask;
     } else {
       sfr() &= ~mask;
     }
+    return value;
   }
 };
 
-/** macro for first template argument for SFRfield and SFRbit, mates to cmsis style type declarations which can't use c bit-fields.*/
-#define SFRptr(absaddress, blocktype, member) (absaddress + offsetof(blocktype, member))
+///** macro for first template argument for SFRfield and SFRbit, mates to cmsis style type declarations which can't use c bit-fields.*/
+//#define SFRptr(absaddress, blocktype, member) (absaddress + offsetof(blocktype, member))
 //todo: constexpr version
-#endif // PERIPHERALTYPES_H

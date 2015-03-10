@@ -13,21 +13,23 @@
 #include "boolish.h"
 
 /** the ports are numbered from 0. Making them unsigned gives us a quick bounds check via a single compare*/
-typedef unsigned PortNumber;
+typedef u8 PortNumber;
 
 /** we could constrain this for 0..11 */
-typedef unsigned BitNumber;
+typedef u8 BitNumber;
 
 namespace LPC {
+
 constexpr bool isLegalPort(PortNumber pn){
   return pn < 4;
 }
 
+/** @returns block base address, 64k addresses per port */
 constexpr uint32_t portBase(PortNumber portNum){
   return 0x50000000 + (portNum << 16); // this is the only ahb device, and each gpio is 4 blocks thereof so just have a custom address computation.
 }
 
-/** in reality there are ~40 io pins.
+/** @returns linear index of pin (combined port and bit)
  *  this index is useful for things like figuring out which interrupt vector is associated with the pin. */
 constexpr int pinIndex(PortNumber portNum, BitNumber bitPosition){
   return portNum * 12 + bitPosition;
@@ -53,57 +55,60 @@ constexpr int ioconf_map[] = {
 SFR SCK_LOC; /*!< Offset: 0x0B0 SCK pin location select Register (R/W) */
 #endif
 
-/** for acces to the 4 non-gpio pin registers:*/
+/** for access to the 4 non-gpio pin registers:*/
 constexpr unsigned ioconRegister(unsigned offset){
   return LPC::apb0Device(17) + offset;
 }
 
-/** traditional verbose way of doing I/O, but not nearly so verbose as the nxp cmsis version it mimics.
- * instances of this class act like a boolean variable but call functions to do access operations.
- * the template GpioPin class generates fully inlined code instead of calling convenience functions.
- * If the static methods in this class were inlined you might get the same degree of inlining to occur.
- * */
-class GPIO {
+/** express access to a pin.
+ * will add field access objects when that proves useful.
+ */
+class GPIO :public BoolishRef {
 private:
-  const PortNumber portNumber;
-  const BitNumber bitNumber;
+  /** address associated with single bit mask */
+  u32 & dataAccess;
+
 public:
   GPIO(PortNumber portNum, BitNumber bitPosition):
-    portNumber(portNum),
-    bitNumber(bitPosition){
-  }
+    dataAccess(*reinterpret_cast<u32 *>(portBase(portNum)+((1<<bitPosition)<<2)))
+  {/*empty*/ }
+
   bool operator =(bool setHigh) const {
-    SetValue(portNumber, bitNumber, setHigh);
+    dataAccess = 0-setHigh;//all ones for setHigh, all zeroes for !setHigh, address picks the bit.
     return setHigh;
   }
+
   operator bool() const {
-    return GetValue(portNumber, bitNumber);
+    return dataAccess!=0;
   }
+
 public:
   /** this must be called once before any other functions herein are used. SystemInit is a good place, so that constructors for outputs will work.*/
   static void Init( void );
-public: // cmsis/ lpcopen legacy;
-  static void SetDir( PortNumber portNum, BitNumber bitPosi, bool outputter);
-  static void SetValue( PortNumber portNum, BitNumber bitPosi, bool bitVal );
-  /** @returns actual pin value, not necessarily last value set. */
-  static bool GetValue( PortNumber portNum, BitNumber bitPosi);
 
-  static void SetInterrupt( PortNumber portNum, BitNumber bitPosi, uint32_t sense, uint32_t single, uint32_t event );
-  static void IntEnable( PortNumber portNum, BitNumber bitPosi );
-  static void IntDisable( PortNumber portNum, BitNumber bitPosi );
-  static bool IntStatus(PortNumber portNum, BitNumber bitPosi );
-  static void IntClear( PortNumber portNum, BitNumber bitPosi );
 };
-
 
 
 /** declared outside of InputPIn class so that we don't have to apply template args to each use.*/
-enum PinBias {
+enum PinBias { //#ordered for MODE field of iocon register
   LeaveFloating = 0, // in case someone forgets to explicitly select a mode
-  BusLatch, // edge, either edge, input mode buslatch
+  PullDown, // level, pulled down
   PullUp, // level, pulled up
-  PullDown // level, pulled down
+  BusLatch, // edge, either edge, input mode buslatch
+
 };
+
+class GPIOConfigurator {
+  const PortNumber portNumber;
+  const BitNumber bitNumber;
+  GPIOConfigurator(PortNumber portNumber, BitNumber bitNumber):
+   portNumber(portNumber),
+   bitNumber(bitNumber){
+ }
+
+};
+
+
 
 // and now for the modern approach:
 /** to configure a pin for a dedicated function one must merely construct a GpioPin with template args for which pin and constructor arg of control pattern*/
@@ -117,7 +122,7 @@ protected: // for simple gpio you must use an extended class that defines read v
   enum {
     mask = 1 << bitPosition, // used for port control register access
     base = portBase(portNum), // base for port control
-    // 6 pins are special on reset
+    // some pins are special on reset
     doa = (portNum == 0 && (bitPosition == 0 || bitPosition == 10 || bitPosition == 11)) || // 0.0 0.10 0.11
     (portNum == 1 && (bitPosition < 4)), // 1.0 1.1 1.2 1.3
     mode = ioconf_map[pini], // iocon array index

@@ -1,6 +1,9 @@
 #ifndef CLOCKS_H
 #define CLOCKS_H
+#include "eztypes.h"
 
+/** usually defined in a board file: */
+extern const u32 EXTERNAL_HERTZ;
 
 /*----------------------------------------------------------------------------
  *  Processor Clock functions

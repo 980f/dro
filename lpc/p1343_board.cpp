@@ -1,5 +1,8 @@
-
 #include "p1343_board.h"
+
+#include "clocks.h"
+
+const u32 EXTERNAL_HERTZ=12000000;
 
 using namespace LPC;
 
@@ -39,5 +42,4 @@ void P1343devkit::toggleLed(unsigned /*which*/){
 //  case 6: return led6;
 //  case 7: return led7;
 //  }
-
-}
+//}

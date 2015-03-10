@@ -1,20 +1,11 @@
 #ifndef PERIPHERAL_H
 #define PERIPHERAL_H
 
-#include "eztypes.h"
-/** things that are handy for describing peripherals
-volatile is used to keep the compiler from optimizing away accesses that have physical side effects.
-I am working on replacing *'s with &'s, its a statisitcal thing herein as to which is better.
+#include "peripheraltypes.h"  //common cortex peripheral things
+
+/**
+stm32 family nicely aliases control bits into otherwise useless addresses.
 */
-
-/** @returns byte address argument as a pointer to that byte */
-inline constexpr volatile u32* atAddress(u32 address){
-  return reinterpret_cast<u32 *>(address);
-}
-
-/** for a private single instance block */
-#define soliton(type, address) type & the ## type = *reinterpret_cast <type *> (address);
-
 
 inline constexpr u32 bandShift(u32 byteOffset){
   return byteOffset<<5;
@@ -39,8 +30,6 @@ inline constexpr volatile u32 *bandAddress(volatile u32 * byteAddress, unsigned 
   return bandFor(u32(byteAddress),bitnum);
 }
 
-//the following should be deprecated, subsumed in careful use of bandFor
-const u32 stmPeripheralBase(0x40000000);
 
 const u32 stmPeripheralBand(0x42000000);
 

@@ -88,14 +88,14 @@ public:
   };
 
 /** construct one of these to set the selected clock enable */
-  template <int bit> struct ClockController: public SFRbit<SFRptr(LPC::apb0Device(18), SYSCON, SYSAHBCLKCTRL), bit> {
+  template <int bit> struct ClockController: public SFRbit< sysConReg(0x80), bit> {
     ClockController(bool value){
       this->operator =(value);
     }
   };
 
 /** creating one of these resets then conditionally enables a device. */
-  template <int bit> struct Resetter: public SFRbit<SFRptr(LPC::apb0Device(18), SYSCON, PRESETCTRL), bit> {
+  template <int bit> struct Resetter: public SFRbit<sysConReg(4), bit> {
     Resetter(bool value = true){
       this->operator =(0);
       this->operator =(value);

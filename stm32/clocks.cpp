@@ -4,6 +4,7 @@
 #include "flashcontrol.h"
 #include "systick.h"  //so that we can start it.
 
+//stm32 has an internal RC oscillator:
 #define HSI_Hz 8000000
 
 struct ClockControl {
@@ -165,10 +166,18 @@ struct ClockControl {
 //there is only one of these:
 static soliton(ClockControl, RCCBASE);
 
+////////////////////
+// support for cortexm/clocks.h:
+
 void warp9(bool internal){
   theClockControl.maxit(internal);
 }
 
+u32 clockRate(unsigned int bus){
+  return theClockControl.clockRate(bus);
+}
+
+/** stm32 has a feature to post its own clock on a pin, for reference or use by other devices. */
 void setMCO(unsigned int mode){
   Pin MCO(PA, 8); //depends on mcu family ...
 
@@ -180,22 +189,3 @@ void setMCO(unsigned int mode){
   theClockControl.MCOselection = mode;
 }
 
-u32 clockRate(unsigned int bus){
-  return theClockControl.clockRate(bus);
-}
-
-
-ClockStarter::ClockStarter(bool intosc, u32 coreHertz, u32 sysHertz):
-  intosc(intosc),
-  coreHertz(coreHertz),
-  sysHertz(sysHertz)
-{
-  if(coreHertz){
-    //todo: actually honor it!
-  } else {
-    warp9(intosc);
-  }
-  if(sysHertz){
-    SystemTimer::startPeriodicTimer(sysHertz);
-  }
-}

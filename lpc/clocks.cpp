@@ -3,6 +3,7 @@
 #include "syscon.h"
 #include "wdt.h"
 #include "bitbanger.h"
+#include "minimath.h" //multiply divide
 
 //LPC common IR frequency
 #define LPC_IRC_OSC_CLK     (12000000)    /* Internal RC oscillator frequency */
@@ -10,22 +11,18 @@
 /*----------------------------------------------------------------------------
  *  Define clocks
  *----------------------------------------------------------------------------*/
-#ifndef TARGET_XTAL
-#warning "TARGET_XTAL not defined, setting it same as internal RC just to get code to compile."
-#define TARGET_XTAL LPC_IRC_OSC_CLK
-#endif
 
 using namespace LPC;
 
 static DefineSingle(SYSCON, sysConReg(0));
 
 unsigned pllInputHz(void){
-  switch(theSYSCON.SYSPLLCLKSEL & 0x03) {
+  switch(sysConReg(0x40)& 0x03) {
   case 0:                       /* Internal RC oscillator             */
     return LPC_IRC_OSC_CLK;
 
   case 1:                       /* System oscillator                  */
-    return TARGET_XTAL;
+    return EXTERNAL_HERTZ;
     // the case 2 was gotten from cmsis code which either is bullshit or undocumented feature of the part
 //  case 2:                       /* WDT Oscillator                     */
 //    return LPC::WDT::osc_hz(theSYSCON.WDTOSCCTRL);
@@ -42,13 +39,13 @@ unsigned coreInputHz(){
     return pllInputHz();
 
   case 2:                             /* WDT Oscillator                     */
-    return LPC::WDT::osc_hz(theSYSCON.WDTOSCCTRL);
+    return WDT::osc_hz(theSYSCON.WDTOSCCTRL);
 
   case 3: /* System PLL Clock Out               */
-    if(theSYSCON.SYSPLLCTRL &bitm) {
-      return pllInputHz();
-    } else {
-      return pllInputHz() * 1 + (theSYSCON.SYSPLLCTRL & 0x01F);
+    {
+      SFRfield<sysConReg(8),0,5> multiplier;
+      SFRfield<sysConReg(8),5,2> divider;
+      return muldivide( pllInputHz() , 1 +multiplier , (1<<divider)) ;
     }
   } // switch
   return 0; // hopefully caller pays attention to this bogus value
@@ -121,7 +118,8 @@ unsigned clockRate(int which){
     return coreInputHz()/theSYSCON.SYSTICKCLKDIV;//todo:0 deal with divide by zero if not enabled.
   case 0: //processor clock
     return coreHz();
-//  case 1: //
+//  case 1:
+//    return 0;
   }
   return LPC_IRC_OSC_CLK;
 }

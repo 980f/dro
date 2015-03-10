@@ -5,6 +5,8 @@
 class P1343devkit {
 public:
   LPC::InputPin<2, 9> button;
+  //other button is 'wakeup'
+  //reset button is pio0/0, if reset functionality is defeated.
   LPC::OutputPin<3, 0> led0;
   LPC::OutputPin<3, 1> led1;
   LPC::OutputPin<3, 2> led2;

@@ -21,10 +21,11 @@ namespace LPC {
   }
 
 /** poke a control register given documentation of its offset */
-  inline SFR &makeSFR(unsigned apbdev, unsigned offset){
+  inline constexpr SFR &makeSFR(unsigned apbdev, unsigned offset){
     return *(reinterpret_cast<SFR *>(apb0Device(apbdev) + offset));
   }
 } // namespace LPC
+
 #define DefineSingle(regname, addr) LPC:: regname & the ## regname(*reinterpret_cast<LPC:: regname *>(addr))
 
 //// this variation is for things like  multiple functionally identical timers:
