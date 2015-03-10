@@ -2,7 +2,17 @@
 
 #include "gpio.h" // to declare buttons and lamps.
 
-class P1343devkit {
+namespace LPC {
+
+/** this class exists to trigger timely execution of initialization routines since we only have figured out how to call things in order by setting attributes on objects to be statically constructed. */
+struct Board {
+  Board(){
+    GPIO::Init();//this must run before any pins can be reliably be statically created.
+  }
+};
+}
+
+class P1343devkit:public LPC::Board {
 public:
   LPC::InputPin<2, 9> button;
   //other button is 'wakeup'

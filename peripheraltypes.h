@@ -91,7 +91,7 @@ public:
     return (sfr() & mask) != 0;
   }
   // write
-  inline bool operator =(bool value) const{
+  bool operator =(bool value) const{
     if(value) {
       sfr() |= mask;
     } else {

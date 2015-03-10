@@ -48,9 +48,8 @@ static inline GPIO_PORT *portPointer(PortNumber portNum){
 // used static above as it doesn't guard against bad argument.
 
 /** turn clock on to gpio and iocon blocks. */
-
 void GPIO::Init (void){
-  ClockController<6>(1); // gpio clock bit on.
+  ClockController<6>(1); // gpio clock bit on,usually already is.
   ClockController<16>(1); // iocon has to be turned on somewhere, might as well be here.
   // FYI: no jtag in these parts, just SWD.
 }

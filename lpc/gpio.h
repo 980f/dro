@@ -1,16 +1,9 @@
-#ifndef GPIO_H
-#define GPIO_H
-
-/*****************************************************************************
- *   gpio.h:  Header file for NXP LPC13xx Family Microprocessors
- *
- *   c++ version of LPC stuff, thoroughly typed
- * and then a purely c++ performance tweaked version (operations 100% inlinable)
- ******************************************************************************/
+#pragma once
 
 #include "lpcperipheral.h"
 #include "cheapTricks.h"
 #include "boolish.h"
+#include "bitbanger.h"
 
 /** the ports are numbered from 0. Making them unsigned gives us a quick bounds check via a single compare*/
 typedef u8 PortNumber;
@@ -27,6 +20,10 @@ constexpr bool isLegalPort(PortNumber pn){
 /** @returns block base address, 64k addresses per port */
 constexpr uint32_t portBase(PortNumber portNum){
   return 0x50000000 + (portNum << 16); // this is the only ahb device, and each gpio is 4 blocks thereof so just have a custom address computation.
+}
+/** @returns block base address, 64k addresses per port */
+constexpr uint32_t portControl(PortNumber portNum,unsigned regOffset){
+  return portBase(portNum) | (1<<15) | regOffset; // this is the only ahb device, and each gpio is 4 blocks thereof so just have a custom address computation.
 }
 
 /** @returns linear index of pin (combined port and bit)
@@ -140,6 +137,12 @@ protected: // for simple gpio you must use an extended class that defines read v
   inline uint32_t &pin() const {
     return *reinterpret_cast<uint32_t *>(GpioPin<portNum, bitPosition>::pinn);
   }
+
+  void setDirection(bool asOutput){
+    SFRbit<portControl(portNum,0),bitPosition>dirbit;
+    dirbit=asOutput; //the LPC CMSIS code checked before setting, without any explanation as to why that would be needed.
+  }
+
 public:
 
   /** only special pins should use this directly. */
@@ -149,7 +152,7 @@ public:
 
   // biasing is independent of in vs out, but not of function.
   static constexpr unsigned ioconPattern(PinBias bias){
-    // FYI 0.4 and 0.5 reset to 0, all others to D0
+    // FYI P0.4 and P0.5 reset to 0, all others to D0
     //  2 bits are the code passed in
     //   ls 3 bits are either 0 for normal pins or 1 for doa pins like reset or SWD pins.
     return (1<<7) | (1 << 6) | (bias << 3) | doa;
@@ -157,13 +160,13 @@ public:
   }
 
   static constexpr unsigned analogInputPattern(){
-    // the doa bits get a 2 rather than a 1 to select analog functionality
+    // the doa pins get a 2 rather than a 1 to select analog functionality
     // we disable pullups and pulldowns on analog channels (bias==0)
     // bit 7 is a zero for analog selection
     return (1 << 6) | (doa?2:1);
   }
 
-  /** use the pin as if it were a boolean variable. */
+  /** read the pin as if it were a boolean variable. */
   inline operator bool() const {
     return GpioPin<portNum, bitPosition>::pin() != 0; // need to check assembler, a shift might be better.
   }
@@ -179,7 +182,8 @@ private:
 public:
   /** @param yanker controls pullup modality */
   InputPin(PinBias yanker = BusLatch): GpioPin<portNum, bitPosition>(this->ioconPattern(yanker)){
-    // nothing to do.
+    //todo: set direction to 0, which is the power up setting so not urgent in our typical use of static configuration.
+    GpioPin<portNum, bitPosition>::setDirection(0);
   }
 
 };
@@ -189,13 +193,15 @@ template <PortNumber portNum, BitNumber bitPosition> class OutputPin: public Gpi
 public:
   /** @param yanker controls pull-up modality */
   OutputPin(PinBias yanker = BusLatch): GpioPin<portNum, bitPosition>(this->ioconPattern(yanker)){
-    // todo: coerce making it an input.
+    // todo: coerce making it an output
+    GpioPin<portNum, bitPosition>::setDirection(1);
   }
 
   bool operator =(bool newvalue)const{
     GpioPin<portNum, bitPosition>::pin() = newvalue ? ~0 : 0; // don't need to mask or shift, just present all ones or all zeroes and let the hardware 'mask with address' take care of business.
     return newvalue;
   }
+
 };
 
 /** Multiple contiguous bits in a register, this presumes the bits are configured elsewhere via GpioPin objects,
@@ -252,4 +258,3 @@ public:
   // todo: functions for dynamic inspection and enabling. //might allow for dynamic redefinition of polarity.
 };
 } // namespace LPC
-#endif // ifndef GPIO_H
