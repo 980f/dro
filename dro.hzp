@@ -67,6 +67,7 @@
         <file file_name="cortexm/systick.h" />
         <file file_name="cortexm/wtf.cpp" />
         <file file_name="cortexm/wtf.h" />
+        <file file_name="../cortexm/clockstarter.cpp" />
       </folder>
       <folder Name="stm">
         <file file_name="cortexm/stm32/gpio.cpp" />

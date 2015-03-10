@@ -20,40 +20,28 @@ QMAKE_CXXFLAGS += -Wno-error=unused-parameter
 QMAKE_CXXFLAGS += -Wno-error=unused-function
 
 #for debug of macros:
-QMAKE_CXXFLAGS += -save-temps
+#QMAKE_CXXFLAGS += -save-temps
 
-DEFINES += useSTM32=1
+DEFINES += useSTM32=0
 
-INCLUDEPATH += cortexm cortexm/stm32 ezcpp
+INCLUDEPATH += cortexm cortexm/lpc ezcpp
 
 HEADERS +=\
     cortexm/nvic.h\
     cortexm/systick.h\
     cortexm/core_cmInstr.h \
-    cortexm/cruntime.h \
-    cortexm/clocks.h \
-    cortexm/peripheral.h \
     cortexm/wtf.h \
-    cortexm/stm32/gpio.h \
-    cortexm/stm32/p103_board.h \
-    cortexm/stm32/clocks.h \
-    cortexm/stm32/stm32.h \
-    cortexm/stm32/afio.h \
-    cortexm/stm32/exti.h \
     ezcpp/eztypes.h \
+    cortexm/peripheral.h \
     ezcpp/bundler.h \
     ezcpp/polledtimer.h \
-    cortexm/peripheraltypes.h
+    cortexm/cruntime.h \
+    ezcpp/boolish.h \
+    ezcpp/minimath.h
 
 
 SOURCES +=\
     main.cpp \
-    cortexm/stm32/p103_board.cpp \
-    cortexm/stm32/gpio.cpp \
-    cortexm/stm32/stm32.cpp \
-    cortexm/stm32/flashcontrol.cpp \
-    cortexm/stm32/afio.cpp \
-    cortexm/stm32/exti.cpp \
     cortexm/systick.cpp \
     cortexm/nvic.cpp \
     cortexm/cstartup.cpp \
@@ -61,13 +49,15 @@ SOURCES +=\
     ezcpp/minimath.cpp \
     ezcpp/bundler.cpp \
     ezcpp/polledtimer.cpp \
-    cortexm/clockstarter.cpp \
-    cortexm/stm32/clocks.cpp
+    ezcpp/boolish.cpp \
+    cortexm/lpc/p1343_board.cpp \
+    cortexm/lpc/clocks.cpp \
+    cortexm/lpc/gpio.cpp
 
 
 DISTFILES += \
-    cortexm/stm32/f103re.ld \
-    dro.ld \
+    dro-lpc.ld \
+    cortexm/lpc/lpc1343.ld \
     dro.hzp
 
 

@@ -47,7 +47,7 @@ Irq &prime(Exti::enablePin(primePin,true,true));
 P1343devkit board;
 
 
-Irq &pushButton(board.button.pini);
+Irq pushButton(board.button.pini);
 
 using namespace LPC;
 
@@ -56,7 +56,7 @@ InputPin<0,4> primePhase;
 InputPin<0,5> otherPhase;
 
 
-Irq &prime(primePhase.pini);
+Irq prime(primePhase.pini);
 
 #define myIrq 4
 

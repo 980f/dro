@@ -5,8 +5,10 @@
     <title>cw331Eval</title>
   </head>
   <body>
-    <p>crosstudio 3.3.1 evaluation</p>
-    <p>likes</p>
+    <p>crosstudio 3.3.1 evaluation<br>
+      on ubuntu 12.04 and 14.04<br>
+      occasionally with dual monitors.</p>
+    <p>likes:</p>
     <ol>
       <li>debugger actually works:<br>
         eclipse+openOCD tools just give me a dull stare when I try to debug. <br>
@@ -16,11 +18,12 @@
       <li>license locked to usb ethernet adapter. My eval computer is on its
         last legs, it will be nice to be able to move to different computers.</li>
       <li>user interaction seems more responsive than 1.17, 2.x versions (I used
-        crossstudio extensively in 2009&amp;2010 but not much since then.)</li>
+        Crossstudio extensively in 2009&amp;2010 but not much since then.)</li>
       <li>up-to-date version of compiler: I am heavily invested in template
         programming to do type and range checking at compile time, as opposed to
         most of the world still using typeless #defines and trusting themselves
-        to not use wrong arguments.</li>
+        to not use wrong arguments. Other tools seem to be well behind on
+        compiler version.</li>
       <li>similar enough to past versions that my experience with those is still
         relevant, such as how to use my own startup and linker scripts.</li>
     </ol>
@@ -32,10 +35,10 @@
         this attempt to view the ld executable pops up automatically.</li>
       <li>usability-medium: the error view is brought forward but is empty
         despite the output view showing there are errors. I then have to switch
-        to the output view and drill down the tree to get to the error content.</li>
-      <li>text editor-minor: unhandled control keys become ordinary keys: ctrl-
-        is '-' (expected font to shrink), ctrl. is '.' instead of halting
-        execution. (since 1.17!)</li>
+        to the output view and drill down the tree to get to the error content.
+        I seem to have changed something after a while which keeps that view
+        from coming forward, but it is still always empty even when there are
+        errors.</li>
       <li>bug-middling:"Entry Symbol=none" still emits -e making next
         commandline arg be the entry symbol. I don't need an entry symbol so I
         shouldn't have to dummy one up.</li>
@@ -47,16 +50,22 @@
         ARM/v3/packages/targets/LPC1000/lib/liblpc1000_v7m_t_le_eabi_f_swc.a: No
         such file or directory"<br>
         'small' is present, but no 'swc' variant. I selected 'treat double as
-        float', don't know which other properties affect lib selection. The lib
-        wasn't useful to me at this time.</li>
+        float', don't know which other properties affect lib selection. I don't
+        need that lib so this is not an immediate problem (all I am doing is
+        twiddling peripherals to get pins to wiggle).</li>
       <li>BUG: build failed to notice a change to a header file that was a few
         levels of inclusion away. Note: all dependencies nodes under each source
         file in my project are empty.</li>
-      <li>CRASH: segfault in dynamic cast, looks like an attempt to access
-        typeinfo at address 2. After restart got to the same place during debug
-        and it didn't fault. Prior run had many small files opened in editors.
-        Have had a few other instances of going silent then crashing, as if in
-        an infinite loop that eventually exhausts the stack.</li>
+      <li>CRASHES: one was a segfault in dynamic cast, looks like an attempt to
+        access typeinfo at address 2. After a restart I got to the same place
+        during debug and it didn't fault. Prior run had many small files opened
+        in editors. And a second, then third crash (some on someone&nbsp; else's
+        14.04 system with full license) where the program goes silent then goes
+        belly up (presumably infinite recursion). The last one was on a "close
+        all unedited files" prior to starting a debug session.</li>
+      <li>"save all" after marking a particular jtag device as "favorite".
+        Normal program exit and reenter and it is no longer a favorite. Some of
+        my prior changes are preserved, but I can no longer make changes.</li>
     </ol>
     <p>annoyances:</p>
     <ol>
@@ -68,7 +77,7 @@
         dir to point to a library that was in a different git repo. I'd like to
         be able to move around where that other repo is via changing the OS link
         without having to do a search and replace in my project files. Similar
-        to "Make projects portable" request.</li>
+        to "Make projects portable" request already on your support site.</li>
       <li>STM32 Flash can be at two different addresses, either 0 or 128M on my
         stm32 part. Apparently you enforce values from your xml target
         description, rather than trusting the linker. It would be handy if this
@@ -80,7 +89,8 @@
         I can't find anything I have included that includes that.</li>
       <li>bug: In symbol browser constructors appear twice.</li>
       <li>white text on tangerine background is basically invisible to me, 'goto
-        function' completion selection highlight.</li>
+        function' completion selection highlight. =&gt; I found the edit colors
+        stuff, now if I only had a document telling me what the items are ;).</li>
       <li>bug: disabling startup breakpoint is often ignored. I set 'initial
         breakpoint' to "never", changed the function that it would stop on and
         the next debug session start it stopped at the new location (ie didn't
@@ -89,10 +99,15 @@
       <li>click on a function reference "goto definition" and was brought to the
         declaration. click on definition "goto definition" I get "function not
         found". Simple C++ member function.</li>
-      <li>breakpoint in statically called constructor and there is no 'this' in
-        the Locals window. Actually there are no locals at all (noted now that I
-        stopped in a base class that had a variable local to the constructor
-        function)</li>
+      <li>after stopping at a breakpoint in statically called constructor there
+        is no 'this' in the Locals window. Actually there are no locals at all
+        (noted now that I stopped in a base class that had a variable local to
+        the constructor function)</li>
+      <li>debug view stm32 "bit band" access fails, gives: 'FEFEFEFE'. I'm
+        guessing they are not in a memory segment defined in one of the xml
+        files. If the debug mechanism of the chip is unaware of bit band then
+        I'll make a request to have a module that recognizes stm32 chips and
+        simulates that.</li>
     </ol>
     <p>UI annoyances:</p>
     <ol>
@@ -124,6 +139,15 @@
         able to change it for a search underway and for each search as I get to
         it. Configured defaults is fine, but quick access to overrides is&nbsp;
         needed.</li>
+      <li>menu popups can be off screen, greatly reducing their utility. Tested
+        with dual monitor system with a tall monitor on the left and a shorter
+        monitor on the right. Seems to presume that the monitors are all the
+        same height.</li>
+      <li>see above- case is cycle counter right click menu, all off screen
+        except for enough to tell that a menu is present (ubuntu 14.04).</li>
+      <li>text editor-minor: unhandled control keys become ordinary keys: ctrl-
+        is '-' (expected font to shrink), ctrl. is '.' instead of halting
+        execution. (since 1.17!)</li>
       <li>(trivial bug): File menu continues to display single file options
         (Save,Save as) even when all editors and projects are closed.</li>
     </ol>
@@ -133,19 +157,17 @@
         same for regular interrupts. The 'interrupt stack frame' is well
         defined, you should be able to get us back to the line of code causing
         the exception (presuming it is 'synchronous').</li>
-      <li>web: allow placing backup files in another directory, instead of same
+      <li>&nbsp;allow placing backup files in another directory, instead of same
         directory as file, to reduce clutter when browsing the source with a
         file manager, especially useful when grepping for something- you only
         get hits in files that matter without having to use a fancy glob ('.h'
-        or '.cpp'). The same would be nice for autosave files.</li>
-      <li>stm32 bitband addresses show as 0xFEFEFEFE instead of a 0 or a 1. This
-        is a processor specific thing, but arm supplies it for vendors to use so
-        it might not be particularly vendor specific. This should be reasonable
-        to control with a section in the memory def file.</li>
+        or '.cpp'). The same would be nice for autosave files. (already on
+        voting list)</li>
       <li>displaying binary values: a gap or some other mark every 4 bits (like
         the latest C spec accepts as input).</li>
       <li>local view of 'this' has an extra level of tree to open. Open this and
-        you get a '*' and you have to then open that.</li>
+        you get a '*' and you have to then open that, that is extra clicks and
+        loss of screen space.</li>
       <li>open file dialog: should watch for files being added (by external
         actions)</li>
       <li>open file dialog: should remember last file filter, or allow you to
@@ -159,9 +181,9 @@
         reproducing the layout of the file system is tedious.</li>
       <li>Creating a folder after the fact I'd like to be aband moving the
         related files into it, drag and drop or right menu 'move' option.</li>
-      <li>le to build: concatenation of configuration names is done with a space
-        char, making commandline file management annoying. I text edit the hzp
-        to replace the space with a dash.</li>
+      <li>build: concatenation of configuration names is done with a space char,
+        making commandline file management annoying. I text edit the hzp to
+        replace the space with a dash.</li>
       <li>An option for "no heap", versus me chasing down HEAPSIZE and setting
         it to 0. I don't allow any dynamic allocation in microcontroller code
         and I want the link to fail hard if something tries.</li>
@@ -179,31 +201,33 @@
         disabled. OR tell me how to build my own configuration templates so that
         I quit having things I never use urged on me when building a new
         project.</li>
-      <li>Editable keymap.Many of your key assignments are stolen by the unity
+      <li>Editable keymap.Many of your key assignments are stolen by the Unity
         desktop requiring me to use the mouse to get to the feature.</li>
-      <li>on autocompletion of a funciton call the cursor is inside the parens,
+      <li>on autocompletion of a function call the cursor is inside the parens,
         even if the function takes void. In that case it would be nice if it
         were past the closing paren.</li>
-      <li>^O open files from project excludes generated file like the link map.
-        It would be nice if generate files were included in the search list.</li>
+      <li>^O open files from project excludes generated files like the link map.
+        It would be nice if generated files were included in the search list.</li>
       <li>in all tree views have "close all" and "open all" capability,
         especially for project properties.</li>
-      <li>When computer bogs down due to other programs get "target connection
-        has been lost". Crossworks times-out the connection even though it was
-        crossworks lack of cycles not the device's. Perhaps crossworks could use
-        process time rather than wall time for such timeouts?</li>
+      <li>When my computer bogs down due to other programs I get "target
+        connection has been lost". Crossworks times-out the connection even
+        though it was crossworks lack of cycles not the device's. Perhaps
+        crossworks could use process time rather than wall time for such
+        timeouts?</li>
       <li>decorate 'this' with its class name.</li>
     </ol>
     <p>FYI: Why I use my own linker scripts and startup:</p>
     <ol>
       <li>I sort the various init items so that I get full control over
-        initialization order. </li>
+        initialization order across modules. </li>
       <li>I use a very different approach to the interrupt table, so I don't
         have to hunt down spellings in some file. Since I need the number of the
         irq to enable and disable etc. I use a macro to generate an interrupt
-        request alias and then the table itself is just weak versions of the
-        numerical name. Now all I need to know about an interrupt is its number,
-        not someone else's idea of what a good name for it should be. <br>
+        request alias based on that number and then the table itself is just
+        weak versions of the numerical name. Now all I need to know about an
+        interrupt is its number, not someone else's idea of what a good name for
+        it should be. <br>
         This is especially handy when moving about which uart I am using for a
         feature, as I don't have to edit a uart-specific isr function name, I
         can change just one #defined number and both the irq control and the
@@ -215,18 +239,9 @@
       <li>I trust that gcc's alignment commands that are in the input sections
         are adequate for output alignment. This makes for a very readable (and
         small) script.</li>
-      <li>I am old and set in my ways, or at least ornery.</li>
-    </ol>
-    <p>previous version bugs to confirm:</p>
-    <ol>
-      <li>gui: menu popup can be off screen, greatly reducing their utility.
-        Tested with dual monitor system with a tall monitor on the left and a
-        shorter monitor on the right. Seems to presume that the monitors are all
-        the same height.</li>
-      <li>gui: see above- case is cycle counter right click menu, all off screen
-        except for enough to tell that a menu is present.</li>
-      <li>gui: with a large project opening up the dependent files node of the
-        last entry pushed its content off screen</li>
+      <li>your generated linker script and startup do non-functional things like
+        trying to copy the roblock onto itself, ditto for ctors and dtors (why
+        would anyone copy those tables to ram to execute them?)</li>
     </ol>
   </body>
 </html>
