@@ -5,15 +5,15 @@
 /** usually defined in a board file: */
 extern const u32 EXTERNAL_HERTZ;
 
-/*----------------------------------------------------------------------------
- *  Processor Clock functions
- *----------------------------------------------------------------------------*/
-unsigned pllInputHz(void);
-unsigned coreInputHz();
-unsigned coreHz(void);
+/** present values */
+unsigned pllInputHz(bool forUsb);
 
-///////////////
-// portability functions
+/** @returns the frequency pre-divider */
+unsigned coreInputHz();
+/** @returns the frequency post-divider
+ * even if xtal is in integer Hz there is a divisor that isn't a power of 2 */
+double coreHz(void);
+
 
 /** return Hz for @param bus number, -1 for systick, 0 for core, 1.. for AHB etc device specific values usually tied to apb index/*/
 unsigned clockRate(int bus);

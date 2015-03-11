@@ -1,7 +1,7 @@
 #pragma once
 
 #include "eztypes.h"
-#include "boolish.h"
+#include "bitbanger.h"
 
 /**
  *  types used for declaration of peripherals.
@@ -16,9 +16,23 @@ I am working on replacing *'s with &'s, its a statisitcal thing herein as to whi
 */
 
 /** @returns byte address argument as a pointer to that byte */
-inline constexpr volatile u32* atAddress(u32 address){
-  return reinterpret_cast<u32 *>(address);
+inline constexpr volatile u32& atAddress(unsigned address){
+  return *reinterpret_cast<u32 *>(address);
 }
+
+//inline void setBit(unsigned  address, unsigned bit){
+//  *atAddress(address)|= 1<<bit;
+//}
+
+//inline void clearBit(unsigned  address, unsigned  bit){
+//  *atAddress(address) &= 1<<bit;
+//}
+
+///** ensure a 0:1 transition occurs on given bit. */
+//inline void raiseBit(unsigned  address, unsigned  bit){
+//  clearBit(address, bit);
+//  setBit(address, bit);
+//}
 
 /** for a private single instance block */
 #define soliton(type, address) type & the ## type = *reinterpret_cast <type *> (address);
@@ -35,7 +49,7 @@ typedef volatile u16 SFR16;
 
 
 /** most cortex devices follow arm's suggestion of using this block for peripherals */
-const u32 PeripheralBase(0x40000000);
+const u32 PeripheralBase(0x40000000);//1<<30
 
 
 /** Multiple contiguous bits in a register

@@ -6,7 +6,16 @@
 #include "minimath.h" //multiply divide
 
 //LPC common IR frequency
-#define LPC_IRC_OSC_CLK     (12000000)    /* Internal RC oscillator frequency */
+const u32 LPC_IRC_OSC_CLK     (12000000);
+//family limit
+const u32 MaxFrequency (72000000);
+
+enum ClockSource {
+  IRCosc=0,
+  PLLin,
+  WDTosc,
+  PLLout
+};
 
 /*----------------------------------------------------------------------------
  *  Define clocks
@@ -14,10 +23,26 @@
 
 using namespace LPC;
 
-static DefineSingle(SYSCON, sysConReg(0));
+//static DefineSingle(SYSCON, sysConReg(0));
 
-unsigned pllInputHz(void){
-  switch(sysConReg(0x40)& 0x03) {
+unsigned pllOutput(bool forUsb){
+  u32 controlreg=atAddress(sysConReg(forUsb?0x10:8));
+  u32 multiplier=extractField(controlreg,4,0);
+  u32 divider=extractField(controlreg,6,5);
+
+  return muldivide( pllInputHz(forUsb) , 1 +multiplier , (1<<divider)) ;
+}
+
+void setPLL(bool forUsb,unsigned mpy, unsigned exponent){
+  u32 controlreg=sysConReg(forUSb?0x10:8);
+  SFRfield<controlreg,0,5> multiplier;
+  SFRfield<controlreg,5,2> divider;
+  multiplier=mpy-1;
+  divider= exponent;
+}
+
+unsigned pllInputHz(bool forUsb){
+  switch(sysConReg(forUsb?0x48:0x40) & 0x03) {
   case 0:                       /* Internal RC oscillator             */
     return LPC_IRC_OSC_CLK;
 
@@ -30,29 +55,38 @@ unsigned pllInputHz(void){
   return 0;
 } // pllInputHz
 
-unsigned coreInputHz(){
-  switch(theSYSCON.MAINCLKSEL & 0x03) {
-  case 0:                             /* Internal RC oscillator             */
+unsigned coreInputHz(ClockSource cksource){
+  switch(cksource){
+  case IRCosc:
     return LPC_IRC_OSC_CLK;
-
-  case 1:                             /* Input Clock to System PLL          */
-    return pllInputHz();
-
-  case 2:                             /* WDT Oscillator                     */
-    return WDT::osc_hz(theSYSCON.WDTOSCCTRL);
-
-  case 3: /* System PLL Clock Out               */
-    {
-      SFRfield<sysConReg(8),0,5> multiplier;
-      SFRfield<sysConReg(8),5,2> divider;
-      return muldivide( pllInputHz() , 1 +multiplier , (1<<divider)) ;
-    }
+  case PLLin:
+    return pllInputHz(0);
+  case WDTosc:
+    return WDT::osc_hz();
+  case PLLout:
+    return pllOutput(0);
   } // switch
   return 0; // hopefully caller pays attention to this bogus value
 } // coreInputHz
 
+
+unsigned coreInputHz(){
+  return coreInputHz(ClockSource(sysConReg(0x70) & 0x03));
+}
+
 unsigned coreHz(){
-  return coreInputHz() / theSYSCON.SYSAHBCLKDIV;
+  return rate(coreInputHz() / sysConReg(0x78));
+}
+
+void setMainClockSource(ClockSource cksource){
+  //todo:1 check that source is operating!
+  sysConReg(0x70)=cksource;
+  raiseBit(sysConReg(0x74),0);
+}
+
+void setMainClock(unsigned hz,ClockSource cksource){
+  //divider:
+
 }
 
 // todo: if XTAL is not zero then turn on hs-external osc and use it.
@@ -127,4 +161,12 @@ unsigned clockRate(int which){
 
 void warp9(bool internal){
  //todo: RTFM
+
+  if(internal){
+    //net product 6:, 6/1, 12/2, 24/4, but not 48/8, max num is 32
+  } else {
+
+    unsigned scaler=rate(MaxFrequency,EXTERNAL_HERTZ);
+
+  }
 }
