@@ -168,3 +168,17 @@ void GPIO::Init(void){
 //  }
 //}
 
+
+
+void GpioField::setDirection(bool forOutput){
+  u16 mask= reinterpret_cast<unsigned>(address)>>2;
+  u32 &directionRegister=atAddress((reinterpret_cast<unsigned>(address)&~0x7FFF)|0x8000);
+  if(forOutput){
+    directionRegister|= mask;
+  } else {
+    directionRegister &= ~mask;
+  }
+}
+
+GpioField::GpioField(PortNumber portNum, unsigned msb, unsigned lsb):
+  address( portBase(portNum) + ((1 << (msb + 3)) - (1 << (lsb + 2)))){ /*empty*/}

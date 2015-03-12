@@ -25,6 +25,10 @@ public:
   LPC::OutputPin<2, 5> led5;
   LPC::OutputPin<2, 6> led6;
   LPC::OutputPin<2, 7> led7;
+
+  LPC::PortField<3, 3, 0> lownib;
+  LPC::PortField<2, 7, 4> highnib;
+
   P1343devkit();
   ~P1343devkit();
   /** set lamps as an 8-bit number, not particular swift in execution since they are scattered about the i/o space*/
