@@ -34,23 +34,21 @@ unsigned pllOutput(bool forUsb){
 }
 
 void setPLL(bool forUsb,unsigned mpy, unsigned exponent){
-  u32 controlreg=sysConReg(forUSb?0x10:8);
-  SFRfield<controlreg,0,5> multiplier;
-  SFRfield<controlreg,5,2> divider;
-  multiplier=mpy-1;
-  divider= exponent;
+  u32 controlreg=sysConReg(forUsb?0x10:8);
+  mergeBits(controlreg,mpy-1,0,5);
+  mergeBits(controlreg,exponent,5,2);
 }
 
 unsigned pllInputHz(bool forUsb){
   switch(sysConReg(forUsb?0x48:0x40) & 0x03) {
-  case 0:                       /* Internal RC oscillator             */
+  case IRCosc:                       /* Internal RC oscillator             */
     return LPC_IRC_OSC_CLK;
 
   case 1:                       /* System oscillator                  */
     return EXTERNAL_HERTZ;
     // the case 2 was gotten from cmsis code which either is bullshit or undocumented feature of the part
-//  case 2:                       /* WDT Oscillator                     */
-//    return LPC::WDT::osc_hz(theSYSCON.WDTOSCCTRL);
+    //  case 2:                       /* WDT Oscillator                     */
+    //    return LPC::WDT::osc_hz(theSYSCON.WDTOSCCTRL);
   } // switch
   return 0;
 } // pllInputHz
@@ -75,19 +73,16 @@ unsigned coreInputHz(){
 }
 
 unsigned coreHz(){
-  return rate(coreInputHz() / sysConReg(0x78));
+  return rate(coreInputHz() , sysConReg(0x78));
 }
 
 void setMainClockSource(ClockSource cksource){
   //todo:1 check that source is operating!
-  sysConReg(0x70)=cksource;
-  raiseBit(sysConReg(0x74),0);
+  atAddress(sysConReg(0x70))=cksource;
+  raiseBit(atAddress(sysConReg(0x74)),0);
+  //cmsis code (not net the manual) suggests that we can monitor the above bit to see when the new value has taken effect, but why wait? it is at most somethign like 2 of the present clocks and one should be changing the main clock well in advance of doing application timing.
 }
 
-void setMainClock(unsigned hz,ClockSource cksource){
-  //divider:
-
-}
 
 // todo: if XTAL is not zero then turn on hs-external osc and use it.
 
@@ -149,24 +144,72 @@ void setMainClock(unsigned hz,ClockSource cksource){
 unsigned clockRate(int which){
   switch (which) {
   case -1://systick
-    return coreInputHz()/theSYSCON.SYSTICKCLKDIV;//todo:0 deal with divide by zero if not enabled.
+    return rate(coreInputHz(),atAddress(sysConReg(0x0B0)));
   case 0: //processor clock
     return coreHz();
-//  case 1:
-//    return 0;
+    //  case 1:
+    //    return 0;
   }
   return LPC_IRC_OSC_CLK;
 }
 
 
+bool switchToPll(unsigned mpy, unsigned exponent){
+  clearBit(atAddress(sysConReg(0x238)),7);// pllPowerdown
+  setPLL(0,mpy, exponent);
+  //wait for lock, //100uS absolute limit
+  for(unsigned trials=120;trials-->0;){
+    if(bit(atAddress(sysConReg(0x00c)),0)){//if locked
+      setMainClockSource(ClockSource::PLLout);
+      return true;
+    }
+  }
+  return false;
+}
+
+
+void setMainClock(unsigned hz,ClockSource cksource){
+  //divider:
+  //
+}
+
 void warp9(bool internal){
- //todo: RTFM
-
-  if(internal){
-    //net product 6:, 6/1, 12/2, 24/4, but not 48/8, max num is 32
+  u32 sourceHz(0);
+  if(internal || EXTERNAL_HERTZ==0 ){
+    clearBitAt(sysConReg(0x238),0);//irc power on
+    sourceHz=LPC_IRC_OSC_CLK;
   } else {
+    clearBitAt(sysConReg(0x238),5);//ext osc on, presumes xtal configged, else we should leave it off and test whether an external clock is actually clicking
+    sourceHz=EXTERNAL_HERTZ;
+  }
+  unsigned exponent=3;//max exponent for divisor
+  unsigned scaler=muldivide(MaxFrequency,1<<exponent,sourceHz);//maximum multipler
 
-    unsigned scaler=rate(MaxFrequency,EXTERNAL_HERTZ);
+  while(scaler>32 || scaler*sourceHz>=320000000){//field limit, cco limit
+    scaler>>=1;
+    if(--exponent==0){
+      break;
+    }
+  }
+  //todo: if still above 320MHz then system is not reliable.
+  while(isEven(scaler) && scaler*sourceHz>=156000000){//reduce freq if we can without going too low
+    scaler>>=1;
+    if(--exponent==0){
+      break;
+    }
+  }
 
+  if(scaler){//if we have a solution apply it
+    switchToPll(scaler,exponent);
+  }
+}
+
+void setMCO(ClockSource which, unsigned divider){
+  if(divider){
+    atAddress(sysConReg(0x0E0))=which;
+    atAddress(sysConReg(0x0E8))=divider;
+    raiseBit(atAddress(sysConReg(0xE4)),0);
+    //and direct it to a pin
+    atAddress(ioConReg(0x10))=1; //the values for iocon's defy systemization.
   }
 }

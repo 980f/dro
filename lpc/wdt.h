@@ -43,7 +43,7 @@ constexpr unsigned wdt_osc_table[] = {
 };
 
 
-class WDT {
+struct WDT {//could be an inner namespace
   //private:
   //    WDT();
   //public:
@@ -65,7 +65,7 @@ class WDT {
     return 1<< (1 + extractBits(sel ,0,5));
   }
 
-  constexpr static unsigned osc_hz(){
+  static unsigned osc_hz(){
     unsigned sel=sysConReg(0x24);
     return numerator(sel) / denominator(sel);
   }

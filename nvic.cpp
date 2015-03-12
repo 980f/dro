@@ -141,7 +141,7 @@ struct InterruptController {
 soliton(InterruptController, 0xE000ED04);
 
 void configurePriorityGrouping(int code){
-  *atAddress(0xE000ED0C) = ((code & 7) << 8) | 0x05FA0000; //5FA is a guard against random writes.
+  atAddress(0xE000ED0C) = ((code & 7) << 8) | 0x05FA0000; //5FA is a guard against random writes.
 }
 
 extern "C" { // to keep names simple for "alias" processor

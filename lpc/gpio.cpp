@@ -1,57 +1,39 @@
-/*****************************************************************************
-*   gpio.c:  GPIO C file for NXP LPC13xx Family Microprocessors
-*
-*   Copyright(C) 2008, NXP Semiconductor
-*   All rights reserved.
-*
-*   History
-*   2009.12.09  ver 1.01    GPIOSetValue() updated
-*   2008.07.20  ver 1.00    Preliminary version, first Release
-*
-*****************************************************************************/
-#include "lpc13xx.h"      /* LPC13xx Peripheral Registers */
 #include "gpio.h"
-#include "syscon.h" // for clock enable.
-
+#include "lpcperipheral.h" // for clock enable.
 
 using namespace LPC;
 
 
-/*------------- General Purpose Input/Output (GPIO) --------------------------
-12 bits each port, an architecturally fixed limit due to field access mechanism */
-struct GPIO_PORT {
-  union {
-    /** address is anded with port bits, in or out */
-    volatile uint32_t MASKED_ACCESS[4096];
-    /** access all bits using final member of MASKED_ACCESS */
-    struct {
-      SKIPPED RESERVED0[4095];
-      SFR DATA;
-    };
-  };
-  SKIPPED RESERVED1[4096];//16k gap
-  SFR DIR; //0x500p8000
-  SFR IS;
-  SFR IBE;
-  SFR IEV;
+///*------------- General Purpose Input/Output (GPIO) --------------------------
+//12 bits each port, an architecturally fixed limit due to field access mechanism */
+//struct GPIO_PORT {
+//  union {
+//    /** address is anded with port bits, in or out */
+//    volatile uint32_t MASKED_ACCESS[4096];
+//    /** access all bits using final member of MASKED_ACCESS */
+//    struct {
+//      SKIPPED RESERVED0[4095];
+//      SFR DATA;
+//    };
+//  };
+//  SKIPPED RESERVED1[4096];//16k gap
+//  SFR DIR; //0x500p8000
 
-  SFR IE;
-  SFR RIS;
-  SFR MIS;
-  SFR IC;
-};
+//  SFR IS;
+//  SFR IBE;
+//  SFR IEV;
 
-/** to get rid of gobs of duplicated code, paired with switch statements: */
-static inline GPIO_PORT *portPointer(PortNumber portNum){
-  return reinterpret_cast<GPIO_PORT *>(0x50000000 + (portNum << 16));
-}
-// used static above as it doesn't guard against bad argument.
+//  SFR IE;
+//  SFR RIS;
+//  SFR MIS;
+//  SFR IC;
+//};
+
 
 /** turn clock on to gpio and iocon blocks. */
-void GPIO::Init (void){
-  ClockController<6>(1); // gpio clock bit on,usually already is.
-  ClockController<16>(1); // iocon has to be turned on somewhere, might as well be here.
-  // FYI: no jtag in these parts, just SWD.
+void GPIO::Init(void){
+  enableClock(6); // gpio clock bit on,usually already is.
+  enableClock(16); // iocon has to be turned on somewhere, might as well be here.
 }
 
 //void GPIO::SetDir(PortNumber portNum, BitNumber bitPosi, bool outputter){

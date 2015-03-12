@@ -2,6 +2,7 @@
 
 #include "eztypes.h"
 #include "bitbanger.h"
+#include "boolish.h"
 
 /**
  *  types used for declaration of peripherals.
@@ -14,11 +15,6 @@
  * Volatile is used to keep the compiler from optimizing away accesses that have physical side effects.
 I am working on replacing *'s with &'s, its a statisitcal thing herein as to which is better.
 */
-
-/** @returns byte address argument as a pointer to that byte */
-inline constexpr volatile u32& atAddress(unsigned address){
-  return *reinterpret_cast<u32 *>(address);
-}
 
 //inline void setBit(unsigned  address, unsigned bit){
 //  *atAddress(address)|= 1<<bit;

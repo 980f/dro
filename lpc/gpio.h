@@ -21,6 +21,7 @@ constexpr bool isLegalPort(PortNumber pn){
 constexpr uint32_t portBase(PortNumber portNum){
   return 0x50000000 + (portNum << 16); // this is the only ahb device, and each gpio is 4 blocks thereof so just have a custom address computation.
 }
+
 /** @returns block base address, 64k addresses per port */
 constexpr uint32_t portControl(PortNumber portNum,unsigned regOffset){
   return portBase(portNum) | (1<<15) | regOffset; // this is the only ahb device, and each gpio is 4 blocks thereof so just have a custom address computation.
@@ -52,10 +53,6 @@ constexpr int ioconf_map[] = {
 SFR SCK_LOC; /*!< Offset: 0x0B0 SCK pin location select Register (R/W) */
 #endif
 
-/** for access to the 4 non-gpio pin registers:*/
-constexpr unsigned ioconRegister(unsigned offset){
-  return LPC::apb0Device(17) + offset;
-}
 
 /** express access to a pin.
  * will add field access objects when that proves useful.
@@ -238,8 +235,23 @@ enum IrqStyle {
 };
 
 
-/** interrupt input */
-template <PortNumber portNum, BitNumber bitPosition> class IrqPin: public GpioPin<portNum, bitPosition> {
+/** control interrupt input
+GPIOIS R/W 0x8004 Interrupt sense register for port n 0x00
+GPIOIBE R/W 0x8008 Interrupt both edges register for port n 0x00
+
+GPIOIEV R/W 0x800C Interrupt event register for port n 0x00
+GPIOIE R/W 0x8010 Interrupt mask register for port n 0x00
+GPIORIS R 0x8014 Raw interrupt status register for port n 0x00
+GPIOMIS R 0x8018 Masked interrupt status register for port n 0x00
+GPIOIC W 0x801C Interrupt clear register for port n 0x00
+
+
+*/
+template <PortNumber portNum, BitNumber bitPosition> class IrqPin {
+  enum {
+    base= portBase(portNum)|1<<15, //0x500p8000
+    mask=1<<bitPosition
+  };
 private:
   void operator =(bool); // because this is a read-only entity.
   /** use the pin as if it were a boolean variable. */
@@ -257,4 +269,7 @@ public:
   }
   // todo: functions for dynamic inspection and enabling. //might allow for dynamic redefinition of polarity.
 };
+
+
+
 } // namespace LPC
