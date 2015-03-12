@@ -16,11 +16,13 @@
         about yet another configuration item without explaining where it is or
         what values it takes.<br>
         Keil (haven't tried since ~2007) has such an annoying user interface I
-        quit evaluating it, IAR pretty much the same.</li>
+        quit evaluating it, IAR pretty much the same, Hitex was the worst.</li>
       <li>license locked to usb ethernet adapter. My eval computer is on its
         last legs, it will be nice to be able to move to different computers.</li>
       <li>LPC13xx family "checksum in fault 7" implemented with no effort on my
         part.</li>
+      <li>support of the stellaris eval kit as an SWD interface (I happen to
+        have two :)</li>
       <li>user interaction seems more responsive than 1.17, 2.x versions (I used
         Crossstudio extensively in 2009&amp;2010 but not much since then.)</li>
       <li>recent version of compiler: I am heavily invested in template
@@ -57,9 +59,9 @@
         float', don't know which other properties affect lib selection. I don't
         need that lib so this is not an immediate problem (all I am doing is
         twiddling peripherals to get pins to wiggle).</li>
-      <li>BUG: build failed to notice a change to a header file. This actually
-        seems to happen frequently, even when the .h file is explicitly included
-        in the project. <br>
+      <li>build failed to notice a change to a header file. This actually seems
+        to happen frequently, even when the .h file is explicitly included in
+        the project. <br>
         Note: all dependencies nodes under each source file in my project are
         empty.</li>
       <li>CRASHES: one was a segfault in dynamic cast, looks like an attempt to
@@ -91,13 +93,13 @@
         section to see if that is good enough. <br>
         =&gt;&nbsp; I shall try to alter:
         arm_target_restrict_memory_accesses="Yes"</li>
-      <li>strange: in symbol browser all symbols from __crossworks.h appear but
+      <li>strange: in symbol browser many symbols from __crossworks.h appear but
         I can't find anything I have included that includes that.</li>
-      <li>bug: In symbol browser constructors appear twice.</li>
+      <li>In symbol browser constructors appear twice.</li>
       <li>white text on tangerine background is basically invisible to me, 'goto
         function' completion selection highlight. =&gt; I found the edit colors
         stuff, now if I only had a document telling me what the items are ;).</li>
-      <li>bug: disabling startup breakpoint is often ignored. I set 'initial
+      <li>disabling startup breakpoint is often ignored. I set 'initial
         breakpoint' to "never", changed the function that it would stop on and
         the next debug session start it stopped at the new location (ie didn't
         simply fail to unset a previous breakpoint). Erasing the name prevented
@@ -143,11 +145,11 @@
         breakpoints to be edited while the download is proceeding. It is very
         normal that I hit "F5/Start Debug" *then* realize I need to set a
         breakpoint before execution begins (or restart the debug session).</li>
-      <li>Find in editor doesn't have any access to change "whole word" "case"
-        options, unlike find in files. It can be set globally but I want to be
-        able to change it for a search underway and for each search as I get to
-        it. Configured defaults is fine, but quick access to overrides is&nbsp;
-        needed.</li>
+      <li>Find in editor doesn't have any access to change "whole word" and
+        "ignore case" options, unlike find in files. It can be set globally but
+        I want to be able to change it for a search underway and for each search
+        as I get to it. Configured defaults is fine, but quick access to
+        overrides is needed.</li>
       <li>menu popups can be off screen, greatly reducing their utility. Tested
         with dual monitor system with a tall monitor on the left and a shorter
         monitor on the right. Seems to presume that the monitors are all the
@@ -166,7 +168,7 @@
         same for regular interrupts. The 'interrupt stack frame' is well
         defined, you should be able to get us back to the line of code causing
         the exception (presuming it is 'synchronous').</li>
-      <li>&nbsp;allow placing backup files in another directory, instead of same
+      <li>allow placing backup files in another directory, instead of same
         directory as file, to reduce clutter when browsing the source with a
         file manager, especially useful when grepping for something- you only
         get hits in files that matter without having to use a fancy glob ('.h'
@@ -228,7 +230,7 @@
     </ol>
     <p>FYI: Why I use my own linker scripts and startup:</p>
     <ol>
-      <li>I sort the various init items so that I get full control over
+      <li>I sort the various init sections so that I get full control over
         initialization order across modules. </li>
       <li>I use a very different approach to the interrupt table, so I don't
         have to hunt down spellings in some file. Since I need the number of the

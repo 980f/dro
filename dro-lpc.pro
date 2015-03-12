@@ -37,7 +37,8 @@ HEADERS +=\
     ezcpp/polledtimer.h \
     cortexm/cruntime.h \
     ezcpp/boolish.h \
-    ezcpp/minimath.h
+    ezcpp/minimath.h \
+    ezcpp/cheapTricks.h
 
 
 SOURCES +=\
@@ -53,7 +54,8 @@ SOURCES +=\
     cortexm/lpc/p1343_board.cpp \
     cortexm/lpc/clocks.cpp \
     cortexm/lpc/gpio.cpp \
-    cortexm/clockstarter.cpp
+    cortexm/clockstarter.cpp \
+    ezcpp/cheapTricks.cpp
 
 
 DISTFILES += \
