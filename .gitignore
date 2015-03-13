@@ -5,3 +5,4 @@ dro
 *.hzs
 *unc-backup*~
 dro-THUMB-Debug/
+*-THUMB-Flash-Debug/
