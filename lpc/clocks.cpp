@@ -69,11 +69,12 @@ unsigned coreInputHz(ClockSource cksource){
 
 
 unsigned coreInputHz(){
-  return coreInputHz(ClockSource(sysConReg(0x70) & 0x03));
+  unsigned mainclksel=atAddress(sysConReg(0x70));
+  return coreInputHz(ClockSource(mainclksel & 0x03));
 }
 
 unsigned coreHz(){
-  return rate(coreInputHz() , sysConReg(0x78));
+  return rate(coreInputHz() , atAddress(sysConReg(0x78)));
 }
 
 void setMainClockSource(ClockSource cksource){
