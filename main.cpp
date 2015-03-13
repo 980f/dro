@@ -103,6 +103,7 @@ int main(void) {
     stackFault();
     MNE(WFI);
     ++events;
+    board.led1=board.button;
     if(slowToggle.hasFired()){
      board.toggleLed();
     }
