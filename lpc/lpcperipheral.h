@@ -38,6 +38,17 @@ inline void reset(unsigned bit){
 
 } // namespace LPC
 
+
+struct TestInitSequence {
+  static void setLevel(int &level){
+    ++level;
+  }
+
+  TestInitSequence(int myLevel){
+    setLevel(myLevel);
+  }
+};
+
 //#define DefineSingle(regname, addr) LPC:: regname & the ## regname(*reinterpret_cast<LPC:: regname *>(addr))
 
 ////// this variation is for things like  multiple functionally identical timers:

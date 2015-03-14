@@ -1,6 +1,11 @@
 #include "gpio.h"
 #include "lpcperipheral.h" // for clock enable.
 
+
+TestInitSequence gpio24 InitStep(1024) (24);
+TestInitSequence gpio10 InitStep(1010) (10);
+
+
 using namespace LPC;
 
 

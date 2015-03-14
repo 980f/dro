@@ -1,14 +1,18 @@
 #include "clocks.h"
 
-#include "syscon.h"
+#include "lpcperipheral.h"
+
+TestInitSequence clock InitStep(1017) (17);
+TestInitSequence clock2 InitStep(1016) (16);
+
 #include "wdt.h"
 #include "bitbanger.h"
 #include "minimath.h" //multiply divide
 
 //LPC common IR frequency
-const u32 LPC_IRC_OSC_CLK     (12000000);
+const u32 LPC_IRC_OSC_CLK(12000000);
 //family limit
-const u32 MaxFrequency (72000000);
+const u32 MaxFrequency(72000000);
 
 enum ClockSource {
   IRCosc=0,
@@ -17,13 +21,7 @@ enum ClockSource {
   PLLout
 };
 
-/*----------------------------------------------------------------------------
- *  Define clocks
- *----------------------------------------------------------------------------*/
-
 using namespace LPC;
-
-//static DefineSingle(SYSCON, sysConReg(0));
 
 unsigned pllOutput(bool forUsb){
   u32 controlreg=atAddress(sysConReg(forUsb?0x10:8));
@@ -143,15 +141,31 @@ void setMainClockSource(ClockSource cksource){
 
 
 unsigned clockRate(int which){
+  unsigned divreg=0;
   switch (which) {
   case -1://systick
-    return rate(coreInputHz(),atAddress(sysConReg(0x0B0)));
+    divreg=0x0B0;
+    break;
   case 0: //processor clock
-    return coreHz();
-    //  case 1:
-    //    return 0;
+    divreg=0x078;
+    break;
+    //leaving the following spread out until debugged, 0x90 + (which*4);
+  case 1: //ssp0
+    divreg=0x094;
+    break;
+  case 2: //uart
+    divreg=0x098;
+    break;
+  case 3://ssp1
+    divreg=0x09C;
+    break;
   }
-  return LPC_IRC_OSC_CLK;
+  if(divreg){
+    u32 divider=atAddress(sysConReg(divreg));
+    u32 num=coreInputHz();
+    return rate(num,divider);
+  }
+  return 0;
 }
 
 
@@ -203,6 +217,8 @@ void warp9(bool internal){
   if(scaler){//if we have a solution apply it
     switchToPll(scaler,exponent);
   }
+  //systick has a prescaler in this part. for other vendors it is fixed to the core.
+  atAddress(sysConReg(0x0B0))=1;//set to 0 if feature is later disabled.
 }
 
 void setMCO(ClockSource which, unsigned divider){

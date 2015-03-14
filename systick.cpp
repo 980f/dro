@@ -8,10 +8,12 @@
 
 extern void PolledTimerServer();
 
-//namespace SystemTimer {
-static u32 milliTime(0); //storage for global tick time.
-static u32 macroTime(0);   //extended range tick time
-//}
+namespace SystemTimer {
+//when the following were simple static's Rowley would not show them.
+  u32 milliTime(0); //storage for global tick time.
+  u32 macroTime(0);   //extended range tick time
+}
+using namespace SystemTimer;
 
 HandleFault(15){ //15: system tick
   ++milliTime;
@@ -87,7 +89,8 @@ void startPeriodicTimer(u32 persecond){
   if(!theSysTicker.fullspeed) {
     persecond *= 8; // times 8 here instead of /8 in the rate computation.
   }
-  theSysTicker.start(rate(clockRate(-1), persecond));
+  u32 num=clockRate(-1);
+  theSysTicker.start(rate(num, persecond));
 }
 
 double secondsForTicks(u32 ticks){
