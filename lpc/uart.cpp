@@ -2,9 +2,10 @@
 #include "lpcperipheral.h" // the peripheral is wholly hidden within this module.
 #include "gpio.h" // to gain control of pins
 #include "clocks.h"
-#include "syscon.h" // to enable clock
+#include "minimath.h" // checked divide
 #include "bitbanger.h" // for BitField
 #include "nvic.h"  // for isr
+
 using namespace LPC;
 
 // apb dev 2
@@ -26,7 +27,8 @@ ObjectInterrupt(theUart.isr(), uartIrq);
 namespace LPC {
 /*------------- Universal Asynchronous Receiver Transmitter (UART) 16550 equivalent type -----------*/
 struct UART550 {
-  /** actually overlapped registers. For some stupid reason they are maintaining compatibility with code that would have been written for other processors. SO that is cute but they could have also provided direct access so that the aggravating overlay of registers isn't necessary.*/
+  /** actually overlapped registers. For some stupid reason they are maintaining compatibility with code that would have been written for other processors.
+   * SO that is cute but they could have also provided direct access so that the aggravating overlay of registers isn't necessary.*/
   union {
     /** read receive fifo */
     const SFR RBR;
@@ -65,6 +67,7 @@ struct UART550 {
 };
 } // namespace LPC
 
+
 DefineSingle(UART550, apb0Device(2));
 // going through one level of computation in expectation that we will meet a part with more than one uart:
 constexpr unsigned uartRegister(unsigned offset){
@@ -92,16 +95,16 @@ SFRbit<IER,8> AutoBaudCompleteInterruptEnable;
 SFRbit<IER,9> AutoBaudTimeoutInterruptEnable;
 
 /** iopin pattern for uart pins: */
-constexpr unsigned pickUart = 0b11010001; // rtfm, not worth making syntax
+constexpr PinBias pickUart = PinBias(0b11010001); // rtfm, not worth making syntax
 
 Uart::Uart(): receive(nullptr), send(nullptr){
   uirq.disable();
-  GpioPin<PortNumber(1), BitNumber(6)> rxd(pickUart);
-  GpioPin<PortNumber(1), BitNumber(7)> txd(pickUart);
+  InputPin<PortNumber(1), BitNumber(6)> rxd(pickUart);
+  OutputPin<PortNumber(1), BitNumber(7)> txd(pickUart);
   // the 134x parts are picky about order here, the clock must be OFF when configuring the pins.
 
   /* Enable UART clock */
-  ClockController<12>(1); //
+  enableClock(12); //
   uartClockDivider = unsigned(1); // a functioning value, that allows for the greatest precision, if in range.
 }
 
@@ -128,10 +131,10 @@ unsigned Uart::setBaudPieces(unsigned divider, unsigned mul, unsigned div, unsig
   SFRfield<FDR, 4, 4> fmul(mul);
 
   dlab = 1;
-  SFRbyte<uartRegister(0x4)> DLM(divider >> 8);
-  SFRbyte<uartRegister(0x0)> DLL(divider);
+  atAddress(uartRegister(0x4))= (divider >> 8);
+  atAddress(uartRegister(0x0))= (divider);
   dlab = 0;
-  return /*ratio*/ (mul * sysFreq) / ((mul + div) * divider * uartClockDivider * 16);
+  return rate((mul * sysFreq) , ((mul + div) * divider * uartClockDivider * 16));
 } // Uart::setBaud
 
 
@@ -205,7 +208,7 @@ void Uart::beTransmitting(bool enabled){
     if(int nextch = (*send)() < 0) {
       //do nothing, might still be sending from the fifo
     } else {
-      theUART550.THR = nextch;
+      atAddress(uartRegister(0)) = nextch;
       //enable interrupts
     }
   } else {
@@ -218,6 +221,16 @@ void Uart::reception(bool enabled){
   //how bout line status interrupts? .. yeah add those:
   lineStatusInterruptEnable=enabled;
   //note: not our responsiblity to enable in the NVIC, that normally should be left alone during operation.
+}
+
+Uart &Uart::setTransmitter(Uart::Sender sender){
+  this->send = sender;
+  return *this;
+}
+
+Uart &Uart::setReceiver(Uart::Receiver receiver){
+  this->receive = receiver;
+  return *this;
 }
 
 //inner loop of sucking down the read fifo.

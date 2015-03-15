@@ -49,7 +49,7 @@ struct TestInitSequence {
   }
 };
 
-//#define DefineSingle(regname, addr) LPC:: regname & the ## regname(*reinterpret_cast<LPC:: regname *>(addr))
+#define DefineSingle(regname, addr) LPC:: regname & the ## regname(*reinterpret_cast<LPC:: regname *>(addr))
 
 ////// this variation is for things like  multiple functionally identical timers:
 //#define DefineUnit(regname, luno, addr) LPC:: regname * const the ## regname ## luno(reinterpret_cast<LPC:: regname *>(addr))

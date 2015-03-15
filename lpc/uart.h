@@ -1,6 +1,6 @@
-#ifndef UART_H
-#define UART_H
-// #include "eztypes.h"
+#pragma once
+
+#include "eztypes.h"
 
 namespace LPC {
 /** uart manager class, not to be confused with hardware register class.
@@ -40,17 +40,10 @@ public:
     /** call to request that reception isr be enabled or disabled. */
     void reception(bool enabled = true);
     /** set send function. @returns this. */
-    Uart &setTransmitter(Sender sender){
-      this->send = sender;
-      return *this;
-    }
+    Uart &setTransmitter(Sender sender);
     /** set reception routine. . @returns this. */
-    Uart &setReceiver(Receiver receiver){
-      this->receive = receiver;
-      return *this;
-    }
+    Uart &setReceiver(Receiver receiver);
   };
 } // namespace LPC
 // there is only one on this chip so let us go ahead and fabricate it
 extern LPC::Uart theUart;
-#endif // UART_H
