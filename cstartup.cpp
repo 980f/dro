@@ -41,7 +41,7 @@ void run_init( const InitRoutine * table){
 }
 
 // instead of tracking #defined symbols just dummy up the optional routines:
-__attribute__ ((weak,optimize(3))) void SystemInit(void) {
+[[weak,optimize(3)]] void SystemInit(void) {
   wtf(100001);
 }
 
@@ -52,18 +52,18 @@ extern "C" void __cxa_pure_virtual(){  /* upon call of pure virtual function */
   wtf(100000); /* ignore it */
 }
 
-//in case we aren't ready to bring the nvic into the build:
-__attribute__ ((weak,naked,noreturn,optimize(3))) void generateHardReset(){
-  while(1){
-    wtf(100002);
-  }
-}
+////in case we aren't ready to bring the nvic into the build:
+//[[weak,naked,noreturn]] void generateHardReset(){
+//  while(1){
+//    wtf(100002);
+//  }
+//}
 
 /** Reset entry point. Stack pointer is set to top of ram. Other registers are ambiguous.
  * Sets up a simple runtime environment and initializes the C/C++ library.
  */
 extern "C" //to make it easy to pass this to linker sanity checker. can eliminate when -e<blank> is fixed by Rowley.
-__attribute__ ((naked,noreturn)) //we don't need no stinking stack frame (yet)
+[[naked,noreturn]] //we don't need no stinking stack frame (yet)
 void cstartup(void){
   // initialize static variables
   data_init(__data_segment__);
@@ -79,10 +79,10 @@ void cstartup(void){
 } // start
 
 // stack pointer is set to end of ram via linker script
-void (*resetVector)(void) __attribute__((section(".vectors.1"))) = cstartup;
+void (*resetVector)(void) [[section(".vectors.1")]] = cstartup;
 // rest of table is in nvic.cpp, trusting linker script to order files correctly per the numerical suffix
 
-extern const bool __stack_end__;
+extern const bool __stack_end__;//created in linker script
 void stackFault(){
   bool here;
   if(&here <= &__stack_end__){//todo should add a few so that we can call wtf without risk

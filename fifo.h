@@ -25,18 +25,20 @@ public:
   /** forget the content */
   void clear();
 
-  /** forget the content AND wipe the memory, useful for debug.*/
+  /** forget the content AND wipe the memory, the latter useful for debug.*/
   void wipe();
   /** @returns bytes present, but there may be more or less real soon. */
   inline int available() const {
     return count;
   }
-  /** try to put a byte into the memory, @return whether there was room*/
+  /** tries to put a byte into the memory, @returns whether there was room*/
   bool insert(unsigned char incoming);
+  /** try to insert a byte, @returns whether full (-1), busy (-2), or suceeded (0).*/
   int attempt_insert(unsigned char incoming);
 
-  /** read and remove a byte from the memory, @return the byte, or -1 if there wasn't one*/
-  int remove(); // remove
+  /** reads and removes a byte from the memory, @returns the byte, or -1 if there wasn't one*/
+  int remove();
+  /** tries to insert a byte, @returns whether empty (-1), busy (-2), or suceeded (char removed).*/
   int attempt_remove();
 };
 

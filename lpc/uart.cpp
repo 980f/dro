@@ -25,7 +25,7 @@ Uart theUart;
 ObjectInterrupt(theUart.isr(), uartIrq);
 
 namespace LPC {
-/*------------- Universal Asynchronous Receiver Transmitter (UART) 16550 equivalent type -----------*/
+
 struct UART550 {
   /** actually overlapped registers. For some stupid reason they are maintaining compatibility with code that would have been written for other processors.
    * SO that is cute but they could have also provided direct access so that the aggravating overlay of registers isn't necessary.*/
@@ -67,7 +67,8 @@ struct UART550 {
 };
 } // namespace LPC
 
-
+//__attribute__((section(".peripheral.uart0")))
+//UART550 theUART550;
 DefineSingle(UART550, apb0Device(2));
 // going through one level of computation in expectation that we will meet a part with more than one uart:
 constexpr unsigned uartRegister(unsigned offset){
@@ -97,8 +98,12 @@ SFRbit<IER,9> AutoBaudTimeoutInterruptEnable;
 /** iopin pattern for uart pins: */
 constexpr PinBias pickUart = PinBias(0b11010001); // rtfm, not worth making syntax
 
-Uart::Uart(): receive(nullptr), send(nullptr){
+Uart::Uart():
+  receive(nullptr),
+  send(nullptr){
   uirq.disable();
+  disableClock(12);
+  // the 134x parts are picky about order here, the clock must be OFF when configuring the pins.
   InputPin<PortNumber(1), BitNumber(6)> rxd(pickUart);
   OutputPin<PortNumber(1), BitNumber(7)> txd(pickUart);
   // the 134x parts are picky about order here, the clock must be OFF when configuring the pins.
@@ -108,12 +113,10 @@ Uart::Uart(): receive(nullptr), send(nullptr){
   uartClockDivider = unsigned(1); // a functioning value, that allows for the greatest precision, if in range.
 }
 
-///** @param which 0:dsr, 1:dcd, 2:ri @param onP3 true: port 3 else port 2 */
-// void configureModemWire(int which, bool onP3){
-//  //and here we finally find a reason for a dynamically picked iopin:
-//  //SFRbit<ioconRegister(0xb4+(which<<2),0)> HSport(onP3);
-//  //and until that is finished the user must independently configure the related pin.
-// }
+/** @param which 0:dsr, 1:dcd, 2:ri @param onP3 true: port 3 else port 2 */
+ void configureModemWire(int which, bool onP3){
+   atAddress(ioConReg(0xb4+(which<<2)))=onP3;
+ }
 
 
 unsigned Uart::setBaudPieces(unsigned divider, unsigned mul, unsigned div, unsigned sysFreq) const {
@@ -131,8 +134,8 @@ unsigned Uart::setBaudPieces(unsigned divider, unsigned mul, unsigned div, unsig
   SFRfield<FDR, 4, 4> fmul(mul);
 
   dlab = 1;
-  atAddress(uartRegister(0x4))= (divider >> 8);
-  atAddress(uartRegister(0x0))= (divider);
+  atAddress(uartRegister(0x4))= divider >> 8;
+  atAddress(uartRegister(0x0))= divider;
   dlab = 0;
   return rate((mul * sysFreq) , ((mul + div) * divider * uartClockDivider * 16));
 } // Uart::setBaud
@@ -237,7 +240,9 @@ Uart &Uart::setReceiver(Uart::Receiver receiver){
 unsigned Uart::tryInput(unsigned LSRValue){
   typedef BitWad<7, 0> bits; // look just at the 'OR of 'some corruption' and the 'data available' bits
   for( ; bits::exactly(LSRValue, 1); LSRValue = theUART550.LSR) {
-    (*receive)(theUART550.RBR);
+    if(receive){
+      (*receive)(theUART550.RBR);
+    }
   }
   return LSRValue;
 }
@@ -252,24 +257,30 @@ void Uart::isr(){
   case 0: // modem
     break; // no formal reaction to modem line change.
   case 1:  // thre
-    if(int nextch = (*send)() < 0) {
-      // todo: stop xmit interrupts if fifo empty.
+    if(send){
+      if(int nextch = (*send)() < 0) {
+        // todo: stop xmit interrupts if tx ifo empty.
+      } else {
+        theUART550.THR = nextch;
+      }
     } else {
-      theUART550.THR = nextch;
+      //todo: stop xmit interrupts if tx fifo empty.
     }
     break;
   case 2: // rda
     tryInput(1);
     break;
   case 3: { // line error
-    unsigned LSRValue = tryInput(theUART550.LSR); // copying other people here, e.g. this deals with overrun error
+      unsigned LSRValue = tryInput(theUART550.LSR); // copying other people here, e.g. this deals with overrun error
 
-    if(BitWad<7, 1, 2, 3, 4>::any(LSRValue)) { // someone else's code. grr, bundles OE with the others which is NOT so good.
-      (*receive)(~LSRValue); // inform user code
-      LSRValue = theUART550.RBR;  // Dummy read on RX to clear cause interrupt
-      return;
+      if(BitWad<7, 1, 2, 3, 4>::any(LSRValue)) { // someone else's code. grr, bundles OE with the others which is NOT so good.
+        if(receive){
+          (*receive)(~LSRValue); // inform user code
+        }
+        LSRValue = theUART550.RBR;  // Dummy read on RX to clear cause interrupt
+        return;
+      }
     }
-  }
     break;
   case 4: // reserved
     break;

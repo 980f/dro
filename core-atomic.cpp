@@ -1,7 +1,7 @@
 #include "core-atomic.h"
 
 /** cortex M atomic operations */
-#if HOST_SIM
+#if __linux__
 bool atomic_increment(unsigned &alignedDatum){
   ++alignedDatum;
   return false;
@@ -30,6 +30,7 @@ bool atomic_setIfZero(unsigned &alignedDatum, unsigned value){
   if(alignedDatum == 0){
     alignedDatum=value;
   }
+  return false;
 }
 #else // real code
 // assembler file will supply code

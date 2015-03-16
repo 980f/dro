@@ -32,7 +32,7 @@ unsigned pllOutput(bool forUsb){
 }
 
 void setPLL(bool forUsb,unsigned mpy, unsigned exponent){
-  u32 controlreg=sysConReg(forUsb?0x10:8);
+  u32 &controlreg=atAddress(sysConReg(forUsb?0x10:8));
   mergeBits(controlreg,mpy-1,0,5);
   mergeBits(controlreg,exponent,5,2);
 }
