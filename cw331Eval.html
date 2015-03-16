@@ -67,10 +67,15 @@
       <li>CRASHES: one was a segfault in dynamic cast, looks like an attempt to
         access typeinfo at address 2. After a restart I got to the same place
         during debug and it didn't fault. Prior run had many small files opened
-        in editors. And a second, then third crash (some on someone&nbsp; else's
-        14.04 system with full license) where the program goes silent then goes
-        belly up (presumably infinite recursion). The last one was on a "close
-        all unedited files" prior to starting a debug session.</li>
+        in editors. <br>
+        And a second, then third crash (some on someone&nbsp; else's 14.04
+        system with full license) where the program goes silent then goes belly
+        up (presumably infinite recursion). The last one was on a "close all
+        unedited files" prior to starting a debug session.<br>
+        And another when the target disconnected during a download leading to a
+        verification error, and I asked to see the verification error
+        details.&nbsp; Null pointer dereference, with an offset of 0x24. Are
+        apport dumps of any use to you?</li>
       <li>"save all" after marking a particular jtag device as "favorite".
         Normal program exit and reenter and it is no longer a favorite. Some of
         my prior changes are preserved, but I can no longer make changes.</li>
@@ -149,7 +154,7 @@
         "ignore case" options, unlike find in files. It can be set globally but
         I want to be able to change it for a search underway and for each search
         as I get to it. Configured defaults is fine, but quick access to
-        overrides is needed.</li>
+        overrides is desirable.</li>
       <li>menu popups can be off screen, greatly reducing their utility. Tested
         with dual monitor system with a tall monitor on the left and a shorter
         monitor on the right. Seems to presume that the monitors are all the
@@ -158,7 +163,9 @@
         except for enough to tell that a menu is present (ubuntu 14.04).</li>
       <li>text editor-minor: unhandled control keys become ordinary keys: ctrl-
         is '-' (expected font to shrink), ctrl. is '.' instead of halting
-        execution. (since 1.17!)</li>
+        execution. (since 1.17!). It appears that when a keystroke isn't handled
+        by menu accelerator logic then its ctrl attribute is dropped before
+        being passed on to next possible consumer.</li>
       <li>(trivial bug): File menu continues to display single file options
         (Save,Save as) even when all editors and projects are closed.</li>
     </ol>
