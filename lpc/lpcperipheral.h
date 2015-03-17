@@ -30,6 +30,12 @@ inline void enableClock(unsigned bit){
   setBitAt(sysConReg(0x80), bit);
 }
 
+/** enable the selected device clock. Since each will only be referenced in its own module there is no need for formal enum.  */
+inline void disableClock(unsigned bit){
+  clearBitAt(sysConReg(0x80), bit);
+}
+
+
 /** there are only 3 items with resets: 0: ssp0, 1:I2c 2:ssp1 */
 inline void reset(unsigned bit){
   raiseBit(atAddress(sysConReg(4)), bit);
@@ -38,7 +44,18 @@ inline void reset(unsigned bit){
 
 } // namespace LPC
 
-//#define DefineSingle(regname, addr) LPC:: regname & the ## regname(*reinterpret_cast<LPC:: regname *>(addr))
+
+struct TestInitSequence {
+  static void setLevel(int &level){
+    ++level;
+  }
+
+  TestInitSequence(int myLevel){
+    setLevel(myLevel);
+  }
+};
+
+#define DefineSingle(regname, addr) LPC:: regname & the ## regname(*reinterpret_cast<LPC:: regname *>(addr))
 
 ////// this variation is for things like  multiple functionally identical timers:
 //#define DefineUnit(regname, luno, addr) LPC:: regname * const the ## regname ## luno(reinterpret_cast<LPC:: regname *>(addr))

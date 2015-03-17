@@ -2,8 +2,6 @@
 
 #define SYSCON_H
 
-#include "lpcperipheral.h"
-
 /**------------- System Control (SYSCON) --------------------------------------*/
 
 namespace LPC {

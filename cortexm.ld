@@ -91,6 +91,7 @@ SECTIONS {
     __stack_end__ = .;  /* if SP is ever below this value we are corrupting memory. */
   } >SRAM
   /* value to someday feed into start of data segment should we ever figure out how to put the stack first so that we get a fault instead of wild behavior */
-  __stack_max__ = LENGTH(SRAM) - (__stack_end__ - ORIGIN(SRAM)); 
+  __stack_max__ = LENGTH(SRAM) - (__stack_end__ - ORIGIN(SRAM));
+
 }
 

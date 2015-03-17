@@ -2,6 +2,11 @@
 
 #include "clocks.h"
 
+
+TestInitSequence mordor  InitStep(1050) (50);
+TestInitSequence boarder InitStep(1011) (11);
+
+
 const u32 EXTERNAL_HERTZ=12000000;
 
 using namespace LPC;

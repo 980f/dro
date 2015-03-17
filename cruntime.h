@@ -3,7 +3,7 @@
 #define CRUNTIME_H
 /** parts of the c startup that might be useful to a running program */
 
-extern "C" void generateHardReset();
+extern "C" [[noreturn]] void generateHardReset();
 
 /** these structs are created via LONG(...) directives in the ld file.
    That way only one symbol needs to be shared between the ld and this file for each block,

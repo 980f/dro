@@ -6,11 +6,12 @@
 //macro's for generating numbers don't work in the irqnumber slot below. The argument must be a simple digit string, no math or lookups or evenconsexpre's
 #define IrqName(irqnumber) IRQ ## irqnumber
 
-//object based interrupt handlers need some glue:
-#define ObjectInterrupt(objCall, irqnumber) void IrqName(irqnumber) (void) { objCall; }
+//use this in front of the block statement of an irq handler:
+#define HandleInterrupt(irqname)  void IrqName( irqname ) (void)
 
-//put this between your function declaration and its opening brace:
-#define HandlesInterrupt(irqnumber)  __attribute__((alias( "IRQ" # irqnumber)))
+//object based interrupt handlers need some glue:
+#define ObjectInterrupt(objCall, irqnumber) HandleInterrupt(irqnumber){ objCall; }
+
 
 #define FaultName(faultIndex) FAULT ## faultIndex
 #define FaultHandler(name, faultIndex) void name(void) __attribute__((alias("FAULT" # faultIndex)))

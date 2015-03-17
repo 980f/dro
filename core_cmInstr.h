@@ -28,7 +28,7 @@
 
 /* GNU gcc specific syntax */
 
-#define INTRINSICALLY __attribute__((always_inline)) static inline
+#define INTRINSICALLY [[always_inline]] static inline
 
 #if __linux__
 #define SIMPLEOP(mne) void __ ## mne(void){}
