@@ -5,7 +5,7 @@ void SystemInit(void); // __USE_CMSIS __USE_LPCOPEN
 int main(void); // entry point
 void generateHardReset(void); // doesn't return! supplied by nvic.cpp as that is where reset hardware happens to reside.
 
-
+//the linker script creates and initializes these constant structures, used by cstartup() to initialize ram:
 const extern RamInitBlock __data_segment__;//name coordinated with cortexm.ld
 const extern RamBlock __bss_segment__;  //name coordinated with cortexm.ld
 const extern InitRoutine __init_table__[];//name coordinated with cortexm.ld
@@ -42,7 +42,7 @@ void run_init( const InitRoutine * table){
 
 // instead of tracking #defined symbols just dummy up the optional routines:
 __attribute__((weak,optimize(3))) void SystemInit(void) {
-  wtf(100001);
+//  wtf(100001);
 }
 
 /** sometimes pure virtual functions that aren't overloaded get called anyway,
@@ -85,7 +85,7 @@ void (*resetVector)(void) __attribute__((section(".vectors.1"))) = cstartup;
 extern const bool __stack_end__;//created in linker script
 void stackFault(){
   bool here;
-  if(&here <= &__stack_end__){//todo should add a few so that we can call wtf without risk
+  if(&here <= &__stack_end__){//todo: should add a few so that we can call wtf without risk
     wtf(99999999);
     generateHardReset();
   }

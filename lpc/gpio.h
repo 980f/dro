@@ -35,7 +35,8 @@ constexpr int pinIndex(PortNumber portNum, BitNumber bitPosition){
 
 /** there is no relationship between the ioconfiguration register for a pin and its gpio designation.
  *  the LPC designers should be spanked for this, spanked hard and with something nasty. */
-constexpr int ioconf_map[] = { // pass this a pinIndex
+constexpr int ioconf_map[] =
+{ // pass this a pinIndex
   3, 4, 7, 11, 12, 13, 19, 20, 24, 25, 26, 29,
   30, 31, 32, 36, 37, 40, 41, 42, 5, 14, 27, 38,
   2, 10, 23, 35, 16, 17, 0, 8, 9, 21, 22, 28,
@@ -64,30 +65,33 @@ enum PinBias { //#ordered for MODE field of iocon register
  * will add field access objects when that proves useful.
  */
 class GPIO :public BoolishRef {
-private:
+protected:
   /** address associated with single bit mask */
   u32 & dataAccess;
 
 public:
   GPIO(PortNumber portNum, BitNumber bitPosition):
-    dataAccess(*reinterpret_cast<u32 *>(portBase(portNum)+((1<<bitPosition)<<2)))
-  {/*empty*/ }
+    dataAccess(atAddress(portBase(portNum)+((1<<bitPosition)<<2)))
+  {
+  }
 
+
+  /** set like writing to a boolean, @returns @param setHigh, per BoolishRef requirements*/
   bool operator =(bool setHigh) const {
     dataAccess = 0-setHigh;//all ones for setHigh, all zeroes for !setHigh, address picks the bit.
     return setHigh;
   }
 
+  /** read like a boolean, @returns 1 or 0, per BoolishRef requirements*/
   operator bool() const {
     return dataAccess!=0;
   }
 
 public:
-  /** this must be called once before any other functions herein are used. SystemInit is a good place, so that constructors for outputs will work.*/
+  /** this must be called once before any other functions herein are used. Declaring it to be in an init section is a nice way to guarantee that.*/
   static void Init( void );
 
-   /** biasing is independent of in vs out, but not of function.
-  */
+  /** biasing is independent of in vs out, but not of function. */
   static constexpr unsigned ioconPattern(PinBias bias){
     // FYI P0.4 and P0.5 reset to 0, all others to D0
     //  2 bits are the code passed in
@@ -102,13 +106,66 @@ public:
     return (1 << 6) | 1;
   }
 
-
   /** set the ioconfiguration for the given pin to the given pattern.
    the pattern is adjusted herein for @see isDoa pins */
   static void setIocon(int pinIndex,unsigned pattern){
     //for those patterns we have generators for doa pins need a one added to them.
     reinterpret_cast<unsigned *>(LPC::apb0Device(17))[ioconf_map[pinIndex]]=pattern + isDoa(pinIndex);
   }
+public: //interrupt stuff
+  // values for gpio config as well as irq config.
+  enum IrqStyle {
+    NotAnInterrupt = 0, // in case someone forgets to explicitly select a mode
+    AnyEdge, // edge, either edge, input mode buslatch
+    LowActive, // level, pulled up
+    HighActive, // level, pulled down
+    LowEdge, // edge, pulled up
+    HighEdge   // edge, pulled down
+  };
+
+  friend class IrqControl;
+
+  /** for slightly faster control than calling the respective members of GPIO itself.
+   * The 0x1C bias herein is due to that being the only register that will always be accessed in an ISR, and hence worthy of the greatest optimization.
+   * The compiler when allowed to optimize should be able to inline all register operations with minimum possible code, if pin is declared statically.
+  */
+  class IrqControl {
+    const u32 regbase;//acknowledge register, 0x1C offset from direction register
+    const u32 mask;//single bit mask
+    inline void setRegister(unsigned offset)const{
+      atAddress(regbase-0x1c+offset)|=mask;
+    }
+    inline void clearRegister(unsigned offset)const{
+      atAddress(regbase-0x1c+offset)&=~mask;
+    }
+    inline void assignRegister(unsigned offset,bool level)const{
+      if(level){
+        setRegister(offset);
+      } else {
+        clearRegister(offset);
+      }
+    }
+
+  public:
+    IrqControl(const GPIO &gpio):
+      regbase(0x1c+((u32(gpio.dataAccess) & bitMask(0,15)) | (1<<15))), //direction register
+      mask((u32(gpio.dataAccess)>>2) & bitMask(0,12))//recover single bit mask from address
+    {}
+    void setIrqStyle(IrqStyle style,bool andEnable)const;
+    inline void irq(bool enable)const;
+    /** clear pending bit*/
+    inline void irqAcknowledge()const;
+    /** for when you want to interrupt yourself */
+    void setDirection(bool output)const;
+  };
+
+
+  void setDirection(bool output)const;
+  void setIrqStyle(IrqStyle style,bool andEnable)const;
+  void irq(bool enable)const;
+  /** clear pending bit*/
+  void irqAcknowledge()const;
+
 
 };
 
@@ -117,14 +174,14 @@ public:
  */
 class GpioField {
   // read the lpc manual, certain address bits are used as a mask
-  unsigned address;
-  unsigned lsb;
+  const unsigned address;
+  const unsigned lsb;
 public:
   /** actively set as output else input. The iocon registers will also have to be configured seperately.*/
-  void setDirection(bool forOutput);
+  void setDirection(bool forOutput)const;
 
   /** set all the pins associated with this field to the same configuration stuff. */
-  void configurePins(unsigned pattern){
+  void configurePins(unsigned pattern)const{
     int pinIndex= lsb+ ((address>>16)&3)*12;
     u16 picker=1<<(lsb+2);
     while(address & picker){
@@ -153,19 +210,6 @@ struct GpioOutputField: public GpioField {
     setDirection(true);
   }
 };
-
-
-//class GPIOConfigurator {
-//  const PortNumber portNumber;
-//  const BitNumber bitNumber;
-//  GPIOConfigurator(PortNumber portNumber, BitNumber bitNumber):
-//    portNumber(portNumber),
-//    bitNumber(bitNumber){
-//  }
-
-//};
-
-
 
 // and now for the modern approach:
 /** to configure a pin for a dedicated function one must merely construct a GpioPin with template args for which pin and constructor arg of control pattern*/
@@ -287,53 +331,6 @@ public:
       GPIO::setIocon(pini++,pattern);
     }
   }
-};
-
-// values for gpio config as well as irq config.
-enum IrqStyle {
-  NotAnInterrupt = 0, // in case someone forgets to explicitly select a mode
-  AnyEdge, // edge, either edge, input mode buslatch
-  LowActive, // level, pulled up
-  HighActive, // level, pulled down
-  LowEdge, // edge, pulled up
-  HighEdge   // edge, pulled down
-};
-
-
-/** control interrupt input
-GPIOIS R/W 0x8004 Interrupt sense register for port n 0x00
-GPIOIBE R/W 0x8008 Interrupt both edges register for port n 0x00
-
-GPIOIEV R/W 0x800C Interrupt event register for port n 0x00
-GPIOIE R/W 0x8010 Interrupt mask register for port n 0x00
-GPIORIS R 0x8014 Raw interrupt status register for port n 0x00
-GPIOMIS R 0x8018 Masked interrupt status register for port n 0x00
-GPIOIC W 0x801C Interrupt clear register for port n 0x00
-
-
-*/
-template <PortNumber portNum, BitNumber bitPosition> class IrqPin {
-  enum {
-    base= portBase(portNum)|1<<15, //0x500p8000
-    mask=1<<bitPosition
-  };
-private:
-  void operator =(bool); // because this is a read-only entity.
-  /** use the pin as if it were a boolean variable. */
-  inline operator bool() const {
-    return PortPin<portNum, bitPosition>::pin() != 0;
-  }
-  //                                    NotAnInterrupt,AnyEdge, LowActive, HighActive, LowEdge, HighEdge
-  static constexpr unsigned biasForIrqStyle[] = { BusLatch, BusLatch, PullUp, PullDown, PullUp, PullDown };
-
-public:
-
-  /** @param irqStyle controls bias as well as configuring interruptness */
-  IrqPin(IrqStyle irqStyle){
-    //    PortPin<portNum, bitPosition>(ioconPattern(biasForIrqStyle[irqStyle % 6]))
-    // todo: set multiple registers
-  }
-  // todo: functions for dynamic inspection and enabling. //might allow for dynamic redefinition of polarity.
 };
 
 
