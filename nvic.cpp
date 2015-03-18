@@ -382,7 +382,7 @@ str r1,[r0]
 b generateHardReset
 #endif
 
-[[naked,noreturn]] //trying to get good assembler code on this one :)
+__attribute__((naked,noreturn)) //trying to get good assembler code on this one :)
 void generateHardReset(){
   do {//keep on hitting the bit until we reset.
     theInterruptController.airc=0x5FA0005;//1 worked on stm32, 4 should have worked but looped under the debugger.

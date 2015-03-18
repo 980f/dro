@@ -41,7 +41,7 @@ void run_init( const InitRoutine * table){
 }
 
 // instead of tracking #defined symbols just dummy up the optional routines:
-[[weak,optimize(3)]] void SystemInit(void) {
+__attribute__((weak,optimize(3))) void SystemInit(void) {
   wtf(100001);
 }
 
@@ -63,7 +63,7 @@ extern "C" void __cxa_pure_virtual(){  /* upon call of pure virtual function */
  * Sets up a simple runtime environment and initializes the C/C++ library.
  */
 extern "C" //to make it easy to pass this to linker sanity checker. can eliminate when -e<blank> is fixed by Rowley.
-[[naked,noreturn]] //we don't need no stinking stack frame (yet)
+__attribute__((naked,noreturn)) //we don't need no stinking stack frame (yet)
 void cstartup(void){
   // initialize static variables
   data_init(__data_segment__);
@@ -79,7 +79,7 @@ void cstartup(void){
 } // start
 
 // stack pointer is set to end of ram via linker script
-void (*resetVector)(void) [[section(".vectors.1")]] = cstartup;
+void (*resetVector)(void) __attribute__((section(".vectors.1"))) = cstartup;
 // rest of table is in nvic.cpp, trusting linker script to order files correctly per the numerical suffix
 
 extern const bool __stack_end__;//created in linker script
