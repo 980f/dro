@@ -17,19 +17,23 @@
       arm_simulator_memory_simulation_filename="$(TargetsDir)/LPC1000/LPC1000SimulatorMemory.dll"
       arm_simulator_memory_simulation_parameter="LPC13;0x8000;0x2000;0x0"
       arm_supply_absolute_file_path="No"
+      arm_target_connect_with_reset="Yes"
       arm_target_debug_interface_type="ADIv5"
       arm_target_interface_type="SWD"
       arm_target_loader_parameter="12000000"
+      arm_use_builtins="Yes"
       arm_use_gcc_libraries="No"
       build_intermediate_directory="built-$(ProjectName)-$(Configuration)"
       build_output_directory="built-$(ProjectName)-$(Configuration)"
-      c_only_additional_options="" c_preprocessor_definitions=""
+      c_only_additional_options=""
+      c_preprocessor_definitions="useSTM32=0"
       c_user_include_directories="cortexm;cortexm/lpc;ezcpp"
       debug_initial_breakpoint="cstartup"
       debug_initial_breakpoint_set_option="Never"
       double_is_float="Yes"
       gcc_c_language_standard="c99"
       gcc_cplusplus_language_standard="c++11"
+      gcc_dwarf_version="dwarf-2"
       gcc_entry_point="cstartup"
       gcc_wchar_size="16-Bit"
       link_include_standard_libraries="Yes"
@@ -90,6 +94,7 @@
         <file file_name="cortexm/lpc/p1343_board.cpp" />
         <file file_name="cortexm/lpc/clocks.cpp" />
         <file file_name="cortexm/lpc/gpio.h" />
+
         <file file_name="cortexm/lpc/uart.cpp" />
       </folder>
       <folder Name="System Files">
