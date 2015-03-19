@@ -66,7 +66,8 @@ DISTFILES += \
     dro-lpc.ld \
     cortexm/lpc/lpc1343.ld \
     dro.hzp \
-    cortexm/lpc/peripherals.ld
+    cortexm/lpc/peripherals.ld \
+    cortexm/cortexm3.s
 
 
 #end of file.

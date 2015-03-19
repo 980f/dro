@@ -15,7 +15,7 @@ using namespace SystemTimer;
 
 #include "core_cmInstr.h"  //wfe OR wfi
 #include "cruntime.h"
-ClockStarter startup InitStep(InitHardware/2) (false,0,1000);
+ClockStarter startup InitStep(InitHardware/2) (true,0,1000);//external wasn't working properly, need a test to check before switching to it.
 
 //For pins the stm32 lib is using const init'ed objects, LPC templated. It will take some work to reconcile how the two vendors like to describe their ports,
 //however the objects have the same usage syntax so only declarations need to be conditional on vendor.
@@ -116,27 +116,25 @@ void prepUart(){
 
   theUart.reception(true);
 }
+#include "minimath.h"
 
 int main(void) {
   prepUart();
-
   CyclicTimer slowToggle; //since action is polled might as well wait until main to declare the object.
   slowToggle.restart(ticksForSeconds(3));
-
-
   //soft stuff
-  int events=0;
-
+  //lb2 call got compiled into 1+lb2(1234/2), lb<1234>::exponent fully resolved into a number.
+  int events=0;//lb2(1234);//lb<1234>::exponent;//should reduce to a constant ~10 for 1234 (>-1024, <2048)
   //  Exti::enablePin(otherPin);
 
   prime.enable();
   pushButton.enable();
 
-  EnableInterrupts;
-
   while (1) {
-    stackFault();
-    MNE(WFI);
+    stackFault();//useless here, present to test compilation.
+    //re-enabling in the loop to preclude some handler shutting them down. That is unacceptable, although individual ones certainly can be masked.
+    EnableInterrupts;//master enable
+    MNE(WFI);//wait for interrupt. Can't get a straight answer from arm on whether WFE also triggers on interrupts.
     ++events;
     board.led1=board.button;
     if(slowToggle.hasFired()){

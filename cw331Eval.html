@@ -16,7 +16,7 @@
         about yet another configuration item without explaining where it is or
         what values it takes.<br>
         Keil (haven't tried since ~2007) has such an annoying user interface I
-        quit evaluating it, IAR pretty much the same, Hitex was the worst.</li>
+        quit evaluating it, IAR pretty much the same, Hitex was even worse.</li>
       <li>license locked to usb ethernet adapter. My eval computer is on its
         last legs, it will be nice to be able to move to different computers.</li>
       <li>LPC13xx family "checksum in fault 7" implemented with no effort on my
@@ -70,12 +70,17 @@
         in editors. <br>
         And a second, then third crash (some on someone&nbsp; else's 14.04
         system with full license) where the program goes silent then goes belly
-        up (presumably infinite recursion). The last one was on a "close all
-        unedited files" prior to starting a debug session.<br>
+        up (silence seems to be due to apport building a dump file). The last
+        one was on a "close all unedited files" prior to starting a debug
+        session.<br>
         And another when the target disconnected during a download leading to a
         verification error, and I asked to see the verification error
         details.&nbsp; Null pointer dereference, with an offset of 0x24. Are
-        apport dumps of any use to you?</li>
+        apport dumps of any use to you? This repeated twice in a row, on the
+        third event I chose "no" to view verification errors and crossstudio
+        silently quit instead of segfaulting (same if I 'x' the prompting
+        window). Changes to the project file caused this, I have before and
+        after copies available.</li>
       <li>"save all" after marking a particular jtag device as "favorite".
         Normal program exit and reenter and it is no longer a favorite. Some of
         my prior changes are preserved, but I can no longer make changes.</li>
@@ -194,7 +199,7 @@
         sometimes not. It recently got obsessed with .ld files.</li>
       <li>open file dialog: put "all files" at a fixed extreme in the list, I
         use it mroe often than anything preloaded.</li>
-      <li>An option for the files view to follow 1:1 the file system Eclipse
+      <li>An option for the files view to follow 1:1 the file system. Eclipse
         added that pretty early on. Having to manually place files into folders
         reproducing the layout of the file system is tedious.</li>
       <li>Creating a folder after the fact I'd like to be aband moving the
