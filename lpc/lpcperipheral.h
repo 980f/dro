@@ -20,6 +20,14 @@ constexpr unsigned sysConReg(unsigned byteOffset){
   return makeSFR(18,byteOffset);
 }
 
+inline void powerUp(int which){
+  clearBitAt(sysConReg(0x238),which);
+}
+
+inline void powerDown(int which){
+  setBitAt(sysConReg(0x238),which);
+}
+
 /** iocon group */
 constexpr unsigned ioConReg(unsigned byteOffset){
   return makeSFR(17,byteOffset);

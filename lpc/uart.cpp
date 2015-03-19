@@ -87,13 +87,15 @@ SFRbit<LCR, 6> sendBreak;
 /** the heinous divisor latch access bit. */
 SFRbit<LCR, 7> dlab;
 
-//interupt enable regsiter:
+//interrupt enable regsiter:
 constexpr unsigned IER=uartRegister(0x04);
 SFRbit<IER,0> receiveDataInterruptEnable;
 SFRbit<IER,1> transmitHoldingRegisterEmptyInterruptEnable;
 SFRbit<IER,2> lineStatusInterruptEnable;
 SFRbit<IER,8> AutoBaudCompleteInterruptEnable;
 SFRbit<IER,9> AutoBaudTimeoutInterruptEnable;
+/** level is 1,4,8, or 14 */
+//SFRfield<FCR,6,2> receiveFifoLevel;
 
 /** iopin pattern for uart pins: */
 constexpr PinBias pickUart = PinBias(0b11010001); // rtfm, not worth making syntax
@@ -111,6 +113,10 @@ Uart::Uart():
   /* Enable UART clock */
   enableClock(12); //
   uartClockDivider = unsigned(1); // a functioning value, that allows for the greatest precision, if in range.
+
+  theUART550.FCR=1;
+  theUART550.FCR=7;
+
 }
 
 /** @param which 0:dsr, 1:dcd, 2:ri @param onP3 true: port 3 else port 2 */
@@ -208,14 +214,16 @@ void Uart::setFraming(const char *coded) const {
 
 void Uart::beTransmitting(bool enabled){
   if(enabled){
-    if(int nextch = (*send)() < 0) {
-      //do nothing, might still be sending from the fifo
-    } else {
-      atAddress(uartRegister(0)) = nextch;
-      //enable interrupts
+    if(!transmitHoldingRegisterEmptyInterruptEnable){
+      if(int nextch = (*send)() >= 0) {
+        atAddress(uartRegister(0)) = nextch;
+        //enable interrupts
+        transmitHoldingRegisterEmptyInterruptEnable=1;
+      }
     }
   } else {
-
+    transmitHoldingRegisterEmptyInterruptEnable=0;
+    //but leave xmitter sending? for xoff we don't want to lose any data that has been queued.
   }
 }
 

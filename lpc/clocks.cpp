@@ -77,68 +77,14 @@ unsigned coreHz(){
 
 void setMainClockSource(ClockSource cksource){
   //todo:1 check that source is operating!
+  if(1){
+    cksource=IRCosc;
+  }
   atAddress(sysConReg(0x70))=cksource;
+  //execution halts, pll says it is ready but clearly it is not. 
   raiseBit(atAddress(sysConReg(0x74)),0);
-  //cmsis code (not net the manual) suggests that we can monitor the above bit to see when the new value has taken effect, but why wait? it is at most somethign like 2 of the present clocks and one should be changing the main clock well in advance of doing application timing.
+  //cmsis code (but not the manual) suggests that we can monitor the above bit to see when the new value has taken effect, but why wait? it is at most something like 2 of the present clocks and one should be changing the main clock well in advance of doing application timing.
 }
-
-
-// todo: if XTAL is not zero then turn on hs-external osc and use it.
-
-//  theSYSCON.PDRUNCFG &= ~(1 << 5);         /* Power-up System Osc      */
-//  theSYSCON.SYSOSCCTRL = SYSOSCCTRL_Val;
-//  spin(200);
-//  theSYSCON.SYSPLLCLKSEL = SYSPLLCLKSEL_Val;  /* Select PLL Input         */
-//  theSYSCON.SYSPLLCLKUEN = 0x01;              /* Update Clock Source      */
-//  theSYSCON.SYSPLLCLKUEN = 0x00;              /* Toggle Update Register   */
-//  theSYSCON.SYSPLLCLKUEN = 0x01;
-//  while(! (theSYSCON.SYSPLLCLKUEN & 0x01)) {    /* Wait Until Updated       */
-//  }
-// #if (SYSPLL_SETUP)                              /* System PLL Setup         */
-//  theSYSCON.SYSPLLCTRL = SYSPLLCTRL_Val;
-//  theSYSCON.PDRUNCFG &= ~(1 << 7);         /* Power-up SYSPLL          */
-//  while(! (theSYSCON.SYSPLLSTAT & 0x01)) {       /* Wait Until PLL Locked    */
-//  }
-// #endif
-// #endif // if (SYSOSC_SETUP)
-// #if (WDTOSC_SETUP)                              /* Watchdog Oscillator Setup*/
-//  theSYSCON.WDTOSCCTRL = WDTOSCCTRL_Val;
-//  theSYSCON.PDRUNCFG &= ~(1 << 6);         /* Power-up WDT Clock       */
-// #endif
-//  theSYSCON.MAINCLKSEL = MAINCLKSEL_Val;    /* Select PLL Clock Output  */
-//  theSYSCON.MAINCLKUEN = 0x01;              /* Update MCLK Clock Source */
-//  theSYSCON.MAINCLKUEN = 0x00;              /* Toggle Update Register   */
-//  theSYSCON.MAINCLKUEN = 0x01;
-//  while(! (theSYSCON.MAINCLKUEN & 0x01)) {      /* Wait Until Updated       */
-//  }
-// #endif // if (SYSCLK_SETUP)
-
-// #if (USBCLK_SETUP)                              /* USB Clock Setup          */
-//  theSYSCON.PDRUNCFG &= ~(1 << 10);        /* Power-up USB PHY         */
-// #if (USBPLL_SETUP)                              /* USB PLL Setup            */
-//  theSYSCON.PDRUNCFG &= ~(1 << 8);        /* Power-up USB PLL         */
-//  theSYSCON.USBPLLCLKSEL = USBPLLCLKSEL_Val;  /* Select PLL Input         */
-//  theSYSCON.USBPLLCLKUEN = 0x01;              /* Update Clock Source      */
-//  theSYSCON.USBPLLCLKUEN = 0x00;              /* Toggle Update Register   */
-//  theSYSCON.USBPLLCLKUEN = 0x01;
-//  while(! (theSYSCON.USBPLLCLKUEN & 0x01)) {    /* Wait Until Updated       */
-//  }
-//  theSYSCON.USBPLLCTRL = USBPLLCTRL_Val;
-//  while(! (theSYSCON.USBPLLSTAT & 0x01)) {   /* Wait Until PLL Locked    */
-//  }
-//  theSYSCON.USBCLKSEL = 0x00;              /* Select USB PLL           */
-// #else // if (USBPLL_SETUP)
-//  theSYSCON.USBCLKSEL = 0x01;              /* Select Main Clock        */
-// #endif // if (USBPLL_SETUP)
-// #else // if (USBCLK_SETUP)
-//  theSYSCON.PDRUNCFG |= (1 << 10);        /* Power-down USB PHY       */
-//  theSYSCON.PDRUNCFG |= (1 << 8);        /* Power-down USB PLL       */
-// #endif // if (USBCLK_SETUP)
-
-//  theSYSCON.SYSAHBCLKDIV = SYSAHBCLKDIV_Val;
-//  theSYSCON.SYSAHBCLKCTRL = AHBCLKCTRL_Val;
-// #endif // if (CLOCK_SETUP)
-
 
 unsigned clockRate(int which){
   unsigned divreg=0;
@@ -170,7 +116,7 @@ unsigned clockRate(int which){
 
 
 bool switchToPll(unsigned mpy, unsigned exponent){
-  clearBit(atAddress(sysConReg(0x238)),7);// pllPowerdown
+  powerUp(7);// pllPowerdown
   setPLL(0,mpy, exponent);
   //wait for lock, //100uS absolute limit
   for(unsigned trials=120;trials-->0;){
@@ -191,10 +137,10 @@ void setMainClock(unsigned hz,ClockSource cksource){
 void warp9(bool internal){
   u32 sourceHz(0);
   if(internal || EXTERNAL_HERTZ==0 ){
-    clearBitAt(sysConReg(0x238),0);//irc power on
+    powerUp(0);//irc power on
     sourceHz=LPC_IRC_OSC_CLK;
   } else {
-    clearBitAt(sysConReg(0x238),5);//ext osc on, presumes xtal configged, else we should leave it off and test whether an external clock is actually clicking
+    powerUp(5);//ext osc on, presumes xtal configged, else we should leave it off and test whether an external clock is actually clicking
     sourceHz=EXTERNAL_HERTZ;
   }
   unsigned exponent=3;//max exponent for divisor

@@ -17,6 +17,13 @@ Cfunction nanoSpin
   bpl nanoSpin
   bx lr
 
+
+Cfunction log2Exponent
+  clz r0,r0
+  rsb r0,#31
+  bx lr
+
+
 //include core_atomic.h to use the following atomic accesss routines
 // in the atomic_* routines we can't use the ITF instruction mechanism on the clrex instruction, we have to do old fashion branches.
 
@@ -25,7 +32,7 @@ Cfunction atomic_increment
   ldrex r1,[r0]
   add r1, r1, #1
   strex r0,r1,[r0]
-  bx lr  
+  bx lr
 
 //r0 address, trusted to be 32-bit aligned. r1 scratched.
 Cfunction atomic_decrement

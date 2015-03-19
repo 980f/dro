@@ -285,7 +285,7 @@ stub(58);
 stub(59);
 // todo:3 device model specific number of these
 
-Handler VectorTable[] __attribute__((section(".vectors.2"))) = {
+Handler VectorTable[] __attribute__((section(".vectors.2"))) = {//0 is stack top, 1 is reset vector, 2 for the rest.
   FaultName(2),
   FaultName(3),
   FaultName(4),
