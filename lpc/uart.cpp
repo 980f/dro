@@ -161,7 +161,7 @@ unsigned Uart::setBaud(unsigned hertz, unsigned sysFreq) const {
     pclk = sysFreq / uartClockDivider;
     divider = pclk / hertz;
     overflow = divider >> 16;
-    uartClockDivider = uartClockDivider + overflow; // not a true variable.
+    uartClockDivider += overflow;
   } while(overflow);
   // maydo: if divider is >64k hit uartClockDivider to bring it into range.
   unsigned error = pclk % hertz;

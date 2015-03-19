@@ -82,6 +82,10 @@ public:
   inline void operator =(uint32_t value) const {
     sfr() = ((value << pos) & mask) | (sfr() & ~mask);
   }
+
+  void operator +=(unsigned value) const {
+    sfr()=sfr()+value;
+  }
 };
 
 
