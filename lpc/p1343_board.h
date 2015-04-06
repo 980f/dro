@@ -12,9 +12,14 @@ struct Board {
 };
 }
 
+//portIndex(2,9) is irq for button
+#define P1343ButtonIrqNum 33
 class P1343devkit:public LPC::Board {
 public:
+  //push button express access
   LPC::InputPin<2, 9> button;
+  //push button full function access, same physical component as @see button.
+  LPC::GPIO but1;
   //other button is 'wakeup'
   //reset button is pio0/0, if reset functionality is defeated.
   LPC::OutputPin<3, 0> led0;
@@ -26,15 +31,16 @@ public:
   LPC::OutputPin<2, 6> led6;
   LPC::OutputPin<2, 7> led7;
 
+  //parallel access to the leds
   LPC::PortField<3, 3, 0> lownib;
   LPC::PortField<2, 7, 4> highnib;
 
   P1343devkit();
   ~P1343devkit();
-  /** set lamps as an 8-bit number, not particular swift in execution since they are scattered about the i/o space*/
+  /** set lamps as an 8-bit number, not particularly swift in execution since they are scattered about the i/o space*/
   int operator =(int lamp );
   /** set led by ordinal.*/
-  void led(unsigned which);
+  BoolishRef &led(unsigned which);
   /** invert state of one led */
   void toggleLed(unsigned which=0);
 };

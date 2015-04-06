@@ -10,11 +10,6 @@ using namespace LPC;
 
 // apb dev 2
 // interrupt
-/** 0=disabled else divide by 1:255.
- *  Could use a simple SFR, but would still want a function to validate the range. */
-SFRfield<sysConReg(0x98), 0, 8> uartClockDivider;
-
-// irq num must be define, used by simple macros.
 #define uartIrq 46
 
 Irq uirq(uartIrq);
@@ -75,6 +70,10 @@ constexpr unsigned uartRegister(unsigned offset){
   return apb0Device(2) + offset;
 }
 
+constexpr unsigned &uartClockDivider(){
+  return sysConReg(0x98);
+}
+
 // line control register:
 constexpr unsigned LCR = uartRegister(0x0c);
 /** number of bit, minus 5*/
@@ -112,7 +111,7 @@ Uart::Uart():
 
   /* Enable UART clock */
   enableClock(12); //
-  uartClockDivider = unsigned(1); // a functioning value, that allows for the greatest precision, if in range.
+  uartClockDivider() = unsigned(1); // a functioning value, that allows for the greatest precision, if in range.
 
   theUART550.FCR=1;
   theUART550.FCR=7;
@@ -120,9 +119,9 @@ Uart::Uart():
 }
 
 /** @param which 0:dsr, 1:dcd, 2:ri @param onP3 true: port 3 else port 2 */
- void configureModemWire(int which, bool onP3){
-   atAddress(ioConReg(0xb4+(which<<2)))=onP3;
- }
+void configureModemWire(int which, bool onP3){
+  atAddress(ioConReg(0xb4+(which<<2)))=onP3;
+}
 
 
 unsigned Uart::setBaudPieces(unsigned divider, unsigned mul, unsigned div, unsigned sysFreq) const {
@@ -143,7 +142,7 @@ unsigned Uart::setBaudPieces(unsigned divider, unsigned mul, unsigned div, unsig
   atAddress(uartRegister(0x4))= divider >> 8;
   atAddress(uartRegister(0x0))= divider;
   dlab = 0;
-  return rate((mul * sysFreq) , ((mul + div) * divider * uartClockDivider * 16));
+  return rate((mul * sysFreq) , ((mul + div) * divider * uartClockDivider() * 16));
 } // Uart::setBaud
 
 
@@ -156,12 +155,12 @@ unsigned Uart::setBaud(unsigned hertz, unsigned sysFreq) const {
   unsigned pclk;
   unsigned divider;
   unsigned overflow;
-
+  unsigned &clockDiv=uartClockDivider();
   do {
-    pclk = sysFreq / uartClockDivider;
+    pclk = sysFreq / clockDiv;
     divider = pclk / hertz;
     overflow = divider >> 16;
-    uartClockDivider += overflow;
+    clockDiv += overflow;
   } while(overflow);
   // maydo: if divider is >64k hit uartClockDivider to bring it into range.
   unsigned error = pclk % hertz;
@@ -242,6 +241,14 @@ Uart &Uart::setTransmitter(Uart::Sender sender){
 Uart &Uart::setReceiver(Uart::Receiver receiver){
   this->receive = receiver;
   return *this;
+}
+
+void Uart::irq(bool enabled){
+  if(enabled){
+    uirq.prepare();//clear and enable
+  } else {
+    uirq.disable();
+  }
 }
 
 //inner loop of sucking down the read fifo.

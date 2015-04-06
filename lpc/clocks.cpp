@@ -24,7 +24,7 @@ enum ClockSource {
 using namespace LPC;
 
 unsigned pllOutput(bool forUsb){
-  u32 controlreg=atAddress(sysConReg(forUsb?0x10:8));
+  u32 &controlreg(sysConReg(forUsb?0x10:8));
   u32 multiplier=extractField(controlreg,4,0);
   u32 divider=extractField(controlreg,6,5);
 
@@ -32,7 +32,7 @@ unsigned pllOutput(bool forUsb){
 }
 
 void setPLL(bool forUsb,unsigned mpy, unsigned exponent){
-  u32 &controlreg=atAddress(sysConReg(forUsb?0x10:8));
+  u32 &controlreg(sysConReg(forUsb?0x10:8));
   mergeBits(controlreg,mpy-1,0,5);
   mergeBits(controlreg,exponent,5,2);
 }
@@ -67,12 +67,12 @@ unsigned coreInputHz(ClockSource cksource){
 
 
 unsigned coreInputHz(){
-  unsigned mainclksel=atAddress(sysConReg(0x70));
+  unsigned &mainclksel(sysConReg(0x70));
   return coreInputHz(ClockSource(mainclksel & 0x03));
 }
 
 unsigned coreHz(){
-  return rate(coreInputHz() , atAddress(sysConReg(0x78)));
+  return rate(coreInputHz(), sysConReg(0x78));
 }
 
 void setMainClockSource(ClockSource cksource){
@@ -80,9 +80,9 @@ void setMainClockSource(ClockSource cksource){
   if(1){
     cksource=IRCosc;
   }
-  atAddress(sysConReg(0x70))=cksource;
-  //execution halts, pll says it is ready but clearly it is not. 
-  raiseBit(atAddress(sysConReg(0x74)),0);
+  sysConReg(0x70)=cksource;
+  //execution halts, pll says it is ready but clearly it is not.
+  raiseBit(sysConReg(0x74),0);
   //cmsis code (but not the manual) suggests that we can monitor the above bit to see when the new value has taken effect, but why wait? it is at most something like 2 of the present clocks and one should be changing the main clock well in advance of doing application timing.
 }
 
@@ -107,20 +107,38 @@ unsigned clockRate(int which){
     break;
   }
   if(divreg){
-    u32 divider=atAddress(sysConReg(divreg));
+    u32 &divider(sysConReg(divreg));
     u32 num=coreInputHz();
     return rate(num,divider);
   }
   return 0;
 }
 
+int flashWaits(unsigned frequency){
+  if(frequency>40000000){
+    return 2;
+  }
+  if(frequency>20000000){
+    return 1;
+  }
+  return 0;
+}
+
+void setFlashWait(unsigned frequency, bool before){
+  SFRfield<0x4003c010,0,2> fwc;
+  int needed=flashWaits(frequency);
+  int presently=fwc;
+  if(before?(needed>presently):(needed<presently)){
+    fwc=needed;
+  }
+}
 
 bool switchToPll(unsigned mpy, unsigned exponent){
   powerUp(7);// pllPowerdown
   setPLL(0,mpy, exponent);
   //wait for lock, //100uS absolute limit
   for(unsigned trials=120;trials-->0;){
-    if(bit(atAddress(sysConReg(0x00c)),0)){//if locked
+    if(bit(sysConReg(0x00c),0)){//if locked
       setMainClockSource(ClockSource::PLLout);
       return true;
     }
@@ -161,17 +179,19 @@ void warp9(bool internal){
   }
 
   if(scaler){//if we have a solution apply it
+    setFlashWait(MaxFrequency,true);
     switchToPll(scaler,exponent);
+    setFlashWait(MaxFrequency,false);
   }
   //systick has a prescaler in this part. for other vendors it is fixed to the core.
-  atAddress(sysConReg(0x0B0))=1;//set to 0 if feature is later disabled.
+  sysConReg(0x0B0)=1;//set to 0 if feature is later disabled.
 }
 
 void setMCO(ClockSource which, unsigned divider){
   if(divider){
-    atAddress(sysConReg(0x0E0))=which;
-    atAddress(sysConReg(0x0E8))=divider;
-    raiseBit(atAddress(sysConReg(0xE4)),0);
+    sysConReg(0x0E0)=which;
+    sysConReg(0x0E8)=divider;
+    raiseBit(sysConReg(0xE4),0);
     //and direct it to a pin
     atAddress(ioConReg(0x10))=1; //the values for iocon's defy systemization.
   }

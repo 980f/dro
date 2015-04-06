@@ -45,6 +45,7 @@ SECTIONS {
     *(.text .text.*)
      /* alh commented out segments produced by features he doesn't want to be using, some of which are not available on cortexM? parts */
      /**(.glue_7t .glue_7 .gnu.linkonce.t.* .gcc_except_table .ARM.extab* .gnu.linkonce.armextab.*)  */
+
   } >FLASH
 
 /* things that should be called before main():*/
@@ -61,12 +62,13 @@ SECTIONS {
 
 /* fully const'ed data, note that some things declared const end up in .data despite valiant attempts to compile time compute values. */
   .rodata :{
-    *(.rodata .rodata.* .gnu.linkonce.r.*)
+    *(.rodata .rodata.* )
+    /*.gnu.linkonce.r.**/
   } >FLASH
 
 /* zero initialized data */
   .bss (NOLOAD) : {/* NOLOAD is gratuitous, but is a reminder that all that is occurring is data allocation.*/
-    *(.bss .bss.* .gnu.linkonce.b.*) *(COMMON)
+    *(.bss .bss.*) /* .gnu.linkonce.b.*) *(COMMON)*/
   } >SRAM
   .startupClear : {/* the following initializes what my cstartup.cpp calls 'struct RamBlock' */
     LONG(ADDR(.bss))
@@ -76,7 +78,8 @@ SECTIONS {
 
 /* data with constant initializers */
   .data :{
-    *(.data .data.* .gnu.linkonce.d.*)
+    *(.data .data.* )
+    /*.gnu.linkonce.d.*) */
   } >SRAM AT>FLASH
   .startupCopy : { /* this initializes what my cstartup.cpp calls 'struct RamInitBlock' */
     LONG(LOADADDR(.data))
@@ -92,6 +95,20 @@ SECTIONS {
   } >SRAM
   /* value to someday feed into start of data segment should we ever figure out how to put the stack first so that we get a fault instead of wild behavior */
   __stack_max__ = LENGTH(SRAM) - (__stack_end__ - ORIGIN(SRAM));
+
+/* theoretically one can have a memory declaration for each peripheral,
+  in C code declare an object for each as extern,
+  have a section name for each and an attribute in front of data declaration
+  and then the linker can provide addresses for access.
+  That also entails laying out a struct to match the hardware and given the number of 16 bit wide peripherals that can be quite a pain.
+  Without automated code generation that is all quite painful and error prone, and the code isn't any faster or smaller using constexpr
+  address calculation code (when the compiler is allowed to inline it).
+
+  Nonetheless, if one wanted to do all that segment magic one could include a file here with the section per peripheral stuff, and likewise have an
+  include in the device.ld  declaring all the peripheral blocks.
+*/
+
+
 
 }
 

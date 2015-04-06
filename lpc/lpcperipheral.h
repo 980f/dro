@@ -16,16 +16,16 @@ constexpr unsigned makeSFR(unsigned apbdev, unsigned offset){
 }
 
 /** address for syscon reg given offset listed in manual */
-constexpr unsigned sysConReg(unsigned byteOffset){
-  return makeSFR(18,byteOffset);
+constexpr unsigned &sysConReg(unsigned byteOffset){
+  return atAddress(makeSFR(18,byteOffset));
 }
 
 inline void powerUp(int which){
-  clearBitAt(sysConReg(0x238),which);
+  clearBit(sysConReg(0x238),which);
 }
 
 inline void powerDown(int which){
-  setBitAt(sysConReg(0x238),which);
+  setBit(sysConReg(0x238),which);
 }
 
 /** iocon group */
@@ -35,18 +35,18 @@ constexpr unsigned ioConReg(unsigned byteOffset){
 
 /** enable the selected device clock. Since each will only be referenced in its own module there is no need for formal enum.  */
 inline void enableClock(unsigned bit){
-  setBitAt(sysConReg(0x80), bit);
+  setBit(sysConReg(0x80), bit);
 }
 
 /** enable the selected device clock. Since each will only be referenced in its own module there is no need for formal enum.  */
 inline void disableClock(unsigned bit){
-  clearBitAt(sysConReg(0x80), bit);
+  clearBit(sysConReg(0x80), bit);
 }
 
 
 /** there are only 3 items with resets: 0: ssp0, 1:I2c 2:ssp1 */
 inline void reset(unsigned bit){
-  raiseBit(atAddress(sysConReg(4)), bit);
+  raiseBit(sysConReg(4), bit);
 }
 
 

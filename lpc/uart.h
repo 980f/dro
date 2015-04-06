@@ -43,7 +43,11 @@ public:
     Uart &setTransmitter(Sender sender);
     /** set reception routine. . @returns this. */
     Uart &setReceiver(Receiver receiver);
+    /** indirect access to the nvic interrupt enable, so as not to have to include nvic.h in this header file.*/
+    void irq(bool enabled);
   };
 } // namespace LPC
 // there is only one on this chip so let us go ahead and fabricate it
 extern LPC::Uart theUart;
+
+

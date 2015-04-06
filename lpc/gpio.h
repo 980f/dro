@@ -51,6 +51,9 @@ constexpr bool isDoa(int pinIndex){
   return (15>= pinIndex && pinIndex >=10)||pinIndex==0;
 }
 
+constexpr int gpioBankInterrupt(PortNumber portNum){
+  return 56-portNum;
+}
 
 /** declared outside of InputPIn class so that we don't have to apply template args to each use.*/
 enum PinBias { //#ordered for MODE field of iocon register
@@ -130,13 +133,13 @@ public: //interrupt stuff
    * The compiler when allowed to optimize should be able to inline all register operations with minimum possible code, if pin is declared statically.
   */
   class IrqControl {
-    const u32 regbase;//acknowledge register, 0x1C offset from direction register
+    const u32 regbase;//direction register
     const u32 mask;//single bit mask
     inline void setRegister(unsigned offset)const{
-      atAddress(regbase-0x1c+offset)|=mask;
+      atAddress(regbase+offset)|=mask;
     }
     inline void clearRegister(unsigned offset)const{
-      atAddress(regbase-0x1c+offset)&=~mask;
+      atAddress(regbase+offset)&=~mask;
     }
     inline void assignRegister(unsigned offset,bool level)const{
       if(level){
@@ -148,8 +151,8 @@ public: //interrupt stuff
 
   public:
     IrqControl(const GPIO &gpio):
-      regbase(0x1c+((u32(gpio.dataAccess) & bitMask(0,15)) | (1<<15))), //direction register
-      mask((u32(gpio.dataAccess)>>2) & bitMask(0,12))//recover single bit mask from address
+      regbase(((reinterpret_cast<u32>(&gpio.dataAccess) & ~bitMask(0,16)) | (1<<15))), //interrupt clear register
+      mask((reinterpret_cast<u32>(&gpio.dataAccess)>>2) & bitMask(0,12))//recover single bit mask from address
     {}
     void setIrqStyle(IrqStyle style,bool andEnable)const;
     inline void irq(bool enable)const;
