@@ -9,57 +9,35 @@
 
 #include "systick.h"
 using namespace SystemTimer;
-
 #include "polledtimer.h"
 
 #include "core_cmInstr.h"  //wfe OR wfi
 #include "cruntime.h"
+//the next line actually sets up the clocks before main and pretty much anything else gets called:
 ClockStarter startup InitStep(InitHardware/2) (true,0,1000);//external wasn't working properly, need a test to check before switching to it.
-
-//For pins the stm32 lib is using const init'ed objects, LPC templated. It will take some work to reconcile how the two vendors like to describe their ports,
-//however the objects have the same usage syntax so only declarations need to be conditional on vendor.
-#if useSTM32
-#include "exti.h"  //interrupts only tangentially coupled to i/o pins.
-#include "p103_board.h"
-P103_board board;
-
-Irq &pushButton(Exti::enablePin(board.buttonPin,false,true));
-
-void IrqName(6) (void){
-  board.toggleLed();
-  Exti::clearPending(board.buttonPin);
-}
-
-Pin primePin(PB,11);
-const InputPin primePhase(primePin);
-Pin otherPin(PB,12);
-const InputPin otherPhase(otherPin);
-
-Irq &prime(Exti::enablePin(primePin,true,true));
-
-#define myIrq 40
-
-#else
 
 #include "p1343_board.h"
 InitStep(InitApplication)
 P1343devkit board;//construction of this turns on internal peripherals and configures pins.
-
-
 Irq pushButton(board.button.pini);
 
 using namespace LPC;
 
+HandleInterrupt(P1343ButtonIrqNum){
+  board.toggleLed(4);
+  board.but1.irqAcknowledge();
+}
+
+HandleInterrupt(54){
+  board.toggleLed(5);
+  board.but1.irqAcknowledge();
+}
+
 //p0-4,p05 for qei.
 InputPin<0,4> primePhase;
 InputPin<0,5> otherPhase;
-
-
 Irq prime(primePhase.pini);
-
 #define myIrq 4
-
-#endif
 
 //should go up and down depending upon the input signals;
 int axis(0);
@@ -73,11 +51,7 @@ HandleInterrupt( myIrq ) {
   } else {
     ++axis; //will be +/-4 here
   }
-#if useSTM32
-  Exti::clearPending(primePin);
-#else
   //??lpc input clear
-#endif
 }
 
 #include "fifo.h"
@@ -121,14 +95,15 @@ void prepUart(){
 int main(void) {
   prepUart();
   CyclicTimer slowToggle; //since action is polled might as well wait until main to declare the object.
-  slowToggle.restart(ticksForSeconds(3));
+  slowToggle.restart(ticksForSeconds(1.333));
   //soft stuff
-  //lb2 call got compiled into 1+lb2(1234/2), lb<1234>::exponent fully resolved into a number.
-  int events=0;//lb2(1234);//lb<1234>::exponent;//should reduce to a constant ~10 for 1234 (>-1024, <2048)
-  //  Exti::enablePin(otherPin);
+  int events=0;
 
   prime.enable();
-  pushButton.enable();
+  pushButton.enable();//@nvic
+  board.but1.setIrqStyle(GPIO::LowEdge,true);
+  Irq gp2irq(gpioBankInterrupt(2));
+  gp2irq.prepare();
 
   while (1) {
     stackFault();//useless here, present to test compilation.
@@ -138,7 +113,7 @@ int main(void) {
     ++events;
     board.led1=board.button;
     if(slowToggle.hasFired()){
-      board.toggleLed();
+      board.toggleLed(0);
       if(outgoing.insert('A'+(events&15))){
         theUart.beTransmitting();
       }

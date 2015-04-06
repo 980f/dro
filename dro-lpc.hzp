@@ -25,15 +25,14 @@
       arm_use_gcc_libraries="No"
       build_intermediate_directory="built-$(ProjectName)-$(Configuration)"
       build_output_directory="built-$(ProjectName)-$(Configuration)"
-      c_only_additional_options=""
-      c_preprocessor_definitions="useSTM32=0"
+      c_only_additional_options="" c_preprocessor_definitions=""
       c_user_include_directories="cortexm;cortexm/lpc;ezcpp"
       debug_initial_breakpoint="cstartup"
       debug_initial_breakpoint_set_option="Never"
       double_is_float="Yes"
       gcc_c_language_standard="c99"
       gcc_cplusplus_language_standard="c++11"
-      gcc_dwarf_version="dwarf-2"
+      gcc_dwarf_version="dwarf-4"
       gcc_entry_point="cstartup"
       gcc_wchar_size="16-Bit"
       link_include_standard_libraries="Yes"
@@ -66,7 +65,6 @@
       target_reset_script="SRAMReset()" />
     <folder Name="Source Files">
       <configuration Name="Common" filter="cpp;h;s" />
-      <file file_name="main.cpp" />
       <folder Name="ezcpp">
         <file file_name="ezcpp/cheapTricks.cpp" />
         <file file_name="ezcpp/cheapTricks.h" />
@@ -94,7 +92,6 @@
         <file file_name="cortexm/lpc/p1343_board.cpp" />
         <file file_name="cortexm/lpc/clocks.cpp" />
         <file file_name="cortexm/lpc/gpio.h" />
-
         <file file_name="cortexm/lpc/uart.cpp" />
       </folder>
       <folder Name="System Files">
@@ -104,6 +101,7 @@
         <file file_name="dro-lpc.ld" />
         <file file_name="cortexm/lpc/lpc1343.ld" />
         <file file_name="cortexm/cortexm.ld" />
+        <file file_name="p1343-dro.cpp" />
       </folder>
     </folder>
   </project>

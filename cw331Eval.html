@@ -7,7 +7,8 @@
   <body>
     <p>crosstudio 3.3.1 evaluation<br>
       on ubuntu 12.04 and 14.04<br>
-      occasionally with dual monitors.</p>
+      occasionally with dual monitors.<br>
+      Test code is at: github.com/980f/dro</p>
     <p>likes:</p>
     <ol>
       <li>debugger actually works:<br>
@@ -28,28 +29,27 @@
       <li>recent version of compiler: I am heavily invested in template
         programming to do type and range checking at compile time, as opposed to
         most of the world still using typeless #defines and trusting themselves
-        to not use wrong arguments. Other tools seem to be well behind on
-        compiler version.</li>
+        to not use wrong arguments.</li>
       <li>similar enough to past versions that my experience with those is still
         relevant, such as how to use my own startup and linker scripts.</li>
     </ol>
     <p>actual bugs:</p>
     <ol>
-      <li>UI-annoying: clicking on linker error tries to display the linker
-        executable, the linker script would seem to be a better choice (or do
-        nothing since the error is correctly marked in the ld file). Sometimes
-        this attempt to view the ld executable pops up automatically.</li>
+      <li>clicking on linker error tries to display the linker executable, the
+        linker script would seem to be a better choice (or do nothing since the
+        error is correctly marked in the ld file). Sometimes this attempt to
+        view the ld executable pops up automatically.</li>
       <li>usability-medium: the error view is brought forward but is empty
         despite the output view showing there are errors. I then have to switch
         to the output view and drill down the tree to get to the error content.
         I seem to have changed something after a while which keeps that view
         from coming forward, but it is still always empty even when there are
         errors.</li>
-      <li>bug-middling:"Entry Symbol=none" still emits -e making next
-        commandline arg be the entry symbol. I don't need an entry symbol so I
-        shouldn't have to dummy one up.</li>
-      <li>build-minor: '-u_vector' is put into ld commandline, but I am not
-        using that for my vector table (using KEEP's instead). This used to be
+      <li>"Entry Symbol=none" still emits -e making next commandline arg be the
+        entry symbol. I don't need an entry symbol so I shouldn't have to dummy
+        one up.</li>
+      <li>&nbsp;'-u_vector' is put into ld commandline, but I am not using that
+        for my vector table (using KEEP's instead). The value for -u used to be
         accessible from the properties editor but I can't find it therein.</li>
       <li>package error: "cannot find
         /home/andyh/.rowley_associates_limited/CrossWorks for
@@ -68,14 +68,13 @@
         access typeinfo at address 2. After a restart I got to the same place
         during debug and it didn't fault. Prior run had many small files opened
         in editors. <br>
-        And a second, then third crash (some on someone&nbsp; else's 14.04
-        system with full license) where the program goes silent then goes belly
-        up (silence seems to be due to apport building a dump file). The last
-        one was on a "close all unedited files" prior to starting a debug
-        session.<br>
+        And a second, then third crash (some on someone else's 14.04 system with
+        full license) where the program goes silent then goes belly up (silence
+        seems to be due to apport building a dump file). The last one was on a
+        "close all unedited files" prior to starting a debug session.<br>
         And another when the target disconnected during a download leading to a
         verification error, and I asked to see the verification error
-        details.&nbsp; Null pointer dereference, with an offset of 0x24. Are
+        details.&nbsp; Null pointer de-reference, with an offset of 0x24. Are
         apport dumps of any use to you? This repeated twice in a row, on the
         third event I chose "no" to view verification errors and crossstudio
         silently quit instead of segfaulting (same if I 'x' the prompting
@@ -84,6 +83,10 @@
       <li>"save all" after marking a particular jtag device as "favorite".
         Normal program exit and reenter and it is no longer a favorite. Some of
         my prior changes are preserved, but I can no longer make changes.</li>
+      <li>after stopping at a breakpoint in statically called constructor there
+        is no 'this' in the Locals window. Actually there are no locals at all
+        (noted now that I stopped in a base class that had a variable local to
+        the constructor function)</li>
     </ol>
     <p>annoyances:</p>
     <ol>
@@ -104,7 +107,7 @@
         =&gt;&nbsp; I shall try to alter:
         arm_target_restrict_memory_accesses="Yes"</li>
       <li>strange: in symbol browser many symbols from __crossworks.h appear but
-        I can't find anything I have included that includes that.</li>
+        I can't find anything I have included that includes that file.</li>
       <li>In symbol browser constructors appear twice.</li>
       <li>white text on tangerine background is basically invisible to me, 'goto
         function' completion selection highlight. =&gt; I found the edit colors
@@ -117,10 +120,6 @@
       <li>click on a function reference "goto definition" and was brought to the
         declaration. click on definition "goto definition" I get "function not
         found". Simple C++ member function.</li>
-      <li>after stopping at a breakpoint in statically called constructor there
-        is no 'this' in the Locals window. Actually there are no locals at all
-        (noted now that I stopped in a base class that had a variable local to
-        the constructor function)</li>
       <li>debug view stm32 "bit band" access fails, gives: 'FEFEFEFE'. I'm
         guessing they are not in a memory segment defined in one of the xml
         files. If the debug mechanism of the chip is unaware of bit band then
@@ -129,6 +128,16 @@
       <li>Refresh buttons on debug displays often greyed out, need some
         documentation as to why since it is often quite inconvenient to not get
         an update, or to not trust that the display is current.</li>
+      <li>V3.4.0: loaded identical content project from a different drive, upon
+        hitting a breakpoint CW is trying to find the source files at the
+        previous project's directory, not the current project. I'm guessing it
+        is getting files from binary rather than from the project, will try a
+        recompile all. First effect of that is a breakpoint that was missed in
+        prior run is now hit, this is in unconditional code so obviously CW did
+        not set the breakpoint when the binary file wasn't relatable to the
+        project directory.</li>
+      <li>V3.4.0: no 'this' in locals window for member function of templated
+        class, using 'debug' optimization.</li>
     </ol>
     <p>UI annoyances:</p>
     <ol>
@@ -139,8 +148,9 @@
         crossworks also has had a tendency to change the expansion state of a
         tree with every step into another function and return, that also makes
         my wrists ache during any extended debug session and is a major time
-        killer and distraction. (web: And ditto that for the display format of
-        members of a struct or a local variable.) (web: "stable windows setup")<br>
+        killer and distraction. <br>
+        Your web suggestion lists include similar complaints that for the
+        display format of members of a struct or a local variable.<br>
         Summary: View state should not be altered during a data update, view
         state of locals should be remembered by function, not in sync with the
         stack as it executes.</li>
@@ -198,12 +208,13 @@
         me, at least when invoked by ^O. It seems that sometimes it remembers,
         sometimes not. It recently got obsessed with .ld files.</li>
       <li>open file dialog: put "all files" at a fixed extreme in the list, I
-        use it mroe often than anything preloaded.</li>
+        use it more often than any predefined filter.</li>
       <li>An option for the files view to follow 1:1 the file system. Eclipse
         added that pretty early on. Having to manually place files into folders
         reproducing the layout of the file system is tedious.</li>
-      <li>Creating a folder after the fact I'd like to be aband moving the
-        related files into it, drag and drop or right menu 'move' option.</li>
+      <li>Creating a folder after the fact I'd like to be able to move the
+        related files into it, drag and drop or right menu 'move' option.
+        Presently it is delete and add or text edit the hzp file.</li>
       <li>build: concatenation of configuration names is done with a space char,
         making commandline file management annoying. I text edit the hzp to
         replace the space with a dash.</li>
@@ -235,7 +246,7 @@
         especially for project properties.</li>
       <li>When my computer bogs down due to other programs I get "target
         connection has been lost". Crossworks times-out the connection even
-        though it was crossworks lack of cycles not the device's. Perhaps
+        though it was crossworks' lack of cycles not the device's. Perhaps
         crossworks could use process time rather than wall time for such
         timeouts?</li>
       <li>decorate 'this' with its class name.</li>

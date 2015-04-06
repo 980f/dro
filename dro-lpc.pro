@@ -39,11 +39,11 @@ HEADERS +=\
     ezcpp/boolish.h \
     ezcpp/minimath.h \
     ezcpp/cheapTricks.h \
-    cortexm/lpc/uart.h
+    cortexm/lpc/uart.h \
+    cortexm/lpc/gpio.h
 
 
 SOURCES +=\
-    main.cpp \
     cortexm/systick.cpp \
     cortexm/nvic.cpp \
     cortexm/cstartup.cpp \
@@ -59,7 +59,8 @@ SOURCES +=\
     ezcpp/cheapTricks.cpp \
     cortexm/lpc/uart.cpp \
     cortexm/fifo.cpp \
-    cortexm/core-atomic.cpp
+    cortexm/core-atomic.cpp \
+    p1343-dro.cpp
 
 
 DISTFILES += \
@@ -67,7 +68,8 @@ DISTFILES += \
     cortexm/lpc/lpc1343.ld \
     dro.hzp \
     cortexm/lpc/peripherals.ld \
-    cortexm/cortexm3.s
+    cortexm/cortexm3.s \
+    cortexm/cortexm.ld
 
 
 #end of file.
