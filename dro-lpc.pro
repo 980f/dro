@@ -40,7 +40,8 @@ HEADERS +=\
     ezcpp/minimath.h \
     ezcpp/cheapTricks.h \
     cortexm/lpc/uart.h \
-    cortexm/lpc/gpio.h
+    cortexm/lpc/gpio.h \
+    cortexm/lpc/startsignal.h
 
 
 SOURCES +=\
@@ -60,7 +61,8 @@ SOURCES +=\
     cortexm/lpc/uart.cpp \
     cortexm/fifo.cpp \
     cortexm/core-atomic.cpp \
-    p1343-dro.cpp
+    p1343-dro.cpp \
+    cortexm/lpc/startsignal.cpp
 
 
 DISTFILES += \

@@ -131,11 +131,12 @@
       <li>V3.4.0: loaded identical content project from a different drive, upon
         hitting a breakpoint CW is trying to find the source files at the
         previous project's directory, not the current project. I'm guessing it
-        is getting files from binary rather than from the project, will try a
-        recompile all. First effect of that is a breakpoint that was missed in
-        prior run is now hit, this is in unconditional code so obviously CW did
-        not set the breakpoint when the binary file wasn't relatable to the
-        project directory.</li>
+        is getting file names from debug info in the binary files rather than
+        from the project, will try a recompile all. <br>
+        First effect of that is a breakpoint that was missed in prior run is now
+        hit, this is in unconditional code so obviously CW did not set the
+        breakpoint when the binary file wasn't relatable to the project
+        directory.</li>
       <li>V3.4.0: no 'this' in locals window for member function of templated
         class, using 'debug' optimization.</li>
     </ol>
