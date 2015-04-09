@@ -115,7 +115,7 @@ public:
     //for those patterns we have generators for doa pins need a one added to them.
     reinterpret_cast<unsigned *>(LPC::apb0Device(17))[ioconf_map[pinIndex]]=pattern + isDoa(pinIndex);
   }
-public: //interrupt stuff
+public: //interrupt stuff. The manual is very opaque about this stuff. The IRQ stuff here only feeds the shared-per-port interrupts. Individual vectoring is via the Start logic.
   // values for gpio config as well as irq config.
   enum IrqStyle {
     NotAnInterrupt = 0, // in case someone forgets to explicitly select a mode

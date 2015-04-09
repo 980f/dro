@@ -84,6 +84,7 @@ public:
 
 };
 
+/** instantiating more than one of these for a given interrupt defeats the nesting nature of its enable. */
 class Irq: public IrqAccess {
   int locker; //tracking nested attempts to lock out the interrupt.
 public:
@@ -118,20 +119,23 @@ public:
 void setFaultHandlerPriority(int faultIndex, u8 level);
 /** value to put into PRIGROUP field, see arm tech ref manual.
   * 0: maximum nesting; 7: totally flat; 2<sup>7-code</sup> is number of different levels
-  * cstm32 only implements the 4 msbs of the logic so values 3,2,1 are same as 0*/
+  * stm32F10x only implements the 4 msbs of the logic so values 3,2,1 are same as 0*/
 void configurePriorityGrouping(int code); //cortexm3.s or stm32.cpp
 
 #ifdef __linux__ //just compiling for syntax checking
 #define EnableInterrupts
 #define DisableInterrupts
-#define LOCK(somename)
 #define IRQLOCK(irq)
-class CriticalSection { //#this stub needed as we don't want to bother #ifdef around the init of the nesting field of the useful instantiaion.
-  static volatile int nesting;
-};
+
 #else
 #define EnableInterrupts __asm volatile ("CPSIE f")
 #define DisableInterrupts __asm volatile ("CPSID f")
+#define IRQLOCK(irqVarb) IRQLock IRQLCK ## irqVarb(irqVarb)
+
+#endif
+
+//this does not allow for static locking, only for within a function's execution (which is a good thing!):
+#define LOCK(somename) CriticalSection somename ## _locker
 
 /** creating one of these in a function (or blockscope) disables interrupts until said function (or blockscope) exits.
   * By using this fanciness you can't accidentally leave interrupts disabled. */
@@ -151,10 +155,4 @@ public:
     }
   }
 };
-
-//this does not allow for static locking, only for within a function's execution (which is a good thing!):
-#define LOCK(somename) CriticalSection somename ## _locker
-//this can only handle simple access to the irq, no this-> or submembers:
-#define IRQLOCK(irqVarb) IRQLock IRQLCK ## irqVarb(irqVarb)
-#endif /* ifdef ALH_SIM */
 
