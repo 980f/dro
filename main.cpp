@@ -118,6 +118,10 @@ void prepUart(){
 }
 #include "minimath.h"
 
+#include "packdatatest.h"
+static packdatatest ender  __attribute((section(".rodata.packdata.last"))) ={'\0'};
+
+
 int main(void) {
   prepUart();
   CyclicTimer slowToggle; //since action is polled might as well wait until main to declare the object.

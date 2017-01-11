@@ -91,6 +91,9 @@
         <file file_name="../ezcpp/polledtimer.cpp" />
         <file file_name="../ezcpp/polledtimer.h" />
       </folder>
+      <file file_name="packdatatest.cpp" />
+      <file file_name="packdatatest.h" />
+      <file file_name="packtesttoo.cpp" />
     </folder>
     <folder Name="System Files">
       <file file_name="dro.ld" />
@@ -129,6 +132,7 @@
     hidden="Yes" />
   <configuration
     Name="Debug"
+    c_additional_options="-fpermissive"
     c_preprocessor_definitions="DEBUG"
     gcc_debugging_level="Level 3"
     gcc_optimization_level="None"

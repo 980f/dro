@@ -41,7 +41,8 @@ HEADERS +=\
     ezcpp/cheapTricks.h \
     cortexm/lpc/uart.h \
     cortexm/lpc/gpio.h \
-    cortexm/lpc/startsignal.h
+    cortexm/lpc/startsignal.h \
+    packdatatest.h
 
 
 SOURCES +=\
