@@ -19,13 +19,13 @@ Cfunction nanoSpin
 
 
 Cfunction log2Exponent
-  clz r0,r0
-  rsb r0,#31
+  clz r0,r0    //count leading zeroes
+  rsb r0,#31   //we wanted position of leading '1' = 31 - number of leading zeroes
   bx lr
 
 
-//include core_atomic.h to use the following atomic accesss routines
-// in the atomic_* routines we can't use the ITF instruction mechanism on the clrex instruction, we have to do old fashion branches.
+//include core_atomic.h to use the following atomic access routines
+// in the atomic_* routines we can't use the ITF instruction mechanism (?why not?), we have to do old fashion branches.
 
 //r0 address, trusted to be 32-bit aligned. r1 is scratched.
 Cfunction atomic_increment

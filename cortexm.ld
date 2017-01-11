@@ -62,7 +62,9 @@ SECTIONS {
 
 /* fully const'ed data, note that some things declared const end up in .data despite valiant attempts to compile time compute values. */
   .rodata :{
-    *(.rodata .rodata.* )
+    KEEP (*(SORT(.rodata.*)))
+    KEEP (*(.rodata))
+  /*  *(.rodata .rodata.* ) */
     /*.gnu.linkonce.r.**/
   } >FLASH
 
@@ -70,6 +72,7 @@ SECTIONS {
   .bss (NOLOAD) : {/* NOLOAD is gratuitous, but is a reminder that all that is occurring is data allocation.*/
     *(.bss .bss.*) /* .gnu.linkonce.b.*) *(COMMON)*/
   } >SRAM
+
   .startupClear : {/* the following initializes what my cstartup.cpp calls 'struct RamBlock' */
     LONG(ADDR(.bss))
     LONG(SIZEOF(.bss))
@@ -81,6 +84,7 @@ SECTIONS {
     *(.data .data.* )
     /*.gnu.linkonce.d.*) */
   } >SRAM AT>FLASH
+
   .startupCopy : { /* this initializes what my cstartup.cpp calls 'struct RamInitBlock' */
     LONG(LOADADDR(.data))
     LONG(ADDR(.data))

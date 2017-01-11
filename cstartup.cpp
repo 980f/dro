@@ -1,9 +1,9 @@
-#include "wtf.h"
 #include "cruntime.h" //to validate it, herein lay default implementations of it.
+#include "wtf.h"  //error indicator, a shared breakpoint for trouble.
 
 void SystemInit(void); // __USE_CMSIS __USE_LPCOPEN
 int main(void); // entry point
-void generateHardReset(void); // doesn't return! supplied by nvic.cpp as that is where reset hardware happens to reside.
+extern void [[noreturn]] generateHardReset(void); // doesn't return! supplied by nvic.cpp as that is where reset hardware happens to reside.
 
 //the linker script creates and initializes these constant structures, used by cstartup() to initialize ram:
 const extern RamInitBlock __data_segment__;//name coordinated with cortexm.ld
@@ -41,8 +41,8 @@ void run_init( const InitRoutine * table){
 }
 
 // instead of tracking #defined symbols just dummy up the optional routines:
-__attribute__((weak,optimize(3))) void SystemInit(void) {
-//  wtf(100001);
+[[gnu::weak,gnu::optimize(3)]] void SystemInit(void) {
+  wtf(100001);
 }
 
 /** sometimes pure virtual functions that aren't overloaded get called anyway,
@@ -52,18 +52,11 @@ extern "C" void __cxa_pure_virtual(){  /* upon call of pure virtual function */
   wtf(100000); /* ignore it */
 }
 
-////in case we aren't ready to bring the nvic into the build:
-//[[weak,naked,noreturn]] void generateHardReset(){
-//  while(1){
-//    wtf(100002);
-//  }
-//}
-
 /** Reset entry point. Stack pointer is set to top of ram. Other registers are ambiguous.
  * Sets up a simple runtime environment and initializes the C/C++ library.
  */
 extern "C" //to make it easy to pass this to linker sanity checker. can eliminate when -e<blank> is fixed by Rowley.
-__attribute__((naked,noreturn)) //we don't need no stinking stack frame (yet)
+[[gnu::naked,noreturn]] //we don't need no stinking stack frame (yet)
 void cstartup(void){
   // initialize static variables
   data_init(__data_segment__);

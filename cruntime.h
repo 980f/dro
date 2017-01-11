@@ -3,7 +3,7 @@
 #define CRUNTIME_H
 /** parts of the c startup that might be useful to a running program */
 
-extern "C" __attribute__((noreturn)) void generateHardReset();
+extern "C" [[gnu::naked,noreturn]] void generateHardReset();
 
 /** these structs are created via LONG(...) directives in the ld file.
    That way only one symbol needs to be shared between the ld and this file for each block,
@@ -27,7 +27,10 @@ void bss_init(const RamBlock &block);
 
 /** every type of code driven initialization is invoked through a simple void fn(void)*/
 typedef void (*InitRoutine)(void) ;
-/** this implementation trusts the linker script to null terminate the table */
+/** this implementation trusts the linker script to null terminate the table.
+ * To insert something into the table you must put it into a section .ctors[.*]. lower number/alpha after the 'ctors' run earlier.
+ * the 'initialization priority logic' uses such sections to control startup sequencing, and doesn't work without linker support.
+ */
 void run_init( const InitRoutine * table);
 
 /** generate hard reset if the stack has overflowed */

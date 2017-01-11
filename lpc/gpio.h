@@ -133,13 +133,13 @@ public: //interrupt stuff. The manual is very opaque about this stuff. The IRQ s
    * The compiler when allowed to optimize should be able to inline all register operations with minimum possible code, if pin is declared statically.
   */
   class IrqControl {
-    const u32 regbase;//direction register
+    u32 *regbase;//direction register
     const u32 mask;//single bit mask
     inline void setRegister(unsigned offset)const{
-      atAddress(regbase+offset)|=mask;
+      regbase[offset]|=mask;
     }
     inline void clearRegister(unsigned offset)const{
-      atAddress(regbase+offset)&=~mask;
+      regbase[offset]&=~mask;
     }
     inline void assignRegister(unsigned offset,bool level)const{
       if(level){
@@ -151,8 +151,8 @@ public: //interrupt stuff. The manual is very opaque about this stuff. The IRQ s
 
   public:
     IrqControl(const GPIO &gpio):
-      regbase(((reinterpret_cast<u32>(&gpio.dataAccess) & ~bitMask(0,16)) | (1<<15))), //interrupt clear register
-      mask((reinterpret_cast<u32>(&gpio.dataAccess)>>2) & bitMask(0,12))//recover single bit mask from address
+      regbase(0),//( ~bitMask(0,16) & u32(gpio.dataAccess)) | (1<<15)), //interrupt clear register
+      mask(0)//(reinterpret_cast<>(&gpio.dataAccess)>>2) & bitMask(0,12))//recover single bit mask from address
     {}
     void setIrqStyle(IrqStyle style,bool andEnable)const;
     inline void irq(bool enable)const;
