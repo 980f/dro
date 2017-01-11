@@ -4,7 +4,6 @@
 /** test table built by linker */
 struct alignas(4) packdatatest {
   char id;
-  char pad[3];
 };
 
 extern unsigned packdatatable;
