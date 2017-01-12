@@ -17,14 +17,16 @@ struct alignas(4) packdatatest {
 //these are used to iterate over the table.
 extern const packdatatest * const packdataBegin;
 extern const packdatatest * const packdataEnd;
-extern const unsigned packdatacount;
+
+//I changed the type of the following to int as the compiler does signed math on when converting the difference in bytes to a difference in quantities.
+extern const int packdatacount;
 
 //this must be put in the declaration of data. prior=0 and =zzzzzzzz are sacred to the iteration, 
 // ... you can use any other alpha numeric string so long as it is alphabetically between those.
 #define PACKMEMBERTAG(prior) __attribute((section(".rodata.packdata." #prior )))
 
 //the number here might be considered the 'default' priority.
-#define PACKMEMBER PACKMEMBERTAG(1)
+#define PACKMEMBER PACKMEMBERTAG(5)
 
 #if 0  /*
 this can be done a little bit easier if you don't mind adding a line to the linker control file for each table.
