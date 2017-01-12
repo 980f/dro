@@ -53,6 +53,7 @@
       <file file_name="packtesttoo.cpp" />
       <file file_name="packtestmain.cpp" />
       <file file_name="../cortexm/nvicstub.cpp" />
+      <file file_name="packerthreeish.cpp" />
     </folder>
     <folder Name="System Files">
       <file file_name="$(TargetsDir)/LPC1000/LPC1300_Target.js">

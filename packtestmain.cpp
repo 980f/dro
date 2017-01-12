@@ -6,12 +6,24 @@ bool wtf(int where){
 }
 
 int main(){
-  unsigned *first=&packdatatable;
-  unsigned marker=*first++;
-  packdatatest *tabler=reinterpret_cast<packdatatest *>(first);
+//  unsigned *first=&packdatatable;
+//  unsigned marker=*first++;
+//  packdatatest *tabler=reinterpret_cast<packdatatest *>(first);
+//
+//  while(char x=tabler->id){
+//    ++tabler;
+//  }
 
-  while(char x=tabler->id){
-    ++tabler;
+  for(const packdatatest *pointer=packdataBegin;pointer<packdataEnd;++pointer){
+    char x=pointer->id;
   }
-  return marker;
+
+  const packdatatest *pointer=packdataBegin;
+  for(int count=packdatacount;count-->0;){
+    char x=pointer->id;
+    ++pointer;
+  }
+
+
+  return 0;
 }
