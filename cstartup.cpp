@@ -2,6 +2,7 @@
 #include "wtf.h"  //error indicator, a shared breakpoint for trouble.
 
 void SystemInit(void); // __USE_CMSIS __USE_LPCOPEN
+#pragma GCC diagnostic ignored "-Wmain"
 int main(void); // entry point
 extern void [[noreturn]] generateHardReset(void); // doesn't return! supplied by nvic.cpp as that is where reset hardware happens to reside.
 
@@ -42,7 +43,7 @@ void run_init( const InitRoutine * table){
 
 // instead of tracking #defined symbols just dummy up the optional routines:
 [[gnu::weak,gnu::optimize(3)]] void SystemInit(void) {
-  wtf(100001);
+  return;
 }
 
 /** sometimes pure virtual functions that aren't overloaded get called anyway,
@@ -64,10 +65,11 @@ void cstartup(void){
   bss_init(__bss_segment__);
   // a CMSIS hook:
   SystemInit(); // stuff that C++ construction might need, like turning on hardware modules (e.g. LPC::GPIO::Init())
+
   run_init(__init_table__);
   //incorporated by linker into our run_init  __libc_init_array(); // C++ library initialization (? constructors for static objects?)
   main();
-  // todo: theoretically could find and execute destructors for static objects and do atexit routines.
+  // todo: find and execute destructors for static objects and do atexit routines.
   generateHardReset(); // auto restart on problems, design your system to tolerate spontaneous power cycles on fatal firmware error
 } // start
 
