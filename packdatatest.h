@@ -18,19 +18,22 @@ struct alignas(4) packdatatest {
 extern const packdatatest * const packdataBegin;
 extern const packdatatest * const packdataEnd;
 
-//I changed the type of the following to int as the compiler does signed math on when converting the difference in bytes to a difference in quantities.
-extern const int packdatacount;
+//trying to init this as a constant resulted in compiler generating bad init code
+inline int packdataCount(){return packdataEnd-packdataBegin;}
 
-//this must be put in the declaration of data. prior=0 and =zzzzzzzz are sacred to the iteration, 
-// ... you can use any other alpha numeric string so long as it is alphabetically between those.
+//this must be put in the declaration of each table member. 
+//note that 543 is less than 6, which is a handy thing.
 #define PACKMEMBERTAG(prior) __attribute((section(".rodata.packdata." #prior )))
 
-//the number here might be considered the 'default' priority.
+//the number here might be considered the 'default' priority. If you don't need to sort the table then use this for all members
 #define PACKMEMBER PACKMEMBERTAG(5)
+
+////////////////////////////////////////////////////
 
 #if 0  /*
 this can be done a little bit easier if you don't mind adding a line to the linker control file for each table.
-That does entail coordinating names between the files, and you stuff will be left out silently if the names don't match.
+That does entail coordinating names between the files, and your stuff will be left out silently if the names don't match.
+OTOH that would save 8 bytes of rom and some gnarly syntax. The two pointer values have to exist somewhere
 
 If your structs have mutable members then you will have to use .data instead of .rodata in the mechanism.
 
@@ -40,7 +43,6 @@ Note that the compiler will give you an error if all the PACKMEMBER's in a compi
 It is up to you to figure that out. You do get warnings when there is a mismatch, but they aren't well connected to the problem.
 
 Another restriction is that the class must have a constructor that can run at compile time, ie another place you may have to split a class and have the classy part refer to the POD tabulated part.
-
 
 */
 #endif

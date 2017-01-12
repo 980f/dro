@@ -50,7 +50,11 @@
       <configuration Name="Common" filter="c;cpp;cxx;cc;h;s;asm;inc" />
       <file file_name="packdatatest.cpp" />
       <file file_name="packdatatest.h" />
-      <file file_name="packtesttoo.cpp" />
+      <file file_name="packtesttoo.cpp">
+        <configuration
+          Name="THUMB Flash Debug"
+          build_exclude_from_build="No" />
+      </file>
       <file file_name="packtestmain.cpp" />
       <file file_name="../cortexm/nvicstub.cpp" />
       <file file_name="packerthreeish.cpp" />
