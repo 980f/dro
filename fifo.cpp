@@ -14,11 +14,12 @@ void Fifo::clear(){
 
 void Fifo::wipe(){
   clear();
-  for(int i = count; i-- > 0; ) {
+  for(unsigned i = count; i-- > 0; ) {
     mem[i] = 0;
   }
 }
 
+/** the following only accomodates a single writer thread, the atomicity only deals with read vs write. */
 int Fifo::attempt_insert(unsigned char incoming){
   if(count < quantity) {
     *writer = incoming;
@@ -40,15 +41,16 @@ bool Fifo::insert(unsigned char incoming){
   return pushed ? false : true;
 }
 
+/** the following only accomodates a single reader thread, the atomicity only deals with read vs write. */
 int Fifo::attempt_remove(){
   if(count > 0) { // can't alter count until we have preserved our datum, so no test_and-decrement stuff.
-    int pulled = *reader;
+    unsigned pulled = *reader;
     // alter count before pointer to reduce the window for collision. (if we bail on collisions, else is moot)
     if(atomic_decrement(count)) {
       return -2;
     }
     incrementPointer(reader);
-    return pulled;
+    return int(pulled);//chars 128->255 are positive
   } else {
     return -1;
   }

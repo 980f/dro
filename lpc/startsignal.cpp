@@ -34,6 +34,4 @@ void StartSignal::enable(bool on) const {
    assignBit(word(4),bitnum,on);
 }
 
-void StartSignal::prepare() const {
-  setBitAt(word(8),bitnum);
-}
+

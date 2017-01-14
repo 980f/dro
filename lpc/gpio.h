@@ -12,7 +12,7 @@ typedef u8 PortNumber;
 typedef u8 BitNumber;
 
 namespace LPC {
-///** @returns whether pot number is legal. This is so unlikely to ever fail that we quit using it. */
+///** @returns whether port number is legal. This is so unlikely to ever fail that we quit using it. */
 //constexpr bool isLegalPort(PortNumber pn){
 //  return pn < 4;
 //}
@@ -91,7 +91,9 @@ public:
   }
 
 public:
-  /** this must be called once before any other functions herein are used. Declaring it to be in an init section is a nice way to guarantee that.*/
+  /** this must be called once before any other functions herein are used. Declaring it to be in an init section is a nice way to guarantee that.
+As of 2017jan14 SystemInit is calling this, that is simper to maintain than an array of function pointers in an explicit section.
+*/
   static void Init( void );
 
   /** biasing is independent of in vs out, but not of function. */
