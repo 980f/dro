@@ -13,10 +13,14 @@ using namespace SystemTimer;
 
 #include "core_cmInstr.h"  //wfe OR wfi
 #include "cruntime.h"
+
+#include "p1343_board.h"
+
+//#pragma GCC diagnostic ignored "-Wmissing-variable-declarations"
+
 //the next line actually sets up the clocks before main and pretty much anything else gets called:
 ClockStarter startup InitStep(InitHardware/2) (true,0,1000);//external wasn't working properly, need a test to check before switching to it.
 
-#include "p1343_board.h"
 InitStep(InitApplication)
 P1343devkit board;//construction of this turns on internal peripherals and configures pins.
 Irq pushButton(board.button.pini);
@@ -56,17 +60,15 @@ HandleInterrupt( myIrq ) {
 
 #include "fifo.h"
 
-u8 outbuf[33];
-Fifo outgoing(sizeof(outbuf),outbuf);
+FifoBuffer<33> outgoing;
 
-u8 inbuf[33];
-Fifo incoming(sizeof(inbuf),inbuf);
+FifoBuffer<63> incoming;
 
 #include "uart.h"
 /** called by isr on an input event.
  * negative values of @param are notifications of line errors, -1 for interrupts disabled */
 bool uartReceiver(int indata){
-  if(incoming.insert(indata)){
+  if((incoming=u8(indata))){
     return true;
   } else {
     wtf(24);
@@ -75,9 +77,9 @@ bool uartReceiver(int indata){
 }
 
 /** called by isr when transmission becomes possible.
- *  @return either an 8 bit unsigned character, or -1 to disable transmission events*/
+ *  @returns either an 8 bit unsigned character, or -1 to disable transmission events*/
 int uartSender(){
-  int outdata=outgoing.remove();
+  int outdata=outgoing;
   return outdata;//negative for fifo empty
 }
 
@@ -90,6 +92,7 @@ void prepUart(){
   theUart.reception(true);
   theUart.irq(true);
 }
+
 #include "minimath.h"
 
 int main(void) {

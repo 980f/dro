@@ -1,0 +1,294 @@
+
+Discarded input sections
+
+ .group         0x00000000        0x8 packtest THUMB Flash Debug/packdatatest.o
+ .group         0x00000000        0x8 packtest THUMB Flash Debug/packdatatest.o
+ .text          0x00000000        0x0 packtest THUMB Flash Debug/packdatatest.o
+ .data          0x00000000        0x0 packtest THUMB Flash Debug/packdatatest.o
+ .bss           0x00000000        0x0 packtest THUMB Flash Debug/packdatatest.o
+ .group         0x00000000        0x8 packtest THUMB Flash Debug/packtesttoo.o
+ .group         0x00000000        0x8 packtest THUMB Flash Debug/packtesttoo.o
+ .text          0x00000000        0x0 packtest THUMB Flash Debug/packtesttoo.o
+ .data          0x00000000        0x0 packtest THUMB Flash Debug/packtesttoo.o
+ .bss           0x00000000        0x0 packtest THUMB Flash Debug/packtesttoo.o
+ .debug_macro   0x00000000      0x93a packtest THUMB Flash Debug/packtesttoo.o
+ .debug_macro   0x00000000       0x16 packtest THUMB Flash Debug/packtesttoo.o
+ .group         0x00000000        0x8 packtest THUMB Flash Debug/packtestmain.o
+ .group         0x00000000        0x8 packtest THUMB Flash Debug/packtestmain.o
+ .group         0x00000000        0x8 packtest THUMB Flash Debug/packtestmain.o
+ .text          0x00000000        0x0 packtest THUMB Flash Debug/packtestmain.o
+ .data          0x00000000        0x0 packtest THUMB Flash Debug/packtestmain.o
+ .bss           0x00000000        0x0 packtest THUMB Flash Debug/packtestmain.o
+ .debug_macro   0x00000000      0x93a packtest THUMB Flash Debug/packtestmain.o
+ .debug_macro   0x00000000       0x16 packtest THUMB Flash Debug/packtestmain.o
+ .group         0x00000000        0x8 packtest THUMB Flash Debug/nvicstub.o
+ .text          0x00000000        0x0 packtest THUMB Flash Debug/nvicstub.o
+ .data          0x00000000        0x0 packtest THUMB Flash Debug/nvicstub.o
+ .bss           0x00000000        0x0 packtest THUMB Flash Debug/nvicstub.o
+ .debug_macro   0x00000000      0x93a packtest THUMB Flash Debug/nvicstub.o
+ .group         0x00000000        0x8 packtest THUMB Flash Debug/packerthreeish.o
+ .group         0x00000000        0x8 packtest THUMB Flash Debug/packerthreeish.o
+ .text          0x00000000        0x0 packtest THUMB Flash Debug/packerthreeish.o
+ .data          0x00000000        0x0 packtest THUMB Flash Debug/packerthreeish.o
+ .bss           0x00000000        0x0 packtest THUMB Flash Debug/packerthreeish.o
+ .debug_macro   0x00000000      0x93a packtest THUMB Flash Debug/packerthreeish.o
+ .debug_macro   0x00000000       0x16 packtest THUMB Flash Debug/packerthreeish.o
+ .group         0x00000000        0x8 packtest THUMB Flash Debug/cstartup.o
+ .text          0x00000000        0x0 packtest THUMB Flash Debug/cstartup.o
+ .data          0x00000000        0x0 packtest THUMB Flash Debug/cstartup.o
+ .bss           0x00000000        0x0 packtest THUMB Flash Debug/cstartup.o
+ .text.__cxa_pure_virtual
+                0x00000000       0x14 packtest THUMB Flash Debug/cstartup.o
+ .text._Z10stackFaultv
+                0x00000000       0x2c packtest THUMB Flash Debug/cstartup.o
+ .debug_macro   0x00000000      0x93a packtest THUMB Flash Debug/cstartup.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+UNPLACED_SECTIONS 0xfffffff0         0x00000000         xw
+SRAM             0x10000000         0x00002000         xw
+FLASH            0x00000000         0x00008000         xr
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+
+.vectors        0x00000000        0x8
+                0x00000000        0x4 LONG 0x10002000 (ORIGIN (SRAM) + LENGTH (SRAM))
+ *(SORT(.vectors.*) .vectors)
+ .vectors.1     0x00000004        0x4 packtest THUMB Flash Debug/cstartup.o
+                0x00000004                resetVector
+
+.text           0x00000008      0x198
+ *(.text .text.*)
+ .text._Z13packdataCountv
+                0x00000008       0x24 packtest THUMB Flash Debug/packtestmain.o
+                0x00000008                packdataCount()
+ .text.wtf      0x0000002c       0x14 packtest THUMB Flash Debug/packtestmain.o
+                0x0000002c                wtf
+ .text.main     0x00000040       0x64 packtest THUMB Flash Debug/packtestmain.o
+                0x00000040                main
+ .text.generateHardReset
+                0x000000a4       0x10 packtest THUMB Flash Debug/nvicstub.o
+                0x000000a4                generateHardReset
+ .text._Z9data_initRK12RamInitBlock
+                0x000000b4       0x4c packtest THUMB Flash Debug/cstartup.o
+                0x000000b4                data_init(RamInitBlock const&)
+ .text._Z8bss_initRK8RamBlock
+                0x00000100       0x48 packtest THUMB Flash Debug/cstartup.o
+                0x00000100                bss_init(RamBlock const&)
+ .text._Z8run_initPKPFvvE
+                0x00000148       0x28 packtest THUMB Flash Debug/cstartup.o
+                0x00000148                run_init(void (* const*)())
+ .text._Z10SystemInitv
+                0x00000170        0x4 packtest THUMB Flash Debug/cstartup.o
+                0x00000170                SystemInit()
+ .text.cstartup
+                0x00000174       0x2c packtest THUMB Flash Debug/cstartup.o
+                0x00000174                cstartup
+
+.glue_7         0x000001a0        0x0
+ .glue_7        0x000001a0        0x0 linker stubs
+
+.glue_7t        0x000001a0        0x0
+ .glue_7t       0x000001a0        0x0 linker stubs
+
+.vfp11_veneer   0x000001a0        0x0
+ .vfp11_veneer  0x000001a0        0x0 linker stubs
+
+.v4_bx          0x000001a0        0x0
+ .v4_bx         0x000001a0        0x0 linker stubs
+
+.iplt           0x000001a0        0x0
+ .iplt          0x000001a0        0x0 packtest THUMB Flash Debug/packdatatest.o
+
+.init           0x000001a0        0x4
+ *(SORT(.init_array.*))
+ *(.init_array)
+ *(SORT(.ctors.*))
+ *(.ctors)
+                0x000001a0        0x4 LONG 0x0
+                0x000001a0                __init_table__ = LOADADDR (.init)
+
+.rodata         0x000001a4       0x40
+ *(SORT(.rodata.*))
+ .rodata.packdata.0
+                0x000001a4        0x4 packtest THUMB Flash Debug/packdatatest.o
+                0x000001a4                packdataBegin
+ .rodata.packdata.2
+                0x000001a8        0x4 packtest THUMB Flash Debug/packdatatest.o
+ .rodata.packdata.5
+                0x000001ac        0x8 packtest THUMB Flash Debug/packtesttoo.o
+ .rodata.packdata.5
+                0x000001b4       0x18 packtest THUMB Flash Debug/packerthreeish.o
+ .rodata.packdata.7
+                0x000001cc        0x4 packtest THUMB Flash Debug/packdatatest.o
+ .rodata.packdata.8
+                0x000001d0       0x10 packtest THUMB Flash Debug/packtesttoo.o
+ .rodata.packdata.9999999
+                0x000001e0        0x4 packtest THUMB Flash Debug/packdatatest.o
+                0x000001e0                packdataEnd
+ *(.rodata)
+
+.rel.dyn        0x000001e4        0x0
+ .rel.iplt      0x000001e4        0x0 packtest THUMB Flash Debug/packdatatest.o
+
+.bss            0x10000000        0x0
+ *(.bss .bss.*)
+
+.startupClear   0x000001e4        0x8
+                0x000001e4        0x4 LONG 0x10000000 ADDR (.bss)
+                0x000001e8        0x4 LONG 0x0 SIZEOF (.bss)
+                0x000001e4                __bss_segment__ = LOADADDR (.startupClear)
+
+.data           0x10000000        0x0 load address 0x000001ec
+ *(.data .data.*)
+
+.igot.plt       0x10000000        0x0 load address 0x000001ec
+ .igot.plt      0x10000000        0x0 packtest THUMB Flash Debug/packdatatest.o
+
+.startupCopy    0x000001ec        0xc
+                0x000001ec        0x4 LONG 0x1ec LOADADDR (.data)
+                0x000001f0        0x4 LONG 0x10000000 ADDR (.data)
+                0x000001f4        0x4 LONG 0x0 SIZEOF (.data)
+                0x000001ec                __data_segment__ = LOADADDR (.startupCopy)
+
+.findEnd        0x10000000        0x0
+                0x10000000                __stack_end__ = .
+                0x00002000                __stack_max__ = (LENGTH (SRAM) - (__stack_end__ - ORIGIN (SRAM)))
+START GROUP
+LOAD packtest THUMB Flash Debug/packdatatest.o
+LOAD packtest THUMB Flash Debug/packtesttoo.o
+LOAD packtest THUMB Flash Debug/packtestmain.o
+LOAD packtest THUMB Flash Debug/nvicstub.o
+LOAD packtest THUMB Flash Debug/packerthreeish.o
+LOAD packtest THUMB Flash Debug/cstartup.o
+END GROUP
+OUTPUT(packtest THUMB Flash Debug/packtest.elf elf32-littlearm)
+
+.debug_info     0x00000000      0x586
+ .debug_info    0x00000000       0x91 packtest THUMB Flash Debug/packdatatest.o
+ .debug_info    0x00000091       0xb2 packtest THUMB Flash Debug/packtesttoo.o
+ .debug_info    0x00000143      0x142 packtest THUMB Flash Debug/packtestmain.o
+ .debug_info    0x00000285       0x37 packtest THUMB Flash Debug/nvicstub.o
+ .debug_info    0x000002bc       0xb2 packtest THUMB Flash Debug/packerthreeish.o
+ .debug_info    0x0000036e      0x218 packtest THUMB Flash Debug/cstartup.o
+
+.debug_abbrev   0x00000000      0x40f
+ .debug_abbrev  0x00000000       0x6d packtest THUMB Flash Debug/packdatatest.o
+ .debug_abbrev  0x0000006d       0x8e packtest THUMB Flash Debug/packtesttoo.o
+ .debug_abbrev  0x000000fb       0xfc packtest THUMB Flash Debug/packtestmain.o
+ .debug_abbrev  0x000001f7       0x2e packtest THUMB Flash Debug/nvicstub.o
+ .debug_abbrev  0x00000225       0x8e packtest THUMB Flash Debug/packerthreeish.o
+ .debug_abbrev  0x000002b3      0x15c packtest THUMB Flash Debug/cstartup.o
+
+.debug_pubnames
+                0x00000000      0x18b
+ .debug_pubnames
+                0x00000000       0x47 packtest THUMB Flash Debug/packdatatest.o
+ .debug_pubnames
+                0x00000047       0x2d packtest THUMB Flash Debug/packtesttoo.o
+ .debug_pubnames
+                0x00000074       0x35 packtest THUMB Flash Debug/packtestmain.o
+ .debug_pubnames
+                0x000000a9       0x28 packtest THUMB Flash Debug/nvicstub.o
+ .debug_pubnames
+                0x000000d1       0x2e packtest THUMB Flash Debug/packerthreeish.o
+ .debug_pubnames
+                0x000000ff       0x8c packtest THUMB Flash Debug/cstartup.o
+
+.debug_pubtypes
+                0x00000000      0x13e
+ .debug_pubtypes
+                0x00000000       0x2c packtest THUMB Flash Debug/packdatatest.o
+ .debug_pubtypes
+                0x0000002c       0x39 packtest THUMB Flash Debug/packtesttoo.o
+ .debug_pubtypes
+                0x00000065       0x3d packtest THUMB Flash Debug/packtestmain.o
+ .debug_pubtypes
+                0x000000a2       0x12 packtest THUMB Flash Debug/nvicstub.o
+ .debug_pubtypes
+                0x000000b4       0x39 packtest THUMB Flash Debug/packerthreeish.o
+ .debug_pubtypes
+                0x000000ed       0x51 packtest THUMB Flash Debug/cstartup.o
+
+.debug_aranges  0x00000000       0xe8
+ .debug_aranges
+                0x00000000       0x18 packtest THUMB Flash Debug/packdatatest.o
+ .debug_aranges
+                0x00000018       0x18 packtest THUMB Flash Debug/packtesttoo.o
+ .debug_aranges
+                0x00000030       0x30 packtest THUMB Flash Debug/packtestmain.o
+ .debug_aranges
+                0x00000060       0x20 packtest THUMB Flash Debug/nvicstub.o
+ .debug_aranges
+                0x00000080       0x18 packtest THUMB Flash Debug/packerthreeish.o
+ .debug_aranges
+                0x00000098       0x50 packtest THUMB Flash Debug/cstartup.o
+
+.debug_macro    0x00000000      0x9ec
+ .debug_macro   0x00000000       0x1a packtest THUMB Flash Debug/packdatatest.o
+ .debug_macro   0x0000001a      0x93a packtest THUMB Flash Debug/packdatatest.o
+ .debug_macro   0x00000954       0x16 packtest THUMB Flash Debug/packdatatest.o
+ .debug_macro   0x0000096a       0x1a packtest THUMB Flash Debug/packtesttoo.o
+ .debug_macro   0x00000984       0x1a packtest THUMB Flash Debug/packtestmain.o
+ .debug_macro   0x0000099e       0x15 packtest THUMB Flash Debug/nvicstub.o
+ .debug_macro   0x000009b3       0x1a packtest THUMB Flash Debug/packerthreeish.o
+ .debug_macro   0x000009cd       0x1f packtest THUMB Flash Debug/cstartup.o
+
+.debug_line     0x00000000      0x2d4
+ .debug_line    0x00000000       0x4f packtest THUMB Flash Debug/packdatatest.o
+ .debug_line    0x0000004f       0x4e packtest THUMB Flash Debug/packtesttoo.o
+ .debug_line    0x0000009d       0x9f packtest THUMB Flash Debug/packtestmain.o
+ .debug_line    0x0000013c       0x64 packtest THUMB Flash Debug/nvicstub.o
+ .debug_line    0x000001a0       0x51 packtest THUMB Flash Debug/packerthreeish.o
+ .debug_line    0x000001f1       0xe3 packtest THUMB Flash Debug/cstartup.o
+
+.debug_str      0x00000000     0x2a19
+ .debug_str     0x00000000     0x27c9 packtest THUMB Flash Debug/packdatatest.o
+                               0x27ce (size before relaxing)
+ .debug_str     0x000027c9       0x30 packtest THUMB Flash Debug/packtesttoo.o
+                               0x27d6 (size before relaxing)
+ .debug_str     0x000027f9       0x5c packtest THUMB Flash Debug/packtestmain.o
+                               0x2802 (size before relaxing)
+ .debug_str     0x00002855       0x36 packtest THUMB Flash Debug/nvicstub.o
+                               0x273b (size before relaxing)
+ .debug_str     0x0000288b       0x2b packtest THUMB Flash Debug/packerthreeish.o
+                               0x27da (size before relaxing)
+ .debug_str     0x000028b6      0x163 packtest THUMB Flash Debug/cstartup.o
+                               0x2890 (size before relaxing)
+
+.comment        0x00000000       0x4c
+ .comment       0x00000000       0x4c packtest THUMB Flash Debug/packdatatest.o
+                                 0x4d (size before relaxing)
+ .comment       0x0000004c       0x4d packtest THUMB Flash Debug/packtesttoo.o
+ .comment       0x0000004c       0x4d packtest THUMB Flash Debug/packtestmain.o
+ .comment       0x0000004c       0x4d packtest THUMB Flash Debug/nvicstub.o
+ .comment       0x0000004c       0x4d packtest THUMB Flash Debug/packerthreeish.o
+ .comment       0x0000004c       0x4d packtest THUMB Flash Debug/cstartup.o
+
+.ARM.attributes
+                0x00000000       0x33
+ .ARM.attributes
+                0x00000000       0x33 packtest THUMB Flash Debug/packdatatest.o
+ .ARM.attributes
+                0x00000033       0x33 packtest THUMB Flash Debug/packtesttoo.o
+ .ARM.attributes
+                0x00000066       0x33 packtest THUMB Flash Debug/packtestmain.o
+ .ARM.attributes
+                0x00000099       0x33 packtest THUMB Flash Debug/nvicstub.o
+ .ARM.attributes
+                0x000000cc       0x33 packtest THUMB Flash Debug/packerthreeish.o
+ .ARM.attributes
+                0x000000ff       0x33 packtest THUMB Flash Debug/cstartup.o
+
+.debug_frame    0x00000000      0x230
+ .debug_frame   0x00000000       0xb8 packtest THUMB Flash Debug/packtestmain.o
+ .debug_frame   0x000000b8       0x34 packtest THUMB Flash Debug/nvicstub.o
+ .debug_frame   0x000000ec      0x144 packtest THUMB Flash Debug/cstartup.o
+
+.debug_ranges   0x00000000       0x70
+ .debug_ranges  0x00000000       0x20 packtest THUMB Flash Debug/packtestmain.o
+ .debug_ranges  0x00000020       0x10 packtest THUMB Flash Debug/nvicstub.o
+ .debug_ranges  0x00000030       0x40 packtest THUMB Flash Debug/cstartup.o
