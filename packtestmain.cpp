@@ -1,12 +1,13 @@
 #include "packdatatest.h"
-extern "C" {
-bool wtf(int where){
+
+//patch over missing library module:
+extern "C" bool wtf(int where){
   return false;
 }
-}
+
 
 int main(){
-
+  //this works and I should be content with it.
   for(const packdatatest *pointer=packdataBegin;pointer<packdataEnd;++pointer){
     char x=pointer->id;
   }

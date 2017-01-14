@@ -8,17 +8,20 @@
       arm_core_type="Cortex-M3"
       arm_gcc_target="arm-unknown-eabi"
       arm_interwork="No"
-      arm_linker_heap_size="128"
+      arm_linker_heap_size="0"
       arm_linker_process_stack_size="256"
-      arm_linker_stack_size="256"
+      arm_linker_stack_size="0"
       arm_simulator_memory_simulation_filename="$(TargetsDir)/LPC1000/LPC1000SimulatorMemory.dll"
       arm_simulator_memory_simulation_parameter="LPC13;0x8000;0x2000;0x0"
       arm_target_debug_interface_type="ADIv5"
       arm_target_interface_type="SWD"
       arm_target_loader_parameter="12000000"
-      c_only_additional_options="-fms-extensions"
+      build_quietly="Yes"
+      c_only_additional_options=""
       c_preprocessor_definitions=""
       c_user_include_directories=""
+      debug_initial_breakpoint_set_option="Only With No Breakpoints Set"
+      debug_start_from_entry_point_symbol="No"
       link_use_multi_threaded_libraries="No"
       linker_additional_files=""
       linker_memory_map_file="$(TargetsDir)/LPC1000/LPC1343_MemoryMap.xml"
@@ -63,9 +66,10 @@
       <file file_name="$(TargetsDir)/LPC1000/LPC1300_Target.js">
         <configuration Name="Common" file_type="Reset Script" />
       </file>
-      <file file_name="dro-lpc.ld" />
-      <file file_name="../cortexm/cortexm3.s" />
-      <file file_name="../cortexm/cstartup.cpp" />
+      <file file_name="../cortexm/cstartup.cpp">
+        <configuration Name="Common" build_quietly="Yes" />
+      </file>
+      <file file_name="packdatatest.ld" />
     </folder>
   </project>
   <configuration

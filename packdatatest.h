@@ -1,7 +1,7 @@
 #ifndef PACKDATATEST_H
 #define PACKDATATEST_H
 
-/** test table built by linker.
+/** test building a table of objects via the linker.
 
 This stuff makes a table of items each created without any knowledge of the other instances. 
 Each compilation unit (~cpp file) can have entries in the table without knowing anything about the possible presence of other entries.
@@ -18,22 +18,22 @@ struct alignas(4) packdatatest {
 extern const packdatatest * const packdataBegin;
 extern const packdatatest * const packdataEnd;
 
-//trying to init this as a constant resulted in compiler generating bad init code
+//trying to init this as a constant resulted in compiler generating bad init code (explicitly branched to 0xFFF0F0CE)
 inline int packdataCount(){return packdataEnd-packdataBegin;}
 
 //this must be put in the declaration of each table member. 
 //note that 543 is less than 6, which is a handy thing.
 #define PACKMEMBERTAG(prior) __attribute((section(".rodata.packdata." #prior )))
 
-//the number here might be considered the 'default' priority. If you don't need to sort the table then use this for all members
+//the number herein might be considered the 'default' priority. If you don't need to sort the table then use this for all members:
 #define PACKMEMBER PACKMEMBERTAG(5)
 
 ////////////////////////////////////////////////////
 
 #if 0  /*
-this can be done a little bit easier if you don't mind adding a line to the linker control file for each table.
+this can be done a little bit easier if you don't mind adding a section chunk to the linker control file for each table.
 That does entail coordinating names between the files, and your stuff will be left out silently if the names don't match.
-OTOH that would save 8 bytes of rom and some gnarly syntax. The two pointer values have to exist somewhere
+OTOH that would save 8 bytes of rom. The two pointer values have to exist somewhere done this way.
 
 If your structs have mutable members then you will have to use .data instead of .rodata in the mechanism.
 
