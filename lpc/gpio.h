@@ -18,24 +18,24 @@ namespace LPC {
 //}
 
 /** @returns block base address, 64k addresses per port */
-constexpr uint32_t portBase(PortNumber portNum){
+constexpr unsigned portBase(PortNumber portNum){
   return 0x50000000 + (portNum << 16); // this is the only ahb device, and each gpio is 4 blocks thereof so just have a custom address computation.
 }
 
 /** @returns block control address, base + 32k . @param regOffset is the value from the LPC manual */
-constexpr uint32_t portControl(PortNumber portNum,unsigned regOffset){
+constexpr unsigned portControl(PortNumber portNum,unsigned regOffset){
   return portBase(portNum) | (1<<15) | regOffset; // this is the only ahb device, and each gpio is 4 blocks thereof so just have a custom address computation.
 }
 
 /** @returns linear index of pin (combined port and bit)
  *  this index is useful for things like figuring out which interrupt vector is associated with the pin. */
-constexpr int pinIndex(PortNumber portNum, BitNumber bitPosition){
+constexpr unsigned pinIndex(PortNumber portNum, BitNumber bitPosition){
   return portNum * 12 + bitPosition;
 }
 
 /** there is no relationship between the ioconfiguration register for a pin and its gpio designation.
  *  the LPC designers should be spanked for this, spanked hard and with something nasty. */
-constexpr int ioconf_map[] =
+constexpr unsigned ioconf_map[] =
 { // pass this a pinIndex
   3, 4, 7, 11, 12, 13, 19, 20, 24, 25, 26, 29,
   30, 31, 32, 36, 37, 40, 41, 42, 5, 14, 27, 38,
@@ -47,11 +47,11 @@ constexpr int ioconf_map[] =
 
 /** the pins for which this are true have different io configuration patterns than the rest.
 // 0.0 0.10 0.11   1.0 1.1 1.2 1.3 */
-constexpr bool isDoa(int pinIndex){
+constexpr bool isDoa(unsigned pinIndex){
   return (15>= pinIndex && pinIndex >=10)||pinIndex==0;
 }
 
-constexpr int gpioBankInterrupt(PortNumber portNum){
+constexpr unsigned gpioBankInterrupt(PortNumber portNum){
   return 56-portNum;
 }
 
@@ -70,14 +70,13 @@ enum PinBias { //#ordered for MODE field of iocon register
 class GPIO :public BoolishRef {
 protected:
   /** address associated with single bit mask */
-  u32 & dataAccess;
+  unsigned & dataAccess;
 
 public:
   GPIO(PortNumber portNum, BitNumber bitPosition):
-    dataAccess(atAddress(portBase(portNum)+((1<<bitPosition)<<2)))
-  {
+    dataAccess(*atAddress(portBase(portNum)+((1<<bitPosition)<<2))){
+    //#nada
   }
-
 
   /** set like writing to a boolean, @returns @param setHigh, per BoolishRef requirements*/
   bool operator =(bool setHigh) const {
@@ -199,12 +198,12 @@ public:
   GpioField (PortNumber portNum, unsigned msb, unsigned lsb);
   /** read actual pin values, might not match last output request if the pins are overloaded */
   inline operator unsigned() const {
-    return atAddress(address) >> lsb;
+    return *atAddress(address) >> lsb;
   }
 
   /** write data to pins, but only effective if an output, doesn''t cause a spontaneous reconfiguration */
   inline unsigned operator =(unsigned value) const {
-    atAddress(address) = value << lsb;
+    *atAddress(address) = value << lsb;
     return value;
   }
 };
@@ -323,16 +322,16 @@ template <PortNumber portNum, int msb, int lsb> class PortField {
 
 public:
   // read
-  inline operator uint32_t() const {
-    return atAddress(address) >> lsb;
+  inline operator unsigned() const {
+    return *atAddress(address) >> lsb;
   }
   // write
-  inline void operator =(uint32_t value) const {
-    atAddress(address) = value << lsb;
+  inline void operator =(unsigned value) const {
+    *atAddress(address) = value << lsb;
   }
   void configurePins(unsigned pattern){
-    int pini= pinIndex(portNum, lsb);
-    for(int which=lsb;which++<=msb;){
+    unsigned pini= pinIndex(portNum, lsb);
+    for(unsigned which=lsb;which++<=msb;){
       GPIO::setIocon(pini++,pattern);
     }
   }

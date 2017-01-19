@@ -66,7 +66,7 @@ struct WDT {//could be an inner namespace
   }
 
   static unsigned osc_hz(){
-    unsigned sel=sysConReg(0x24);
+    unsigned sel=*sysConReg(0x24);
     return numerator(sel) / denominator(sel);
   }
 

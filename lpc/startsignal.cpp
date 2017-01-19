@@ -16,7 +16,7 @@
 
 StartSignal::StartSignal(int which):
   bitnum(which & bitMask(0,5)),
-  base(LPC::sysConReg(0x200)+((which&bitMask(5))?16:0))
+  base(reinterpret_cast<unsigned>(LPC::sysConReg(0x200))+((which&bitMask(5))?16:0))
 {
   IrqAccess(which).enable();
 }

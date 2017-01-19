@@ -114,7 +114,7 @@ void GPIO::IrqControl::setDirection(bool output)const{
 
 void GpioField::setDirection(bool forOutput)const{
   u16 mask= reinterpret_cast<unsigned>(address)>>2;
-  u32 &directionRegister=atAddress((reinterpret_cast<unsigned>(address)&~0x7FFF)|0x8000);
+  unsigned &directionRegister(*atAddress((reinterpret_cast<unsigned>(address)&~0x7FFF)|0x8000));
   if(forOutput){
     directionRegister|= mask;
   } else {

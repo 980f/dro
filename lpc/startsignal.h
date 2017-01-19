@@ -18,7 +18,7 @@ class StartSignal {
   const unsigned base; //register base, there are 4 registers per group.
   /** there are 4 groups/attributes, @param group is the byte offset from the lpc manual. */
   unsigned &word(unsigned group) const {
-    return atAddress(base+group);
+    return *atAddress(base+group);
   }
 
 public:

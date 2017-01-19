@@ -9,7 +9,7 @@
 #include "cheapTricks.h"
 //#include "functional"
 #include "systick.h" //periodic behavior
-#include "P1343devkit.h" //for led's
+//#include "P1343devkit.h" //for led's
 
 using namespace LPC;
 
