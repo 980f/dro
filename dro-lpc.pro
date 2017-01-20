@@ -43,7 +43,8 @@ HEADERS +=\
     cortexm/lpc/gpio.h \
     cortexm/lpc/startsignal.h \
     packdatatest.h \
-    cortexm/lpc/usbinterface.h
+    cortexm/lpc/usbinterface.h \
+    ezcpp/tableofpointers.h
 
 
 SOURCES +=\

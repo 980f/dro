@@ -10,6 +10,7 @@
 #include "systick.h"
 using namespace SystemTimer;
 #include "polledtimer.h"
+#include "tableofpointers.h"
 
 #include "core_cmInstr.h"  //wfe OR wfi
 #include "cruntime.h"
@@ -95,7 +96,7 @@ void prepUart(){
 #include "minimath.h"
 
 static CyclicTimer slowToggle; //since action is polled might as well wait until main to declare the object.
-RegisterTimer(slowToggle);
+Register(PolledTimer,slowToggle);
 
 int main(void) {
   prepUart();
