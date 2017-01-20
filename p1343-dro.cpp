@@ -91,28 +91,9 @@ void prepUart(){
 #include "minimath.h"
 
 static CyclicTimer slowToggle; //since action is polled might as well wait until main to declare the object.
-Register(PolledTimer,slowToggle);
+RegisterTimer(slowToggle);
 
-////test object table:
-//struct alignas(4) TestObject{
-//  char id;
-//};
-//
-//MakeObjectAt(TestObject,last,9,'L');
-//MakeObject(TestObject,middle,'M');
-//
-//MakeConstTable(TestObject);
-//MakeObjectAt(TestObject,first,1,'F');
-//
-//int sumObjs(){
-//  int checksum(0);
-//  ForObjects(TestObject){
-//    checksum+=it->id;
-//  }
-//  return checksum;
-//}
-////end test object table.
-
+MakeRef(SystemTicker,PolledTimerServer);
 
 int main(void) {
   prepUart();

@@ -24,7 +24,7 @@ QMAKE_CXXFLAGS += -Wno-error=unused-parameter
 QMAKE_CXXFLAGS += -Wno-error=unused-function
 
 #for debug of macros:
-#QMAKE_CXXFLAGS += -save-temps
+QMAKE_CXXFLAGS += -save-temps
 
 DEFINES += useSTM32=0
 
