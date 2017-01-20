@@ -33,6 +33,10 @@ constexpr unsigned pinIndex(PortNumber portNum, BitNumber bitPosition){
   return portNum * 12 + bitPosition;
 }
 
+constexpr unsigned pinMask(unsigned pinIndex){
+  return 1U<<(pinIndex%12);
+}
+
 /** there is no relationship between the ioconfiguration register for a pin and its gpio designation.
  *  the LPC designers should be spanked for this, spanked hard and with something nasty. */
 constexpr unsigned ioconf_map[] =
@@ -71,10 +75,21 @@ class GPIO :public BoolishRef {
 protected:
   /** address associated with single bit mask */
   unsigned & dataAccess;
+public:
+  const unsigned pini;
+  static constexpr unsigned baseAddress(PortNumber portNum, BitNumber bitPosition){
+    return (portBase(portNum)+((1U<<bitPosition)<<2));
+  }
+
+  static constexpr unsigned baseAddress(unsigned pinIndex){
+    return baseAddress(pinIndex/12,pinIndex%12);
+  }
 
 public:
   GPIO(PortNumber portNum, BitNumber bitPosition):
-    dataAccess(*atAddress(portBase(portNum)+((1<<bitPosition)<<2))){
+    dataAccess(*atAddress(baseAddress(portNum,bitPosition))),
+    pini(pinIndex(portNum, bitPosition))
+  {
     //#nada
   }
 
@@ -87,6 +102,10 @@ public:
   /** read like a boolean, @returns 1 or 0, per BoolishRef requirements*/
   operator bool() const {
     return dataAccess!=0;
+  }
+
+  void setIocon(unsigned pattern)const{
+    GPIO::setIocon(pini,pattern);
   }
 
 public:
@@ -104,18 +123,6 @@ As of 2017jan14 SystemInit is calling this, that is simpler to maintain than an 
     // ignoring hysteresis option, it depends upon VDD so we'd have to define a symbol for that.
   }
 
-  static constexpr unsigned analogInputPattern(){
-    // we disable pullups and pulldowns on analog channels (bias==0)
-    // bit 7 is a zero for analog selection
-    return (1 << 6) | 1;
-  }
-
-  /** set the ioconfiguration for the given pin to the given pattern.
-   the pattern is adjusted herein for @see isDoa pins */
-  static void setIocon(int pinIndex,unsigned pattern){
-    //for those patterns we have generators for doa pins need a one added to them.
-    reinterpret_cast<unsigned *>(LPC::apb0Device(17))[ioconf_map[pinIndex]]=pattern + isDoa(pinIndex);
-  }
 public: //interrupt stuff. The manual is very opaque about this stuff. The IRQ stuff here only feeds the shared-per-port interrupts. Individual vectoring is via the Start logic.
   // values for gpio config as well as irq config.
   enum IrqStyle {
@@ -126,8 +133,6 @@ public: //interrupt stuff. The manual is very opaque about this stuff. The IRQ s
     LowEdge, // edge, pulled up
     HighEdge   // edge, pulled down
   };
-
-  friend class IrqControl;
 
   /** for slightly faster control than calling the respective members of GPIO itself.
    * The 0x1C bias herein is due to that being the only register that will always be accessed in an ISR, and hence worthy of the greatest optimization.
@@ -152,8 +157,8 @@ public: //interrupt stuff. The manual is very opaque about this stuff. The IRQ s
 
   public:
     IrqControl(const GPIO &gpio):
-      regbase(0),//( ~bitMask(0,16) & u32(gpio.dataAccess)) | (1<<15)), //interrupt clear register
-      mask(0)//(reinterpret_cast<>(&gpio.dataAccess)>>2) & bitMask(0,12))//recover single bit mask from address
+      regbase(atAddress(( ~bitMask(0,16) & (GPIO::baseAddress(gpio.pini) | (1<<15))))), //interrupt clear register
+      mask(pinMask(gpio.pini))
     {}
     void setIrqStyle(IrqStyle style,bool andEnable)const;
     inline void irq(bool enable)const;
@@ -164,6 +169,19 @@ public: //interrupt stuff. The manual is very opaque about this stuff. The IRQ s
   };
 
 
+  static constexpr unsigned analogInputPattern(){
+    // we disable pullups and pulldowns on analog channels (bias==0)
+    // bit 7 is a zero for analog selection
+    return (1 << 6) | 1;
+  }
+
+  /** set the ioconfiguration for the given pin to the given pattern.
+   the pattern is adjusted herein for @see isDoa pins */
+  static void setIocon(unsigned pinIndex,unsigned pattern){
+    //for those patterns we have generators for doa pins need a one added to them.
+    reinterpret_cast<unsigned *>(LPC::apb0Device(17))[ioconf_map[pinIndex]]=pattern + isDoa(pinIndex);
+  }
+
   void setDirection(bool output)const;
   void setIrqStyle(IrqStyle style,bool andEnable)const;
   void irq(bool enable)const;
@@ -173,10 +191,25 @@ public: //interrupt stuff. The manual is very opaque about this stuff. The IRQ s
 
 };
 
+
+
+class Output: public GPIO {
+public:
+  Output(PortNumber portNum, BitNumber bitPosition):GPIO(portNum,bitPosition){
+    setDirection(1);
+  }
+  //grrr, should be able to inherit this, wtf C++?
+  bool operator=(bool other)const{
+    return GPIO::operator=(other);
+  }
+
+};
+
 /** Multiple contiguous bits in a register, this presumes the bits are configured elsewhere via GpioPin objects,
  * this class just expedites access using the gpio port 'masked[]' based access
  */
 class GpioField {
+protected:
   // read the lpc manual, certain address bits are used as a mask
   const unsigned address;
   const unsigned lsb;
@@ -186,7 +219,7 @@ public:
 
   /** set all the pins associated with this field to the same configuration stuff. */
   void configurePins(unsigned pattern)const{
-    int pinIndex= lsb+ ((address>>16)&3)*12;
+    unsigned pinIndex= lsb+ ((address>>16)&3)*12;
     u16 picker=1<<(lsb+2);
     while(address & picker){
       GPIO::setIocon(pinIndex++,pattern);
@@ -212,6 +245,11 @@ public:
 struct GpioOutputField: public GpioField {
   GpioOutputField(PortNumber portNum, unsigned msb, unsigned lsb):GpioField(portNum,msb,lsb){
     setDirection(true);
+  }
+  /** write data to pins, but only effective if an output, doesn''t cause a spontaneous reconfiguration */
+  inline unsigned operator =(unsigned value) const {
+    *atAddress(address) = value << lsb;
+    return value;
   }
 };
 
@@ -314,7 +352,7 @@ public:
 /** Multiple contiguous bits in a register, this presumes the bits are configured elsewhere via GpioPin objects,
  * this class just expedites access using the gpio port 'masked[]' based access
  */
-template <PortNumber portNum, int msb, int lsb> class PortField {
+template <PortNumber portNum, unsigned msb, unsigned lsb> class PortField {
   enum {
     // read the lpc manual, certain address bits are used as a mask
     address = portBase(portNum) + ((1 << (msb + 3)) - (1 << (lsb + 2)))
@@ -335,6 +373,7 @@ public:
       GPIO::setIocon(pini++,pattern);
     }
   }
+
 };
 
 

@@ -9,32 +9,39 @@ namespace LPC {
 
 class P1343devkit {
 public:
-  //push button express access
-  const LPC::InputPin<2, 9> button;
-  //push button full function access, same physical component as @see button.
-  const LPC::GPIO but1;
+  const LPC::GPIO button={2,9};
   //other button is 'wakeup'
+  const LPC::GPIO wakeup={1,4};
   //reset button is pio0/0, if reset functionality is defeated.
-  const LPC::OutputPin<3, 0> led0;
-  const LPC::OutputPin<3, 1> led1;
-  const LPC::OutputPin<3, 2> led2;
-  const LPC::OutputPin<3, 3> led3;
-  const LPC::OutputPin<2, 4> led4;
-  const LPC::OutputPin<2, 5> led5;
-  const LPC::OutputPin<2, 6> led6;
-  const LPC::OutputPin<2, 7> led7;
+  const LPC::Output led0={3, 0};
+  const LPC::Output led1={3, 1};
+  const LPC::Output led2={3, 2};
+  const LPC::Output led3={3, 3};
+  const LPC::Output led4={2, 4};
+  const LPC::Output led5={2, 5};
+  const LPC::Output led6={2, 6};
+  const LPC::Output led7={2, 7};
 
   //parallel access to the leds
-  const LPC::PortField<3, 3, 0> lownib;
-  const LPC::PortField<2, 7, 4> highnib;
+  const GpioOutputField lownib={3, 3, 0};
+  const GpioOutputField highnib={2, 7, 4};
 
   P1343devkit();
   ~P1343devkit();
   /** set lamps as an 8-bit number, not particularly swift in execution since they are scattered about the i/o space*/
-  int operator =(int lamp )const;
+  unsigned operator =(unsigned lamp )const;
   /** set led by ordinal.*/
   const BoolishRef &led(unsigned which)const ;
   /** invert state of one led */
   void toggleLed(unsigned which=0)const ;
 };
 }
+
+#if 0
+UEXt connector pinout:
+  3.3  gnd
+  txd  rxd
+  scl  sda
+  miso mosi
+  sck  ssel
+#endif

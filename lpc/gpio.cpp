@@ -29,7 +29,7 @@ Reading the pin via raw interrupt sense is only slightly more expensive than usi
 //  SFR IC;  GPIOIC W 0x801C Interrupt clear register for port n 0x00
 
 void GPIO::setDirection(bool output)const{
-  GPIO::IrqControl myIrqc(*this);
+  IrqControl myIrqc(*this);
   myIrqc.setDirection(output);
 }
 

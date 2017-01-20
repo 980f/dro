@@ -53,20 +53,9 @@ inline void reset(unsigned bit){
 
 } // namespace LPC
 
-//figiured out how to use section naming to do this
-//struct TestInitSequence {
-//  static void setLevel(int &level){
-//    ++level;
-//  }
-//
-//  TestInitSequence(int myLevel){
-//    setLevel(myLevel);
-//  }
-//};
-
 #define DefineSingle(regname, addr) LPC:: regname & the ## regname(*reinterpret_cast<LPC:: regname *>(addr))
 
-////// this variation is for things like  multiple functionally identical timers:
+////// this variation is for things like multiple functionally identical timers:
 //#define DefineUnit(regname, luno, addr) LPC:: regname * const the ## regname ## luno(reinterpret_cast<LPC:: regname *>(addr))
 
 

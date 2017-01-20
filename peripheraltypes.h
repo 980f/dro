@@ -119,3 +119,4 @@ public:
 ///** macro for first template argument for SFRfield and SFRbit, mates to cmsis style type declarations which can't use c bit-fields.*/
 //#define SFRptr(absaddress, blocktype, member) (absaddress + offsetof(blocktype, member))
 //todo: constexpr version
+
