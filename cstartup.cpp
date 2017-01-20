@@ -98,7 +98,7 @@ void stackFault(){
 const RamInitBlock __data_segment__={0,{0,0}};
 const RamBlock __bss_segment__={0,0};
 const InitRoutine __init_table__[]={nullptr};
-const unsigned * __stack_end__(0);
+const unsigned __stack_limit__(0);
 #else
 //destructor failure stuff, but ours won't ever actually fail
 extern "C" int __aeabi_atexit(void *object, void (*destructor)(void *), void *dso_handle){

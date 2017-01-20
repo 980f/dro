@@ -24,7 +24,7 @@ class StartSignal {
 public:
   /** construction also enables the irq in the NVIC.
     if you statically construct one of these you will have to ensure its InitPriority follows NVIC configuration (but I don't think there is any ;) */
-  StartSignal(int which);
+  StartSignal(unsigned which);
   /** configure polarity, @param andEnable is whether to also enable locally */
   void configure(bool rising, bool andEnable) const;
   /** enable locally, doesn't alter NVIC state */
