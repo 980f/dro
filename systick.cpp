@@ -6,7 +6,7 @@
 #include "clocks.h"
 #include "minimath.h"  //safe division functions
 
-extern void PolledTimerServer();
+extern void PolledTimerServer();//todo: service scanner like for PolledTimer.
 
 namespace SystemTimer {
 //when the following were simple static's Rowley would not show them.
@@ -18,10 +18,10 @@ using namespace SystemTimer;
 HandleFault(15){ //15: system tick
   ++milliTime;
   if(milliTime == 0) {
-    //we have rolled over and anything waiting on an particular value will have failed
+    //we have rolled over and anything waiting on a particular value will have failed
     ++macroTime;//but rollover of this is not going to happen for decades.
   }
-  PolledTimerServer();
+  PolledTimerServer();//todo: service scanner like for PolledTimer.
 }
 
 

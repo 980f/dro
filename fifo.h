@@ -20,6 +20,8 @@ class Fifo {
     }
   }
 
+  /** copying doesn't make sense*/
+  Fifo(const Fifo&)=delete;
 public:
   Fifo(unsigned quantity,unsigned char *mem);
 
@@ -28,21 +30,31 @@ public:
 
   /** forget the content AND wipe the memory, the latter useful for debug.*/
   void wipe();
+
   /** @returns bytes present, but there may be more or less real soon. */
   inline unsigned available() const {
     return count;
   }
+
+  /** @returns bytes empty, but there may be more or less real soon. */
+  inline unsigned free() const {
+    return quantity-count;
+  }
+
   /** tries to put a byte into the memory, @returns whether there was room*/
   bool insert(unsigned char incoming);
+
   /** try to insert a byte, @returns whether full (-1), busy (-2), or suceeded (0).*/
   int attempt_insert(unsigned char incoming);
 
   /** reads and removes a byte from the memory, @returns the byte, or -1 if there wasn't one*/
   int remove();
+
   /** tries to insert a byte, @returns whether empty (-1), busy (-2), or suceeded (char removed).*/
   int attempt_remove();
 };
 
+/** allocate data and wrap it in a Fifo access mechanism */
 template <int size> class FifoBuffer:public Fifo {
 public:
   unsigned char buf[size];
@@ -52,7 +64,7 @@ public:
   }
   /** @returns char removed from fifo, or negative number for various errors. */
   operator int(){
-    return Fifo::remove();
+    return remove();
   }
 };
 

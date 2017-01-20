@@ -1,5 +1,5 @@
 #include "wtf.h"
-#include "cheapTricks.h"
+#include "cheaptricks.h"
 
 extern "C" bool wtf(int complaint) {
   static int lastWtf = 0;

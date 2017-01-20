@@ -74,6 +74,9 @@ SECTIONS {
 
 /* fully const'ed data, note that some things declared const end up in .data despite valiant attempts to compile time compute values. */
   .rodata :{
+    /** our table segments were not referenced explicitly and therefore were discarded when placed into rodata.
+       we can't just keep all rodata's because the libraries are chick full of such sections */
+    KEEP( *(SORT(.table.*)))
     *(SORT(.rodata.*))
     *(.rodata)
     /* shouldn't be getting these, want to know if we do:  .gnu.linkonce.r.* */

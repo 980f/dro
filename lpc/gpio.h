@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lpcperipheral.h"
-#include "cheapTricks.h"
+#include "cheaptricks.h"
 #include "boolish.h"
 #include "bitbanger.h"
 
