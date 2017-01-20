@@ -53,16 +53,16 @@ inline void reset(unsigned bit){
 
 } // namespace LPC
 
-
-struct TestInitSequence {
-  static void setLevel(int &level){
-    ++level;
-  }
-
-  TestInitSequence(int myLevel){
-    setLevel(myLevel);
-  }
-};
+//figiured out how to use section naming to do this
+//struct TestInitSequence {
+//  static void setLevel(int &level){
+//    ++level;
+//  }
+//
+//  TestInitSequence(int myLevel){
+//    setLevel(myLevel);
+//  }
+//};
 
 #define DefineSingle(regname, addr) LPC:: regname & the ## regname(*reinterpret_cast<LPC:: regname *>(addr))
 

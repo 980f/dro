@@ -1,11 +1,12 @@
 #include "gpio.h"
 #include "lpcperipheral.h" // for clock enable.
 
-TestInitSequence gpio24 InitStep(1024) (24);
-TestInitSequence gpio10 InitStep(1010) (10);
-
 
 using namespace LPC;
+
+
+//GPIO::Init();//this must run before any pins can be reliably be statically created.
+
 
 /*
 curiously: if you program a level triggered interrupt with low active level then leave it disabled

@@ -18,6 +18,6 @@ unsigned coreHz(void);
 unsigned clockRate(int bus);
 
 /** set clock to fastest possible with @internal osc else with its own logic as to which is faster.*/
- void warp9(bool internal);
+void warp9(bool internal);
 
 #endif // CLOCKS_H

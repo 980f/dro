@@ -2,9 +2,6 @@
 
 #include "lpcperipheral.h"
 
-TestInitSequence clock InitStep(1017) (17);
-TestInitSequence clock2 InitStep(1016) (16);
-
 #include "wdt.h"
 #include "bitbanger.h"
 #include "minimath.h" //multiply divide

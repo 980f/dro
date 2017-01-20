@@ -91,7 +91,7 @@ public:
 
 public:
   /** this must be called once before any other functions herein are used. Declaring it to be in an init section is a nice way to guarantee that.
-As of 2017jan14 SystemInit is calling this, that is simper to maintain than an array of function pointers in an explicit section.
+As of 2017jan14 SystemInit is calling this, that is simpler to maintain than an array of function pointers in an explicit section.
 */
   static void Init( void );
 

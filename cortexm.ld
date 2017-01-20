@@ -19,7 +19,18 @@ Some people have multiple initialization call tables, I pack them into one segme
 which eliminates the need for a slew of shared symbols and counting. I may have unintentionaly altered the
 priority, the point of the multiple lists was to allow for some control over order in which initialization
 routines execute, which is done via the order of input declarations.
-
+---
+The following dance is done for most sections:
+    KEEP (*(SORT(.data.*)))
+    KEEP (*(.data))
+This allows one to build a table from pieces in different translation units. For each such table use __attribute__((section(".ramorrom.tablename.somenumber"))
+applied to each entry. Reserve somenumber=0 for the first entry to the table, and 999999 or zzzzz or the like for marking the end of the table. 
+A simple unsigned allocated at each of those magic values gives you (with minor syntax) the address of the first and last entries in the table.
+A good example would be a set of logical timers that are run off of a common hardware timer. Each module needing such a timer includes the header with
+the table definition (and a macro to make the section declaration easy) and then declares a module level entity with the related attribute.
+The numbers following the tablename allow for ordering of the table, although most of the time a common value should be used and only give a few entities 
+a custom value to put them earlier or later in the table.
+---
 No special provision has been made for a ram vector table. The compiler can align a user built array of function pointers
 and user code can assign to the vector table system control register to enable it.
 
@@ -34,7 +45,7 @@ I have made it convenient to swap around the order of the sections without havin
 */
 
 SECTIONS {
-/* interrupt table */
+/* interrupt table.   Needs KEEP directive as these functions will only be referenced by this table. */
   .vectors ORIGIN(FLASH):{
     LONG( ORIGIN(SRAM)+LENGTH(SRAM))  /* set initial stack pointer to top of sram */
     KEEP (*( SORT(.vectors.*)  .vectors)) /* followed by reset and other handlers */
@@ -48,9 +59,10 @@ SECTIONS {
 
   } >FLASH
 
-/* things that should be called before main():*/
+/* things that should be called before main():  
+ Needs KEEP directive as these functions will only be referenced by this table.*/
   .init : {
-/* code that initializes static data via run-time computation.*/
+/* code that initializes static data via run-time computation. */
     KEEP (*(SORT(.init_array.*)))
     KEEP (*(.init_array))
  /* static constructors after C lib inits*/
@@ -62,15 +74,16 @@ SECTIONS {
 
 /* fully const'ed data, note that some things declared const end up in .data despite valiant attempts to compile time compute values. */
   .rodata :{
-    KEEP (*(SORT(.rodata.*)))
-    KEEP (*(.rodata))
-  /*  *(.rodata .rodata.* ) */
-    /*.gnu.linkonce.r.**/
+    *(SORT(.rodata.*))
+    *(.rodata)
+    /* shouldn't be getting these, want to know if we do:  .gnu.linkonce.r.* */
   } >FLASH
 
 /* zero initialized data */
   .bss (NOLOAD) : {/* NOLOAD is gratuitous, but is a reminder that all that is occurring is data allocation.*/
-    *(.bss .bss.*) /* .gnu.linkonce.b.*) *(COMMON)*/
+    *(SORT(.bss.*))
+    *(.bss)
+    /* shouldn't be getting these: .gnu.linkonce.b.*) *(COMMON)*/
   } >SRAM
 
   .startupClear : {/* the following initializes what my cstartup.cpp calls 'struct RamBlock' */
@@ -81,7 +94,8 @@ SECTIONS {
 
 /* data with constant initializers */
   .data :{
-    *(.data .data.* )
+    *(SORT(.data.*))
+    *(.data)
     /*.gnu.linkonce.d.*) */
   } >SRAM AT>FLASH
 
@@ -94,11 +108,12 @@ SECTIONS {
 
 /* diagnostic, or feed into a runtime stack check routine */
 
-  .findEnd :{ /* cute trick to get the total SRAM used. This trick keeps us from having to move the __stack_end__ assignment into whichever ram block becomes the last.*/
-    __stack_end__ = .;  /* if SP is ever below this value we are corrupting memory. */
+  .findEnd :{ /* cute trick to get the total SRAM used. This trick keeps us from having to move the __stack_limit__ assignment into whichever ram block becomes the last.*/
+    __stack_limit__ = .;  /* if SP is ever below this value we are corrupting memory. */
   } >SRAM
+
   /* value to someday feed into start of data segment should we ever figure out how to put the stack first so that we get a fault instead of wild behavior */
-  __stack_max__ = LENGTH(SRAM) - (__stack_end__ - ORIGIN(SRAM));
+  __stack_max__ = LENGTH(SRAM) - (__stack_limit__ - ORIGIN(SRAM));
 
 /* theoretically one can have a memory declaration for each peripheral,
   in C code declare an object for each as extern,
