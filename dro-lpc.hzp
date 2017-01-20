@@ -25,7 +25,8 @@
       arm_use_gcc_libraries="No"
       build_intermediate_directory="built-$(ProjectName)-$(Configuration)"
       build_output_directory="built-$(ProjectName)-$(Configuration)"
-      c_only_additional_options="" c_preprocessor_definitions=""
+      c_only_additional_options=""
+      c_preprocessor_definitions=""
       c_user_include_directories="cortexm;cortexm/lpc;ezcpp"
       debug_initial_breakpoint="cstartup"
       debug_initial_breakpoint_set_option="Never"
@@ -125,4 +126,9 @@
     gcc_debugging_level="Level 3"
     gcc_optimization_level="Debug"
     hidden="Yes" />
+  <configuration
+    Name="Common"
+    arm_library_optimization="Small"
+    arm_use_gcc_libraries="No"
+    link_include_standard_libraries="No" />
 </solution>

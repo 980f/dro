@@ -16,13 +16,12 @@ using namespace SystemTimer;
 
 #include "p1343_board.h"
 
+using namespace LPC;
 //#pragma GCC diagnostic ignored "-Wmissing-variable-declarations"
 
 //the next line actually sets up the clocks before main and pretty much anything else gets called:
 ClockStarter startup InitStep(InitHardware/2) (true,0,1000);//external wasn't working properly, need a test to check before switching to it.
-
-InitStep(InitApplication)
-P1343devkit board;//construction of this turns on internal peripherals and configures pins.
+P1343devkit board InitStep(InitApplication);//construction of this turns on internal peripherals and configures pins.
 Irq pushButton(board.button.pini);
 
 using namespace LPC;
@@ -112,7 +111,7 @@ int main(void) {
     stackFault();//useless here, present to test compilation.
     //re-enabling in the loop to preclude some handler shutting them down. That is unacceptable, although individual ones certainly can be masked.
     EnableInterrupts;//master enable
-    MNE(WFI);//wait for interrupt. Can't get a straight answer from arm on whether WFE also triggers on interrupts.
+    MNE(WFE);//wait for event, expecting interrupts to also be events.
     ++events;
     board.led1=board.button;
     if(slowToggle.hasFired()){
