@@ -38,11 +38,12 @@ HEADERS +=\
     cortexm/cruntime.h \
     ezcpp/boolish.h \
     ezcpp/minimath.h \
-    ezcpp/cheapTricks.h \
+    ezcpp/cheaptricks.h \
     cortexm/lpc/uart.h \
     cortexm/lpc/gpio.h \
     cortexm/lpc/startsignal.h \
-    packdatatest.h
+    packdatatest.h \
+    cortexm/lpc/usbinterface.h
 
 
 SOURCES +=\
@@ -58,12 +59,11 @@ SOURCES +=\
     cortexm/lpc/clocks.cpp \
     cortexm/lpc/gpio.cpp \
     cortexm/clockstarter.cpp \
-    ezcpp/cheapTricks.cpp \
+    ezcpp/cheaptricks.cpp \
     cortexm/lpc/uart.cpp \
     cortexm/fifo.cpp \
     cortexm/core-atomic.cpp \
-    p1343-dro.cpp \
-    cortexm/lpc/startsignal.cpp
+    p1343-dro.cpp
 
 
 DISTFILES += \
