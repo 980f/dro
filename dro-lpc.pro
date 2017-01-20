@@ -11,7 +11,7 @@ QMAKE_CXXFLAGS += -funsigned-char
 QMAKE_CXXFLAGS += -fdiagnostics-show-option
 
 QMAKE_CXXFLAGS += -Werror
-#we use attributes fairly heavily in firmware, could pragme just those files but none of us use attributes gratuitously or casually.
+#we use attributes fairly heavily in firmware, could pragma just those files but none of us use attributes gratuitously or casually.
 QMAKE_CXXFLAGS += -Wno-error=attributes
 #QMAKE_CXXFLAGS += -Wno-error=switch
 #QMAKE_CXXFLAGS += -Wno-error=deprecated-declarations
@@ -20,7 +20,7 @@ QMAKE_CXXFLAGS += -Wno-error=unused-parameter
 QMAKE_CXXFLAGS += -Wno-error=unused-function
 
 #for debug of macros:
-#QMAKE_CXXFLAGS += -save-temps
+QMAKE_CXXFLAGS += -save-temps
 
 DEFINES += useSTM32=0
 

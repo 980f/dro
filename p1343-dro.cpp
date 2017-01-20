@@ -98,6 +98,27 @@ void prepUart(){
 static CyclicTimer slowToggle; //since action is polled might as well wait until main to declare the object.
 Register(PolledTimer,slowToggle);
 
+//test object table:
+struct alignas(4) TestObject{
+  char id;
+};
+
+MakeObjectAt(TestObject,last,9,'L');
+MakeObject(TestObject,middle,'M');
+
+MakeConstTable(TestObject);
+MakeObjectAt(TestObject,first,1,'F');
+
+int sumObjs(){
+  int checksum(0);
+  ForObjects(TestObject){
+    checksum+=it->id;
+  }
+  return checksum;
+}
+//end test object table.
+
+
 int main(void) {
   prepUart();
   slowToggle.restart(ticksForSeconds(1.333));
@@ -111,7 +132,7 @@ int main(void) {
   gp2irq.prepare();
   //no longer doing this prophylactically in the loop as we now use atomics rather than interrupt gating to deal with concurrency.
   EnableInterrupts;//master enable
-
+  events=sumObjs();
   while (1) {
     MNE(WFE);//wait for event, expecting interrupts to also be events.
     ++events;
@@ -125,3 +146,4 @@ int main(void) {
   }
   return 0;
 }
+
