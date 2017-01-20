@@ -18,7 +18,6 @@ using namespace SystemTimer;
 #include "p1343_board.h"
 
 using namespace LPC;
-//#pragma GCC diagnostic ignored "-Wmissing-variable-declarations"
 
 //the next line actually sets up the clocks before main and pretty much anything else gets called:
 ClockStarter startup InitStep(InitHardware/2) (true,0,1000);//external wasn't working properly, need a test to check before switching to it.
@@ -29,12 +28,12 @@ using namespace LPC;
 
 HandleInterrupt(P1343ButtonIrqNum){
   board.toggleLed(4);
-  board.but1.irqAcknowledge();
+  board.button.irqAcknowledge();
 }
 
 HandleInterrupt(54){
   board.toggleLed(5);
-  board.but1.irqAcknowledge();
+  board.button.irqAcknowledge();
 }
 
 //p0-4,p05 for qei.
@@ -48,7 +47,6 @@ static int axis(0);
 
 HandleInterrupt( myIrq ) {
   //prime phase interrupt
-  //void QEI (void) {
   bool dirbit = otherPhase;
   if (dirbit) {
     --axis; //ignoring quarter phase for now
@@ -59,9 +57,7 @@ HandleInterrupt( myIrq ) {
 }
 
 #include "fifo.h"
-
 static FifoBuffer<33> outgoing;
-
 static FifoBuffer<63> incoming;
 
 #include "uart.h"
@@ -79,8 +75,7 @@ bool uartReceiver(int indata){
 /** called by isr when transmission becomes possible.
  *  @returns either an 8 bit unsigned character, or -1 to disable transmission events*/
 int uartSender(){
-  int outdata=outgoing;
-  return outdata;//negative for fifo empty
+  return outgoing;//negative for fifo empty
 }
 
 void prepUart(){
@@ -98,25 +93,25 @@ void prepUart(){
 static CyclicTimer slowToggle; //since action is polled might as well wait until main to declare the object.
 Register(PolledTimer,slowToggle);
 
-//test object table:
-struct alignas(4) TestObject{
-  char id;
-};
-
-MakeObjectAt(TestObject,last,9,'L');
-MakeObject(TestObject,middle,'M');
-
-MakeConstTable(TestObject);
-MakeObjectAt(TestObject,first,1,'F');
-
-int sumObjs(){
-  int checksum(0);
-  ForObjects(TestObject){
-    checksum+=it->id;
-  }
-  return checksum;
-}
-//end test object table.
+////test object table:
+//struct alignas(4) TestObject{
+//  char id;
+//};
+//
+//MakeObjectAt(TestObject,last,9,'L');
+//MakeObject(TestObject,middle,'M');
+//
+//MakeConstTable(TestObject);
+//MakeObjectAt(TestObject,first,1,'F');
+//
+//int sumObjs(){
+//  int checksum(0);
+//  ForObjects(TestObject){
+//    checksum+=it->id;
+//  }
+//  return checksum;
+//}
+////end test object table.
 
 
 int main(void) {
@@ -127,16 +122,16 @@ int main(void) {
 
   prime.enable();
   pushButton.enable();//@nvic
-  board.but1.setIrqStyle(GPIO::LowEdge,true);
+  board.button.setIrqStyle(GPIO::LowEdge,true);
   Irq gp2irq(gpioBankInterrupt(2));
   gp2irq.prepare();
   //no longer doing this prophylactically in the loop as we now use atomics rather than interrupt gating to deal with concurrency.
   EnableInterrupts;//master enable
-  events=sumObjs();
+//  events=sumObjs();
   while (1) {
     MNE(WFE);//wait for event, expecting interrupts to also be events.
     ++events;
-    board.led1=board.button;
+    board.led1 = board.button;
     if(slowToggle.hasFired()){
       board.toggleLed(0);
       if((outgoing='A'+(events&15))){

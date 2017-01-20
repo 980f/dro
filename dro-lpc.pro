@@ -5,10 +5,14 @@ CONFIG -= qt
 
 QMAKE_CFLAGS += -std=c99
 QMAKE_CFLAGS +=   -Wall
-QMAKE_CXXFLAGS += -std=c++11
+QMAKE_CXXFLAGS += -std=c++14
 
 QMAKE_CXXFLAGS += -funsigned-char
 QMAKE_CXXFLAGS += -fdiagnostics-show-option
+
+#finally had to give in and state this so that we can do address calculations:
+QMAKE_CXXFLAGS += -fpermissive
+#and that wasn't fucking good enough so add a pragma where needed (wasn't good enough by itself)
 
 QMAKE_CXXFLAGS += -Werror
 #we use attributes fairly heavily in firmware, could pragma just those files but none of us use attributes gratuitously or casually.
@@ -20,7 +24,7 @@ QMAKE_CXXFLAGS += -Wno-error=unused-parameter
 QMAKE_CXXFLAGS += -Wno-error=unused-function
 
 #for debug of macros:
-QMAKE_CXXFLAGS += -save-temps
+#QMAKE_CXXFLAGS += -save-temps
 
 DEFINES += useSTM32=0
 

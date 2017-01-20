@@ -1,6 +1,6 @@
 [submodule "ezcpp"]
 	path = ezcpp
-	url = https://980f@github.com/980f/ezcpp
+	url = https://980f@github.com/980f/ezcpp.git
 [submodule "cortexm"]
 	path = cortexm
 	url = https://980f@github.com/980f/cortexm.git
