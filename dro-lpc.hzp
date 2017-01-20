@@ -67,13 +67,13 @@
     <folder Name="Source Files">
       <configuration Name="Common" filter="cpp;h;s" />
       <folder Name="ezcpp">
-        <file file_name="ezcpp/cheapTricks.cpp" />
-        <file file_name="ezcpp/cheapTricks.h" />
         <file file_name="ezcpp/eztypes.h" />
         <file file_name="ezcpp/minimath.cpp" />
         <file file_name="ezcpp/minimath.h" />
         <file file_name="ezcpp/polledtimer.cpp" />
         <file file_name="ezcpp/polledtimer.h" />
+        <file file_name="../ezcpp/cheaptricks.cpp" />
+        <file file_name="../ezcpp/cheaptricks.h" />
       </folder>
       <folder Name="cortexm">
         <file file_name="cortexm/cstartup.cpp" />

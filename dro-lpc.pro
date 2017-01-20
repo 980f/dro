@@ -52,7 +52,6 @@ SOURCES +=\
     cortexm/cstartup.cpp \
     cortexm/wtf.cpp \
     ezcpp/minimath.cpp \
-    ezcpp/bundler.cpp \
     ezcpp/polledtimer.cpp \
     ezcpp/boolish.cpp \
     cortexm/lpc/p1343_board.cpp \

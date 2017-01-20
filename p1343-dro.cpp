@@ -43,7 +43,7 @@ Irq prime(primePhase.pini);
 #define myIrq 4
 
 //should go up and down depending upon the input signals;
-int axis(0);
+static int axis(0);
 
 HandleInterrupt( myIrq ) {
   //prime phase interrupt
@@ -59,9 +59,9 @@ HandleInterrupt( myIrq ) {
 
 #include "fifo.h"
 
-FifoBuffer<33> outgoing;
+static FifoBuffer<33> outgoing;
 
-FifoBuffer<63> incoming;
+static FifoBuffer<63> incoming;
 
 #include "uart.h"
 /** called by isr on an input event.
@@ -94,9 +94,11 @@ void prepUart(){
 
 #include "minimath.h"
 
+static CyclicTimer slowToggle; //since action is polled might as well wait until main to declare the object.
+RegisterTimer(slowToggle);
+
 int main(void) {
   prepUart();
-  CyclicTimer slowToggle; //since action is polled might as well wait until main to declare the object.
   slowToggle.restart(ticksForSeconds(1.333));
   //soft stuff
   int events=0;
@@ -106,17 +108,16 @@ int main(void) {
   board.but1.setIrqStyle(GPIO::LowEdge,true);
   Irq gp2irq(gpioBankInterrupt(2));
   gp2irq.prepare();
+  //no longer doing this prophylactically in the loop as we now use atomics rather than interrupt gating to deal with concurrency.
+  EnableInterrupts;//master enable
 
   while (1) {
-    stackFault();//useless here, present to test compilation.
-    //re-enabling in the loop to preclude some handler shutting them down. That is unacceptable, although individual ones certainly can be masked.
-    EnableInterrupts;//master enable
     MNE(WFE);//wait for event, expecting interrupts to also be events.
     ++events;
     board.led1=board.button;
     if(slowToggle.hasFired()){
       board.toggleLed(0);
-      if(outgoing.insert('A'+(events&15))){
+      if((outgoing='A'+(events&15))){
         theUart.beTransmitting();
       }
     }
