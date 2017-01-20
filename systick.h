@@ -34,3 +34,5 @@ u32 ticksForMicros(int us);
 /** ticks necessary to get a periodic interrupt at the @param hz rate*/
 u32 ticksForHertz(float hz); //approximate since we know a divide is required.
 }
+//functions to call on the SystemTick
+typedef void (*SystemTicker)();
