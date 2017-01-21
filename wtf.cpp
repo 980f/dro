@@ -1,7 +1,7 @@
 #include "wtf.h"
-#include "cheapTricks.h"
+#include "cheaptricks.h"
 
-bool wtf(int complaint) {
+extern "C" bool wtf(int complaint) {
   static int lastWtf = 0;
   static int repeats = 0;
   if (complaint) {

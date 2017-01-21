@@ -66,7 +66,7 @@ private:
 
 public:
   SFRfield(){
-    //this constructor is needed due to use of explict on the other constructor
+    //this constructor is needed due to use of explicit on the other constructor
   }
 
   /** this constructor is intended to be used for setting a value into a register which has no reference other than the assignment, but it is not easy to debug its use when something goes horribly wrong. */
@@ -119,3 +119,4 @@ public:
 ///** macro for first template argument for SFRfield and SFRbit, mates to cmsis style type declarations which can't use c bit-fields.*/
 //#define SFRptr(absaddress, blocktype, member) (absaddress + offsetof(blocktype, member))
 //todo: constexpr version
+

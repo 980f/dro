@@ -18,13 +18,13 @@ class StartSignal {
   const unsigned base; //register base, there are 4 registers per group.
   /** there are 4 groups/attributes, @param group is the byte offset from the lpc manual. */
   unsigned &word(unsigned group) const {
-    return atAddress(base+group);
+    return *atAddress(base+group);
   }
 
 public:
   /** construction also enables the irq in the NVIC.
     if you statically construct one of these you will have to ensure its InitPriority follows NVIC configuration (but I don't think there is any ;) */
-  StartSignal(int which);
+  StartSignal(unsigned which);
   /** configure polarity, @param andEnable is whether to also enable locally */
   void configure(bool rising, bool andEnable) const;
   /** enable locally, doesn't alter NVIC state */

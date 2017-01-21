@@ -1,11 +1,12 @@
 #include "gpio.h"
 #include "lpcperipheral.h" // for clock enable.
 
-TestInitSequence gpio24 InitStep(1024) (24);
-TestInitSequence gpio10 InitStep(1010) (10);
-
 
 using namespace LPC;
+
+
+//GPIO::Init();//this must run before any pins can be reliably be statically created.
+
 
 /*
 curiously: if you program a level triggered interrupt with low active level then leave it disabled
@@ -28,7 +29,7 @@ Reading the pin via raw interrupt sense is only slightly more expensive than usi
 //  SFR IC;  GPIOIC W 0x801C Interrupt clear register for port n 0x00
 
 void GPIO::setDirection(bool output)const{
-  GPIO::IrqControl myIrqc(*this);
+  IrqControl myIrqc(*this);
   myIrqc.setDirection(output);
 }
 
@@ -114,7 +115,7 @@ void GPIO::IrqControl::setDirection(bool output)const{
 
 void GpioField::setDirection(bool forOutput)const{
   u16 mask= reinterpret_cast<unsigned>(address)>>2;
-  u32 &directionRegister=atAddress((reinterpret_cast<unsigned>(address)&~0x7FFF)|0x8000);
+  unsigned &directionRegister(*atAddress((reinterpret_cast<unsigned>(address)&~0x7FFF)|0x8000));
   if(forOutput){
     directionRegister|= mask;
   } else {

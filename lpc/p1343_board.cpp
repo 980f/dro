@@ -2,38 +2,33 @@
 
 #include "clocks.h"
 
-
-TestInitSequence mordor  InitStep(1050) (50);
-TestInitSequence boarder InitStep(1011) (11);
-
-
 const u32 EXTERNAL_HERTZ=12000000;
 
 using namespace LPC;
 
-P1343devkit::P1343devkit():
-  button(PullUp),
-  but1(2,9){
+P1343devkit::P1343devkit(){
+  button.setIocon(PullUp);
   this->operator =(0xB9);
 }
+
 
 P1343devkit::~P1343devkit(){
   this->operator =(0); // lights off.
 }
 
-int P1343devkit::operator =(int lamp){
+unsigned P1343devkit::operator =(unsigned lamp)const {
   lownib = lamp;
   highnib = lamp >> 4;
   return lamp;
 }
 
-void P1343devkit::toggleLed(unsigned which){
-  BoolishRef &anLed(led(which));
+void P1343devkit::toggleLed(unsigned which)const {
+  const BoolishRef &anLed(led(which));
   anLed=1-anLed;
 }
 
 
-BoolishRef &P1343devkit::led(unsigned which){
+const BoolishRef &P1343devkit::led(unsigned which)const {
   switch(which){
   default:
   case 0: return led0;
@@ -46,3 +41,4 @@ BoolishRef &P1343devkit::led(unsigned which){
   case 7: return led7;
   }
 }
+

@@ -106,6 +106,6 @@ using namespace LPC;
  *----------------------------------------------------------------------------*/
 
 void SystemInit (void){
-  LPC::GPIO::Init(); // needed before static constructors for its defined classes run.
+  GPIO::Init(); // needed before static constructors for its defined classes run.
   //leaving clock at power up default.
 } // SystemInit

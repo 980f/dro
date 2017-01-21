@@ -71,7 +71,7 @@ constexpr unsigned uartRegister(unsigned offset){
 }
 
 constexpr unsigned &uartClockDivider(){
-  return sysConReg(0x98);
+  return *sysConReg(0x98);
 }
 
 // line control register:
@@ -120,7 +120,7 @@ Uart::Uart():
 
 /** @param which 0:dsr, 1:dcd, 2:ri @param onP3 true: port 3 else port 2 */
 void configureModemWire(int which, bool onP3){
-  atAddress(ioConReg(0xb4+(which<<2)))=onP3;
+  *atAddress(ioConReg(0xb4+(which<<2)))=onP3;
 }
 
 
@@ -139,8 +139,8 @@ unsigned Uart::setBaudPieces(unsigned divider, unsigned mul, unsigned div, unsig
   SFRfield<FDR, 4, 4> fmul(mul);
 
   dlab = 1;
-  atAddress(uartRegister(0x4))= divider >> 8;
-  atAddress(uartRegister(0x0))= divider;
+  *atAddress(uartRegister(0x4))= divider >> 8;
+  *atAddress(uartRegister(0x0))= divider;
   dlab = 0;
   return rate((mul * sysFreq) , ((mul + div) * divider * uartClockDivider() * 16));
 } // Uart::setBaud
@@ -215,7 +215,7 @@ void Uart::beTransmitting(bool enabled){
   if(enabled){
     if(!transmitHoldingRegisterEmptyInterruptEnable){
       if(int nextch = (*send)() >= 0) {
-        atAddress(uartRegister(0)) = nextch;
+        *atAddress(uartRegister(0)) = nextch;
         //enable interrupts
         transmitHoldingRegisterEmptyInterruptEnable=1;
       }

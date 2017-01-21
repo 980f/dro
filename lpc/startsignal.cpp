@@ -10,13 +10,11 @@
 8: "reset" 0..31 1=reset, this is write only.
 12: "pending"  1=pending
 +16 for 32..39
-
-
 */
 
-StartSignal::StartSignal(int which):
+StartSignal::StartSignal(unsigned which):
   bitnum(which & bitMask(0,5)),
-  base(LPC::sysConReg(0x200)+((which&bitMask(5))?16:0))
+  base(reinterpret_cast<unsigned>(LPC::sysConReg(0x200))+((which&bitMask(5))?16:0))
 {
   IrqAccess(which).enable();
 }

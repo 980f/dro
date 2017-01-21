@@ -65,10 +65,10 @@ void cstartup(void){
 void (*resetVector)(void) __attribute__((section(".vectors.1"))) = cstartup;
 // rest of table is in nvic.cpp, trusting linker script to order files correctly per the numerical suffix
 
-extern unsigned const * __stack_end__;//created in linker script
+extern unsigned const __stack_limit__;//created in linker script
 void stackFault(){
   unsigned here;
-  if(&here <= __stack_end__){//todo: should add a few so that we can call wtf without risk
+  if(&here <= &__stack_limit__){//todo: should add a few so that we can call wtf without risk
     wtf(99999999);
     generateHardReset();
   }
@@ -78,6 +78,19 @@ void stackFault(){
 const RamInitBlock __data_segment__={0,{0,0}};
 const RamBlock __bss_segment__={0,0};
 const InitRoutine __init_table__[]={nullptr};
-const unsigned * __stack_end__(0);
+const unsigned __stack_limit__(0);
 #else
+//destructor failure stuff, but ours won't ever actually fail
+extern "C" int __aeabi_atexit(void *object, void (*destructor)(void *), void *dso_handle){
+  return 0;
+}
+
+//extern "C" {
+//  void __aeabi_atexit(){
+//    wtf(-1);
+//  }
+//  void __dso_handle(){
+//    wtf(-2);
+//  }
+//}
 #endif
