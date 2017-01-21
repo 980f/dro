@@ -6,24 +6,31 @@
 extern "C" [[gnu::naked,noreturn]] void generateHardReset();
 
 /** these structs are created via LONG(...) directives in the ld file.
-   That way only one symbol needs to be shared between the ld and this file for each block,
-   and the machine code reduction makes up for the explicit storing of these values in the rom .*/
+   That way only one symbol needs to be shared between the ld and this file for each block.*/
 struct RamBlock {
   unsigned int *address;
   unsigned int length;
+  /** NB: this startup presumes 32 bit aligned, 32bit padded bss, but linker gives byte addresses and counts.
+   *  Does anyone remember what BSS originally meant? Nowadays it is 'zeroed static variables' */
+  void go(void){
+    length /= sizeof(unsigned int); // convert byte count to u32 count.
+    while(length-- > 0) {
+      *address++ = 0;
+    }
+  }
 };
 
 struct RamInitBlock {
   const unsigned int *rom;
   RamBlock ram;
+  /** NB: this startup presumes 32 bit aligned, 32bit padded structures, but linker gives byte addresses and counts */
+  void go(void){
+    ram.length /= sizeof(unsigned int); // convert byte count to u32 count.
+    while(ram.length-- > 0) {
+      *ram.address++ = *rom++;
+    }
+  }
 };
-
-/** NB: this startup presumes 32 bit aligned, 32bit padded structures, but linker gives byte addresses and counts */
-void data_init(const RamInitBlock &block);
-
-/** NB: this startup presumes 32 bit aligned, 32bit padded bss, but linker gives byte addresses and counts.
- *  Does anyone remember what BSS originally meant? Nowadays it is 'zeroed static variables' */
-void bss_init(const RamBlock &block);
 
 /** every type of code driven initialization is invoked through a simple void fn(void)*/
 typedef void (*InitRoutine)(void) ;

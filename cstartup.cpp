@@ -19,26 +19,6 @@ const extern RamBlock __bss_segment__;  //name coordinated with cortexm.ld
 //run all code in .init sections.
 const extern InitRoutine __init_table__[];//name coordinated with cortexm.ld
 
-/** NB: this startup presumes 32 bit aligned, 32bit padded structures, but linker gives byte addresses and counts. 
-OTOH gnu c compiler puts alignment commands in every section so we rely upon that here for speed. */
-void data_init(const RamInitBlock &block) /*ISRISH*/ {
-  RamInitBlock copy=block;
-  copy.ram.length /= sizeof(unsigned int); // convert byte count to u32 count.
-  while(copy.ram.length-- > 0) {
-    *copy.ram.address++ = *copy.rom++;
-  }
-}
-
-/** NB: this startup presumes 32 bit aligned, 32bit padded bss, but linker gives byte addresses and counts.
- *  Does anyone remember what BSS originally meant? Nowadays it is 'zeroed static variables' */
-void bss_init(const RamBlock &block)  {
-  RamBlock bss=block;
-  bss.length /= sizeof(unsigned int); // convert byte count to u32 count.
-  while(bss.length-- > 0) {
-    *bss.address++ = 0;
-  }
-}
-
 /** every type of code driven initialization is invoked through a simple void fn(void)*/
 typedef void (*InitRoutine)(void) ;
 const extern InitRoutine __init_table__[];//name coordinated with cortexm.ld
@@ -68,9 +48,9 @@ extern "C" //to make it easy to pass this to linker sanity checker.
 [[gnu::naked,noreturn]] //we don't need no stinking stack frame (no params, no locals)
 void cstartup(void){
   // initialize static variables
-  data_init(__data_segment__);
+  RamInitBlock(__data_segment__).go();
   // Zero other static variables.
-  bss_init(__bss_segment__);
+  RamBlock(__bss_segment__).go();
   // a CMSIS hook:
   SystemInit(); // stuff that C++ construction might need, like turning on hardware modules (e.g. my LPC::GPIO::Init())
 
