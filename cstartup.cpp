@@ -85,6 +85,9 @@ extern "C" int __aeabi_atexit(void *object, void (*destructor)(void *), void *ds
   return 0;
 }
 
+//these guys get linked in when you have explicit destructors, even if those destructores are "=default".
+//... that keeps on rehappening due to the warning of 'have virtual functions but not virtual destructor' inspiring the creation of pointless destructors.
+//... which I guess is a potential burden- not having destructors on classes that happen to be used statically, but might be useful 'automatically' as well.
 //extern "C" {
 //  void __aeabi_atexit(){
 //    wtf(-1);
