@@ -1,8 +1,0 @@
-echo "####################################################"
-for gitdir in . ezcpp cortexm ; do 
-  echo "Applying $1 to $gitdir"
-  pushd $gitdir
-  git $@ 
-  popd
-done
- 
