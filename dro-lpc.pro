@@ -37,7 +37,6 @@ HEADERS +=\
     cortexm/wtf.h \
     ezcpp/eztypes.h \
     cortexm/peripheral.h \
-    ezcpp/bundler.h \
     ezcpp/polledtimer.h \
     cortexm/cruntime.h \
     ezcpp/boolish.h \
