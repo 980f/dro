@@ -74,6 +74,7 @@
         <file file_name="ezcpp/polledtimer.h" />
         <file file_name="ezcpp/cheaptricks.cpp" />
         <file file_name="ezcpp/cheaptricks.h" />
+        <file file_name="ezcpp/tableofpointers.h" />
       </folder>
       <folder Name="cortexm">
         <file file_name="cortexm/cstartup.cpp" />
