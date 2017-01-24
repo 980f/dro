@@ -31,7 +31,7 @@ HandleInterrupt(P1343ButtonIrqNum){
   board.button.irqAcknowledge();
 }
 
-HandleInterrupt(54){
+HandleInterrupt(54){//this gets the button irq
   board.toggleLed(5);
   board.button.irqAcknowledge();
 }
@@ -97,13 +97,13 @@ MakeRef(SystemTicker,PolledTimerServer);
 
 int main(void) {
   prepUart();
-  slowToggle.restart(ticksForSeconds(1.333));
+  slowToggle.restart(ticksForSeconds(0.333));
   //soft stuff
   int events=0;
 
   prime.enable();
   pushButton.enable();//@nvic
-  board.button.setIrqStyle(GPIO::LowEdge,true);
+  board.button.setIrqStyle(GPIO::AnyEdge,true);
   Irq gp2irq(gpioBankInterrupt(2));
   gp2irq.prepare();
   //no longer doing this prophylactically in the loop as we now use atomics rather than interrupt gating to deal with concurrency.
@@ -112,7 +112,7 @@ int main(void) {
   while (1) {
     MNE(WFE);//wait for event, expecting interrupts to also be events.
     ++events;
-    board.led1 = board.button;
+//works, now will do using isr    board.led1 = board.button;
     if(slowToggle.hasFired()){
       board.toggleLed(0);
       if((outgoing='A'+(events&15))){
