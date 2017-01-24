@@ -48,7 +48,7 @@ extern "C" //to make it easy to pass this to linker sanity checker.
 [[gnu::naked,noreturn]] //we don't need no stinking stack frame (no params, no locals)
 void cstartup(void){
   // initialize static variables
-  RamInitBlock(__data_segment__).go();
+  RamInitBlock(__data_segment__).go();//ICE
   // Zero other static variables.
   RamBlock(__bss_segment__).go();
   // a CMSIS hook:

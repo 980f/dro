@@ -30,7 +30,7 @@ HandleFault(15){ //15: system tick
 
 
 struct SysTicker {
-  unsigned int enableCounting : 1; //enable counting
+  volatile unsigned int enableCounting : 1; //enable counting
   unsigned int enableInterrupt : 1; //enable interrupt
   unsigned int fullspeed : 1; //1: main clock, 0: that divided by 8 (St's choice, ignore their naming)
   unsigned int : 16 - 3;
@@ -136,10 +136,16 @@ u32 snapTime(void){
 }
 
 u32 snapTickTime(void){
+  u32 snapms;
+  u32 snaptick;
   theSysTicker.enableCounting = 0; //can't use bitlock on a field in a struct :(
-  u32 retval = ((milliTime + 1) * (theSysTicker.reload + 1)) - theSysTicker.value;
-  theSysTicker.enableCounting = 1; //todo:3 add some to systick to compensate for the dead time of this routine.
-  return retval;
+  snapms=milliTime;
+  snaptick=theSysTicker.value;
+  theSysTicker.enableCounting = 1; 
+  //add some to systick to compensate for the dead time of this routine.
+  snaptick-=6;//counted clocks between the disable and enable operations
+  //todo: might have skipped a tick, and failed to execute the isr which could cause some usages to have an unexpected delay or extension.
+  return ((snapms + 1) * (theSysTicker.reload + 1)) - snaptick;
 }
 
 u64 snapLongTime(void){//this presumes  little endian 64 bit integer.
