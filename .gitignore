@@ -6,3 +6,7 @@ dro
 *unc-backup*~
 dro-THUMB-Debug/
 *-THUMB-Flash-Debug/
+build-*
+cortexm
+ezcpp
+gitlist
