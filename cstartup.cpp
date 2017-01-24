@@ -48,9 +48,9 @@ extern "C" //to make it easy to pass this to linker sanity checker.
 [[gnu::naked,noreturn]] //we don't need no stinking stack frame (no params, no locals)
 void cstartup(void){
   // initialize static variables
-  RamInitBlock(__data_segment__).go();//ICE
+  __data_segment__.go();
   // Zero other static variables.
-  RamBlock(__bss_segment__).go();
+  __bss_segment__.go();
   // a CMSIS hook:
   SystemInit(); // stuff that C++ construction might need, like turning on hardware modules (e.g. my LPC::GPIO::Init())
 

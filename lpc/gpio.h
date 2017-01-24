@@ -269,7 +269,8 @@ protected: // for simple gpio you must use an extended class that defines read v
     doa = (portNum == 0 && (bitPosition == 0 || bitPosition == 10 || bitPosition == 11)) || // 0.0 0.10 0.11
     (portNum == 1 && (bitPosition < 4)), // 1.0 1.1 1.2 1.3
     mode = ioconf_map[pini], // iocon array index
-    pinn = base + (mask << 2)    // physical pin 'masked' access location "address == pattern"
+    pinn = base + (mask << 2),    // physical pin 'masked' access location "address == pattern"
+    ctrl = base + (1<<15)
   };
 
   /** set associated IOCON register to @param pattern.
@@ -279,13 +280,28 @@ protected: // for simple gpio you must use an extended class that defines read v
   }
 
   /** @returns reference to the masked access port of the register, mask set to the one bit for this pin. @see InputPin and @see OutputPin classes for use, unlike stm32 bitbanding some shifting is still needed. */
-  inline uint32_t &pin() const {
-    return *reinterpret_cast<uint32_t *>(PortPin<portNum, bitPosition>::pinn);
+  inline unsigned &pin() const {
+    return *reinterpret_cast<unsigned *>(/*PortPin<portNum, bitPosition>::*/pinn);
   }
 
-  void setDirection(bool asOutput){
-    SFRbit<portControl(portNum,0),bitPosition>dirbit;
-    dirbit=asOutput; //the LPC CMSIS code checked before setting, without any explanation as to why that would be needed.
+  inline void setRegister(unsigned offset)const{
+    *reinterpret_cast<unsigned*>(ctrl+offset) |=  mask;
+  }
+
+  inline void clearRegister(unsigned offset)const{
+    *reinterpret_cast<unsigned*>(ctrl+offset) &= ~mask;
+  }
+
+  inline void assignRegister(unsigned offset,bool level)const{
+    if(level){
+      setRegister(offset);
+    } else {
+      clearRegister(offset);
+    }
+  }
+
+  void setDirection(bool asOutput)const{
+    assignRegister(0,asOutput); //the LPC CMSIS code checked before setting, without any explanation as to why that would be needed.
   }
 
 public:
@@ -321,6 +337,10 @@ public:
 
 /** simple digital input */
 template <PortNumber portNum, BitNumber bitPosition> class InputPin: public PortPin<portNum, bitPosition> {
+  using PortPin<portNum, bitPosition>::clearRegister;
+  using PortPin<portNum, bitPosition>::setRegister;
+  using PortPin<portNum, bitPosition>::assignRegister;
+
 private:
   bool operator =(bool)const {return false;} // private because this is a read-only entity.
 
@@ -329,6 +349,55 @@ public:
   InputPin(PinBias yanker = BusLatch): PortPin<portNum, bitPosition>(this->ioconPattern(yanker)){
     //todo: set direction to 0, which is the power up setting so not urgent in our typical use of static configuration.
     PortPin<portNum, bitPosition>::setDirection(0);
+  }
+
+  void irqAcknowledge() const {
+    setRegister(0x1c);
+  }
+
+  void irq(bool enable)const{
+    assignRegister(16,enable);
+  }
+
+  void setIrqStyle(GPIO::IrqStyle style, bool andEnable)const{
+    //disable before recongifuring
+    clearRegister(16);
+
+    //  atAddress(regbase)&=~mask; //force to input, user can make it an output and interrupt themselves later if they so wish.
+    switch(style){
+    case GPIO::NotAnInterrupt : // in case someone forgets to explicitly select a mode, or we wish to dynamically deconfigure.
+      //nothing to do, we have disabled it above so it doesn't matter if we leave it somewhat configured.
+      break;
+    case GPIO::AnyEdge: // edge, either edge, input mode buslatch
+      clearRegister(4); //pro forma clear of level sense
+      setRegister(8);  //double edge
+      clearRegister(12);//pro forma clear of direction
+      break;
+    case GPIO::LowActive: // level, pulled up
+      setRegister(4);
+      clearRegister(8);
+      clearRegister(12);
+      break;
+    case GPIO::HighActive: // level, pulled down
+      setRegister(4);
+      clearRegister(8);
+      setRegister(12);
+      break;
+    case GPIO::LowEdge: // edge, pulled up
+      clearRegister(4);
+      clearRegister(8);
+      clearRegister(12);
+      break;
+    case GPIO::HighEdge:// edge, pulled down
+      clearRegister(4);
+      clearRegister(8);
+      setRegister(12);
+      break;
+    }
+
+    if(andEnable){
+      setRegister(16);
+    }
   }
 
 };

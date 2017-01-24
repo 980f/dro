@@ -90,7 +90,7 @@ public:
 };
 
 
-/** single bit, ignoring the possibility it is in bitbanded memory (an stm32 special feature it seems).
+/** single bit, ignoring the possibility it is in bitbanded memory.
  *  This is NOT derived from SFRfield as we can do some optimizations that the compiler might miss (or developer might have disabled)*/
 template <unsigned sfraddress, int pos> class SFRbit : public BoolishRef {
   enum {

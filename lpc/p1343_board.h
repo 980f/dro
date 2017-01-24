@@ -9,7 +9,7 @@ namespace LPC {
 
 class P1343devkit {
 public:
-  const LPC::GPIO button={2,9};
+  const LPC::InputPin<2,9> button;//={2,9};
   //other button is 'wakeup'
   const LPC::GPIO wakeup={1,4};
   //reset button is pio0/0, if reset functionality is defeated.

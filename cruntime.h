@@ -12,10 +12,11 @@ struct RamBlock {
   unsigned int length;
   /** NB: this startup presumes 32 bit aligned, 32bit padded bss, but linker gives byte addresses and counts.
    *  Does anyone remember what BSS originally meant? Nowadays it is 'zeroed static variables' */
-  void go(void){
-    length /= sizeof(unsigned int); // convert byte count to u32 count.
-    while(length-- > 0) {
-      *address++ = 0;
+  void go(void)const{
+    unsigned *target=address;
+    unsigned count=length/sizeof(unsigned int); // convert byte count to u32 count.
+    while(count-- > 0) {
+      *target++ = 0;
     }
   }
 };
@@ -24,10 +25,13 @@ struct RamInitBlock {
   const unsigned int *rom;
   RamBlock ram;
   /** NB: this startup presumes 32 bit aligned, 32bit padded structures, but linker gives byte addresses and counts */
-  void go(void){
-    ram.length /= sizeof(unsigned int); // convert byte count to u32 count.
-    while(ram.length-- > 0) {
-      *ram.address++ = *rom++;
+  void go(void)const {
+  //using local is slightly faster than member
+    const unsigned int *source;
+    unsigned *target=ram.address;
+    unsigned length=ram.length/sizeof(unsigned int); // convert byte count to u32 count.
+    while(length-- > 0) {
+      *target++ = *source++;
     }
   }
 };

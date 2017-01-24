@@ -7,7 +7,7 @@ const u32 EXTERNAL_HERTZ=12000000;
 using namespace LPC;
 
 P1343devkit::P1343devkit(){
-  button.setIocon(PullUp);
+//  button.setIocon(PullUp);
   this->operator =(0xB9);
 }
 
