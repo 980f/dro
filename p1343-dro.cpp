@@ -20,16 +20,16 @@ using namespace SystemTimer;
 using namespace LPC;
 
 //the next line actually sets up the clocks before main and pretty much anything else gets called:
-ClockStarter startup InitStep(InitHardware/2) (true,0,1000);//external wasn't working properly, need a test to check before switching to it.
+ClockStarter startup InitStep(InitHardware/2) (true,0,1000);//external clock wasn't working properly, need a test to check before switching to it.
 P1343devkit board InitStep(InitApplication);//construction of this turns on internal peripherals and configures pins.
 Irq pushButton(board.button.pini);
 
 using namespace LPC;
 
-HandleInterrupt(P1343ButtonIrqNum){
-  board.toggleLed(4);
-  board.button.irqAcknowledge();
-}
+//HandleInterrupt(P1343ButtonIrqNum){
+//  board.toggleLed(4);
+//  board.button.irqAcknowledge();
+//}
 
 HandleInterrupt(54){//this gets the button irq
   board.toggleLed(5);
