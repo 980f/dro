@@ -9,7 +9,7 @@
 /** peripheral base addresses are computable from their indexes into the clock control registers: */
 constexpr volatile u32 * APB_Block(unsigned bus2, unsigned slot) { return atAddress(PeripheralBase | bus2 << 16 | slot << 10);}
 
-constexpr volatile u32 * APB_Band(unsigned bus2, unsigned slot)  { return atAddress(stmPeripheralBand | bus2 << 21 | slot << 15);}
+constexpr volatile u32 * APB_Band(unsigned bus2, unsigned slot)  { return atAddress(PeripheralBand | bus2 << 21 | slot << 15);}
 
 const u32 RCCBASE (0x40021000);
 

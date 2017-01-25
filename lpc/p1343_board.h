@@ -4,14 +4,11 @@
 
 namespace LPC {
 
-//portIndex(2,9) is irq for button
-#define P1343ButtonIrqNum 33
-
 class P1343devkit {
 public:
   const LPC::InputPin<2,9> button;//={2,9};
   //other button is 'wakeup'
-  const LPC::GPIO wakeup={1,4};
+  const LPC::InputPin<1,4> wakeup;
   //reset button is pio0/0, if reset functionality is defeated.
   const LPC::Output led0={3, 0};
   const LPC::Output led1={3, 1};

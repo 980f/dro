@@ -404,15 +404,15 @@ public:
 
 /** simple digital output */
 template <PortNumber portNum, BitNumber bitPosition> class OutputPin: public PortPin<portNum, bitPosition>{
+  typedef  PortPin<portNum, bitPosition> super;
 public:
   /** @param yanker controls pull-up modality */
   OutputPin(PinBias yanker = BusLatch): PortPin<portNum, bitPosition>(this->ioconPattern(yanker)){
-    // todo: coerce making it an output
-    PortPin<portNum, bitPosition>::setDirection(1);
+    super::setDirection(1);
   }
 
   bool operator =(bool newvalue)const{
-    PortPin<portNum, bitPosition>::pin() = newvalue ? ~0 : 0; // don't need to mask or shift, just present all ones or all zeroes and let the hardware 'mask with address' take care of business.
+    super::pin() = newvalue ? ~0 : 0; // don't need to mask or shift, just present all ones or all zeroes and let the hardware 'mask with address' take care of business.
     return newvalue;
   }
 

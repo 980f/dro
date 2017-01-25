@@ -41,12 +41,12 @@ struct IrqAccess {
 protected:
 
   /** @returns reference to word related to the feature. */
-  unsigned &controlWord(unsigned grup)const{
+  inline unsigned &controlWord(unsigned grup)const{
     return *reinterpret_cast <unsigned *> (grup | bias);
   }
 
   /** this is for the registers where you write a 1 to a bit to make something happen. */
-  void strobe(unsigned grup)const{
+  inline void strobe(unsigned grup)const{
     controlWord(grup) = mask;
   }
 

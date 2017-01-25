@@ -72,6 +72,17 @@ SECTIONS {
   } >FLASH
   __init_table__ = LOADADDR(.init);
 
+/* exit table, although a good mcu program never exits */
+  .exit : {
+    *(SORT(.dtors.*))    /* explicit destructions,alh thinks this should follow the plain dtors */
+    *(.dtors)            /* implicit destructions (nameless objects) */
+    *(.fini_array)       /* general exit stuff */
+    *(SORT(.fini_array.*))  /* particular exit stuff, alh thinks this should precede the plan fini_array */
+    LONG(0)  /*mark end of table, instead of having code for decrementing a count */
+  } >FLASH
+__exit_table__ = LOADADDR(.exit);
+
+
 /* fully const'ed data, note that some things declared const end up in .data despite valiant attempts to compile time compute values. */
   .rodata :{
     /** our table segments were not referenced explicitly and therefore were discarded when placed into rodata.

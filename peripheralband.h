@@ -1,5 +1,6 @@
 #pragma once
-
+#include "eztypes.h"
+#include "peripheraltypes.h"
 /** many, but not all, cortex devices put peripheral control registers in the 0x4000 space, and bitband all of that to 0x4200.
  * "bitband" is ARM's term for mapping each bit of the lower space into a 32bit word in the bitband region. 
 This replaces a 3-clock operation that is susceptible to interruption into a one clock operation that is not. That is important if an ISR is modifying the same control word as main thread code.

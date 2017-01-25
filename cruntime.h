@@ -42,7 +42,7 @@ typedef void (*InitRoutine)(void) ;
  * To insert something into the table you must put it into a section .ctors[.*]. lower number/alpha after the 'ctors' run earlier.
  * the 'initialization priority logic' uses such sections to control startup sequencing, and doesn't work without linker support.
  */
-void run_init( const InitRoutine * table);
+void run_table( const InitRoutine * table);
 
 /** generate hard reset if the stack has overflowed */
 void stackFault();
