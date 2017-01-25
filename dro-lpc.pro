@@ -94,7 +94,8 @@ HEADERS +=\
     ezcpp/bundler.h \
     ezcpp/circularpointer.h \
     ezcpp/limitedcounter.h \
-    ezcpp/limitedpointer.h
+    ezcpp/limitedpointer.h \
+    cortexm/peripheralband.h
 
 
 SOURCES +=\
@@ -144,11 +145,7 @@ SOURCES +=\
     cortexm/core_itm.cpp \
     cortexm/coredebug.cpp \
     cortexm/nvicstub.cpp \
-    dro-THUMB-Debug/cheapTricks_PP.cpp \
-    dro-THUMB-Debug/main_PP.cpp \
-    drobm/main.cpp \
     ezcpp/bitbanger.cpp \
-    ezcpp/bundler.cpp \
     ezcpp/circularpointer.cpp \
     ezcpp/limitedcounter.cpp \
     ezcpp/limitedpointer.cpp \
