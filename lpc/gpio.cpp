@@ -50,13 +50,13 @@ void GPIO::irqAcknowledge()const{
   myIrqc.irqAcknowledge();
 }
 
-void GPIO::setIrqStyle(GPIO::IrqStyle style, bool andEnable)const{
+void GPIO::setIrqStyle(IrqStyle style, bool andEnable)const{
   GPIO::IrqControl myIrqc(*this);
   myIrqc.setIrqStyle(style,andEnable);
 }
 
 
-void GPIO::IrqControl::setIrqStyle(GPIO::IrqStyle style, bool andEnable)const{
+void GPIO::IrqControl::setIrqStyle(IrqStyle style, bool andEnable)const{
   //disable before recongifuring
   clearRegister(0x10);
 

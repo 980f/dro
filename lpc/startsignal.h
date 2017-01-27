@@ -29,8 +29,8 @@ public:
   void configure(bool rising, bool andEnable) const;
   /** enable locally, doesn't alter NVIC state */
   void enable(bool on=true) const;
-  /** reset/acknowledge/set to trigger again*/
-  void prepare() const  {
+  /** reset/acknowledge/set to trigger again, oten issued in an isr so keep it clean and fast. */
+  inline void prepare() const  {
     setBitAt(word(8),bitnum);
   }
   /** whether locally pending, also can check NVIC for 'fully enabled and pending' */

@@ -125,14 +125,6 @@ As of 2017jan14 SystemInit is calling this, that is simpler to maintain than an 
 
 public: //interrupt stuff. The manual is very opaque about this stuff. The IRQ stuff here only feeds the shared-per-port interrupts. Individual vectoring is via the Start logic.
   // values for gpio config as well as irq config.
-  enum IrqStyle {
-    NotAnInterrupt = 0, // in case someone forgets to explicitly select a mode
-    AnyEdge, // edge, either edge, input mode buslatch
-    LowActive, // level, pulled up
-    HighActive, // level, pulled down
-    LowEdge, // edge, pulled up
-    HighEdge   // edge, pulled down
-  };
 
   /** for slightly faster control than calling the respective members of GPIO itself.
    * The 0x1C bias herein is due to that being the only register that will always be accessed in an ISR, and hence worthy of the greatest optimization.
@@ -359,36 +351,36 @@ public:
     assignRegister(16,enable);
   }
 
-  void setIrqStyle(GPIO::IrqStyle style, bool andEnable)const{
+  void setIrqStyle(IrqStyle style, bool andEnable)const{
     //disable before recongifuring
     clearRegister(16);
 
     //  atAddress(regbase)&=~mask; //force to input, user can make it an output and interrupt themselves later if they so wish.
     switch(style){
-    case GPIO::NotAnInterrupt : // in case someone forgets to explicitly select a mode, or we wish to dynamically deconfigure.
+    case NotAnInterrupt : // in case someone forgets to explicitly select a mode, or we wish to dynamically deconfigure.
       //nothing to do, we have disabled it above so it doesn't matter if we leave it somewhat configured.
       break;
-    case GPIO::AnyEdge: // edge, either edge, input mode buslatch
+    case AnyEdge: // edge, either edge, input mode buslatch
       clearRegister(4); //pro forma clear of level sense
       setRegister(8);  //double edge
       clearRegister(12);//pro forma clear of direction
       break;
-    case GPIO::LowActive: // level, pulled up
+    case LowActive: // level, pulled up
       setRegister(4);
       clearRegister(8);
       clearRegister(12);
       break;
-    case GPIO::HighActive: // level, pulled down
+    case HighActive: // level, pulled down
       setRegister(4);
       clearRegister(8);
       setRegister(12);
       break;
-    case GPIO::LowEdge: // edge, pulled up
+    case LowEdge: // edge, pulled up
       clearRegister(4);
       clearRegister(8);
       clearRegister(12);
       break;
-    case GPIO::HighEdge:// edge, pulled down
+    case HighEdge:// edge, pulled down
       clearRegister(4);
       clearRegister(8);
       setRegister(12);

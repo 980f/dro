@@ -47,6 +47,15 @@ typedef volatile u16 SFR16;
 /** most cortex devices follow arm's suggestion of using this block for peripherals */
 const u32 PeripheralBase(0x40000000);//1<<30
 
+//GPIO interrupt configuration options. Some devices may not support some options, but most do so this is defined here.
+enum IrqStyle {
+  NotAnInterrupt = 0, // in case someone forgets to explicitly select a mode
+  AnyEdge, // edge, either edge, input mode buslatch
+  LowActive, // level, pulled up
+  HighActive, // level, pulled down
+  LowEdge, // edge, pulled up
+  HighEdge   // edge, pulled down
+};
 
 /** Multiple contiguous bits in a register
  * Note: This creates a class per sf register field, but the compiler should inline all uses making this a compile time burden but a runtime minimalization.
