@@ -6,15 +6,15 @@
 extern "C" [[gnu::naked,noreturn]] void generateHardReset();
 
 /** these structs are created via LONG(...) directives in the ld file.
-   That way only one symbol needs to be shared between the ld and this file for each block.*/
+   That way only one symbol needs to be shared between the ld file and this file for each block.*/
 struct RamBlock {
   unsigned int *address;
-  unsigned int length;
+  unsigned int length; //number of unsigneds
   /** NB: this startup presumes 32 bit aligned, 32bit padded bss, but linker gives byte addresses and counts.
    *  Does anyone remember what BSS originally meant? Nowadays it is 'zeroed static variables' */
   void go(void)const{
     unsigned *target=address;
-    unsigned count=length/sizeof(unsigned int); // convert byte count to u32 count.
+    unsigned count=length;
     while(count-- > 0) {
       *target++ = 0;
     }
@@ -24,12 +24,13 @@ struct RamBlock {
 struct RamInitBlock {
   const unsigned int *rom;
   RamBlock ram;
-  /** NB: this startup presumes 32 bit aligned, 32bit padded structures, but linker gives byte addresses and counts */
+  /** NB: this startup presumes 32 bit aligned, 32bit padded structures, but linker gives byte addresses and counts
+ compared to common usage of memcpy this moves 4 bytes at a time, without the overhead of testing whether that can be done. */
   void go(void)const {
   //using local is slightly faster than member
-    const unsigned int *source;
+    const unsigned int *source=rom;
     unsigned *target=ram.address;
-    unsigned length=ram.length/sizeof(unsigned int); // convert byte count to u32 count.
+    unsigned length=ram.length;
     while(length-- > 0) {
       *target++ = *source++;
     }

@@ -253,6 +253,7 @@ stub(26);
 stub(27);
 stub(28);
 stub(29);
+//sam3u stops here
 stub(30);
 stub(31);
 stub(32);
@@ -331,6 +332,7 @@ Handler VectorTable[] __attribute__((section(".vectors.2"))) = {//0 is stack top
   IrqName(27),
   IrqName(28),
   IrqName(29),
+//sam3u/x stops here
   IrqName(30),
   IrqName(31),
   IrqName(32),
@@ -359,9 +361,10 @@ Handler VectorTable[] __attribute__((section(".vectors.2"))) = {//0 is stack top
   IrqName(55),
   IrqName(56),
   IrqName(57),
+//lpc1300 stops here
   IrqName(58),
   IrqName(59),
-  // todo:3 device model specific quantity.
+
 };
 
 #if 0

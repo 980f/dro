@@ -102,7 +102,7 @@ __exit_table__ = LOADADDR(.exit);
 
   .startupClear : {/* the following initializes what my cstartup.cpp calls 'struct RamBlock' */
     LONG(ADDR(.bss))
-    LONG(SIZEOF(.bss))
+    LONG((SIZEOF(.bss)+3)>>2)
   } >FLASH
   __bss_segment__ = LOADADDR(.startupClear);
 
@@ -116,7 +116,7 @@ __exit_table__ = LOADADDR(.exit);
   .startupCopy : { /* this initializes what my cstartup.cpp calls 'struct RamInitBlock' */
     LONG(LOADADDR(.data))
     LONG(ADDR(.data))
-    LONG(SIZEOF(.data))
+    LONG((SIZEOF(.data)+3)>>2)
   } >FLASH
   __data_segment__ = LOADADDR(.startupCopy);
 
