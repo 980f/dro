@@ -14,8 +14,7 @@ struct RamBlock {
    *  Does anyone remember what BSS originally meant? Nowadays it is 'zeroed static variables' */
   void go(void)const{
     unsigned *target=address;
-    unsigned count=length;
-    while(count-- > 0) {
+    for(unsigned count=length;count> 0;--count) {
       *target++ = 0;
     }
   }
@@ -30,8 +29,7 @@ struct RamInitBlock {
   //using local is slightly faster than member
     const unsigned int *source=rom;
     unsigned *target=ram.address;
-    unsigned length=ram.length;
-    while(length-- > 0) {
+    for(unsigned length=ram.length;length> 0;--length) {
       *target++ = *source++;
     }
   }
