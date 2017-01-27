@@ -1,0 +1,171 @@
+<!DOCTYPE CrossStudio_Project_File>
+<solution Name="dro" target="8" version="2">
+  <project Name="dro">
+    <configuration
+      Name="Common"
+      Placement="Flash"
+      Target="STM32F103RB"
+      arm_architecture="v7M"
+      arm_core_type="Cortex-M3"
+      arm_fpu_type="None"
+      arm_gcc_target="arm-unknown-eabi"
+      arm_linker_heap_size="0"
+      arm_linker_jtag_pad_pre_dr="1"
+      arm_linker_jtag_pad_pre_ir="5"
+      arm_linker_process_stack_size="0"
+      arm_linker_stack_size="0"
+      arm_simulator_memory_simulation_filename="$(TargetsDir)/STM32/STM32SimulatorMemory.dll"
+      arm_simulator_memory_simulation_parameter="STM32F103RB;0x20000;0x5000"
+      arm_target_connect_with_reset="Yes"
+      arm_target_debug_interface_type="ADIv5"
+      arm_target_interface_type="Default"
+      arm_target_loader_applicable_loaders="Flash"
+      arm_target_loader_default_loader="Flash"
+      arm_target_restrict_memory_accesses="Yes"
+      arm_use_gcc_libraries="No"
+      c_user_include_directories="cortexm;cortexm/stm32;ezcpp"
+      debug_register_definition_file="$(TargetsDir)/STM32/STM32F103xx_Peripherals.xml"
+      gcc_optimization_level="Debug"
+      link_include_standard_libraries="No"
+      linker_additional_files="$(StudioDir)/lib/libm_v7m_t_le_eabi_f_swc.a"
+      linker_memory_map_file="$(TargetsDir)/STM32/STM32F103RB_MemoryMap.xml"
+      linker_section_placement_file="$(StudioDir)/targets/Cortex_M/flash_placement.xml"
+      project_directory=""
+      project_type="Executable"
+      property_groups_file_path="$(TargetsDir)/STM32/propertyGroups.xml"
+      target_get_partname_script="GetPartName()"
+      target_match_partname_script="MatchPartName(&quot;$(Target)&quot;)"
+      target_script_file="$(TargetsDir)/STM32/STM32_Target.js"
+      target_trace_initialize_script="EnableTrace(&quot;$(TraceInterfaceType)&quot;)" />
+    <configuration
+      Name="Flash"
+      arm_target_flash_loader_file_path="$(TargetsDir)/STM32/Release/Loader_rpc.elf"
+      arm_target_flash_loader_type="LIBMEM RPC Loader"
+      arm_target_loader_can_erase_all="Yes"
+      arm_target_loader_can_lock_all="No"
+      arm_target_loader_can_lock_range="No"
+      arm_target_loader_can_unlock_all="No"
+      arm_target_loader_can_unlock_range="No"
+      target_reset_script="FLASHReset()" />
+    <configuration Name="RAM" target_reset_script="Reset()" />
+    <folder Name="Source Files">
+      <configuration Name="Common" filter="cpp;h;s" />
+      <file file_name="ezcpp/cheapTricks.cpp" />
+      <file file_name="ezcpp/cheapTricks.h" />
+      <file file_name="ezcpp/eztypes.h" />
+      <file file_name="main.cpp" />
+      <file file_name="ezcpp/minimath.cpp" />
+      <file file_name="ezcpp/minimath.h" />
+      <folder Name="cortexm">
+        <file file_name="cortexm/core_cmInstr.h" />
+        <file file_name="cortexm/cstartup.cpp">
+          <configuration Name="Common" gcc_optimization_level="Debug" />
+        </file>
+        <file file_name="cortexm/nvic.cpp" />
+        <file file_name="cortexm/nvic.h" />
+        <file file_name="cortexm/systick.cpp" />
+        <file file_name="cortexm/systick.h" />
+        <file file_name="cortexm/wtf.cpp" />
+        <file file_name="cortexm/wtf.h" />
+        <file file_name="../cortexm/clockstarter.cpp" />
+      </folder>
+      <folder Name="stm">
+        <file file_name="cortexm/stm32/gpio.cpp" />
+        <file file_name="cortexm/stm32/gpio.h" />
+        <file file_name="cortexm/stm32/stm32.cpp" />
+        <file file_name="cortexm/stm32/p103_board.cpp" />
+        <file file_name="cortexm/stm32/p103_board.h" />
+        <file file_name="cortexm/stm32/stm32.h" />
+        <file file_name="cortexm/stm32/exti.cpp" />
+        <file file_name="cortexm/stm32/exti.h" />
+        <file file_name="cortexm/stm32/flashcontrol.cpp" />
+        <file file_name="cortexm/stm32/flashcontrol.h" />
+        <file file_name="cortexm/stm32/afio.cpp" />
+        <file file_name="cortexm/stm32/afio.h" />
+        <file file_name="../cortexm/stm32/clocks.cpp" />
+        <file file_name="../cortexm/stm32/clocks.h" />
+      </folder>
+      <folder Name="ezcpp">
+        <file file_name="../ezcpp/bundler.cpp" />
+        <file file_name="../ezcpp/bundler.h" />
+        <file file_name="../ezcpp/polledtimer.cpp" />
+        <file file_name="../ezcpp/polledtimer.h" />
+      </folder>
+      <file file_name="packdatatest.cpp" />
+      <file file_name="packdatatest.h" />
+      <file file_name="packtesttoo.cpp" />
+    </folder>
+    <folder Name="System Files">
+      <file file_name="dro.ld" />
+      <file file_name="cortexm/cortexm.ld" />
+      <file file_name="cortexm/stm32/f103rb.ld" />
+    </folder>
+    <configuration
+      Name="THUMB"
+      arm_keep_assembly="Yes"
+      arm_keep_preprocessor_output="Yes"
+      arm_linker_gap_fill="0xff"
+      arm_supply_absolute_file_path="Yes"
+      arm_use_builtins="Yes"
+      arm_use_gcc_libraries="No"
+      build_intermediate_directory="$(ProjectName)-$(Configuration)"
+      build_output_directory="$(ProjectName)-$(Configuration)"
+      c_preprocessor_definitions="useSTM32=1"
+      debug_initial_breakpoint_set_option="Always"
+      double_is_float="Yes"
+      gcc_c_language_standard="c11"
+      gcc_cplusplus_language_standard="c++11"
+      gcc_debugging_level="Level 3"
+      gcc_entry_point="cstartup"
+      gcc_wchar_size="16-Bit"
+      link_include_standard_libraries="Yes"
+      project_dependencies_can_build_in_parallel="Yes" />
+    <configuration Name="THUMB-Debug" link_include_standard_libraries="No" />
+  </project>
+  <configuration Name="THUMB-Debug" inherited_configurations="THUMB;Debug" />
+  <configuration
+    Name="THUMB"
+    Platform="ARM"
+    arm_instruction_set="Thumb"
+    arm_library_instruction_set="Thumb"
+    c_preprocessor_definitions="__THUMB"
+    hidden="Yes" />
+  <configuration
+    Name="Debug"
+    c_additional_options="-fpermissive"
+    c_preprocessor_definitions="DEBUG"
+    gcc_debugging_level="Level 3"
+    gcc_optimization_level="None"
+    hidden="Yes" />
+  <configuration
+    Name="Release"
+    c_preprocessor_definitions="NDEBUG"
+    gcc_debugging_level="Level 1"
+    gcc_optimization_level="Level 3"
+    hidden="Yes" />
+  <configuration
+    Name="Common"
+    arm_architecture="v7M"
+    arm_instruction_set="Thumb"
+    arm_keep_assembly="Yes"
+    arm_keep_preprocessor_output="Yes"
+    arm_library_instruction_set="Thumb"
+    arm_linker_fiq_stack_size="0"
+    arm_linker_gap_fill="0xff"
+    arm_linker_irq_stack_size="0"
+    arm_supply_absolute_file_path="Yes"
+    arm_use_builtins="Yes"
+    double_is_float="Yes"
+    file_codec="UTF-8"
+    gcc_c_language_standard="c99"
+    gcc_cplusplus_language_standard="c++11"
+    gcc_entry_point="noentry"
+    gcc_optimization_level="Debug"
+    gcc_wchar_size="16-Bit"
+    linker_printf_fmt_level="int"
+    linker_printf_fp_enabled="No"
+    linker_printf_width_precision_supported="No"
+    linker_scanf_character_group_matching_enabled="No"
+    linker_scanf_fmt_level="int"
+    linker_scanf_fp_enabled="No" />
+</solution>
