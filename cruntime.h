@@ -10,7 +10,7 @@ extern "C" [[gnu::naked,noreturn]] void generateHardReset();
 struct RamBlock {
   unsigned int *address;
   unsigned int length; //number of unsigneds
-  /** NB: this startup presumes 32 bit aligned, 32bit padded bss, but linker gives byte addresses and counts.
+  /** NB: this startup presumes 32 bit aligned, 32bit padded bss.
    *  Does anyone remember what BSS originally meant? Nowadays it is 'zeroed static variables' */
   void go(void)const{
     unsigned *target=address;
@@ -23,7 +23,7 @@ struct RamBlock {
 struct RamInitBlock {
   const unsigned int *rom;
   RamBlock ram;
-  /** NB: this startup presumes 32 bit aligned, 32bit padded structures, but linker gives byte addresses and counts
+  /** NB: this startup presumes 32 bit aligned, 32bit padded structures
  compared to common usage of memcpy this moves 4 bytes at a time, without the overhead of testing whether that can be done. */
   void go(void)const {
   //using local is slightly faster than member

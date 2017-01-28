@@ -19,8 +19,9 @@
 #define HandleFault(faultIndex) void FaultName(faultIndex) (void)
 
 /** base class to Irq which can be const'ed or even templated. */
-struct IrqAccess {
-  /** offical number per st documents */
+class Irq {
+public:
+  /** official number per your mcu's documents */
   const u8 number;
   /** which member of group of 32 this is */
   const u8 bit;
@@ -30,11 +31,11 @@ struct IrqAccess {
   const u32 mask;
 
   /* using u8 data type to check validity, need an 'explicit' somewhere to make that fully true */
-  IrqAccess(u8 number):
+  Irq(u8 number):
     number(number),
     bit(number & 0x1F),
     bias(0xE000E000 + ((number>>5)<<2)),
-    mask(1<<bit){
+    mask(1<<(number & 0x1F)){//redo bit equation hoping to get init block instead of init routine
     /*empty*/
   }
 
@@ -82,20 +83,21 @@ public:
     strobe(0x180);
   }
 
+  void prepare() const {
+    clear();
+    enable();
+  }
+
 };
 
 /** instantiating more than one of these for a given interrupt defeats the nesting nature of its enable. */
-class Irq: public IrqAccess {
+class GatedIrq: public Irq {
   int locker; //tracking nested attempts to lock out the interrupt.
 public:
-  Irq(int number): IrqAccess(number), locker(0){}
+  GatedIrq(int number): Irq(number), locker(0){}
 
   void enable(void);
-  void lock(void){
-    if(locker++ == 0) {
-      disable();
-    }
-  }
+  void lock(void);
   /** clear any pending then enable, regular enable will cause an interrupt if one is pending.*/
   void prepare(void);
 
@@ -109,9 +111,9 @@ public:
   *  future: automate detection of being in the irq service and drop the argument.
   */
 struct IRQLock {
-  Irq&irq;
+  GatedIrq&irq;
 public:
-  IRQLock(Irq&irq, bool inIrq = false);
+  IRQLock(GatedIrq&irq, bool inIrq = false);
   ~IRQLock();
 };
 
@@ -123,15 +125,13 @@ void setFaultHandlerPriority(int faultIndex, u8 level);
 void configurePriorityGrouping(int code); //cortexm3.s or stm32.cpp
 
 #ifdef __linux__ //just compiling for syntax checking
-#define EnableInterrupts
-#define DisableInterrupts
+extern bool IRQEN;
 #define IRQLOCK(irq)
 
 #else
-#define EnableInterrupts __asm volatile ("CPSIE f")
-#define DisableInterrupts __asm volatile ("CPSID f")
+#include "core_cmFunc.h"
+extern const CPSI_i IRQEN;
 #define IRQLOCK(irqVarb) IRQLock IRQLCK ## irqVarb(irqVarb)
-
 #endif
 
 //this does not allow for static locking, only for within a function's execution (which is a good thing!):
@@ -143,14 +143,14 @@ class CriticalSection {
   static volatile int nesting;
 public:
   CriticalSection(void){
-    DisableInterrupts;
+    IRQEN=0;
     ++nesting;
   }
 
   ~CriticalSection (void){
     if(nesting != 0) { //then interrupts are globally disabled
       if(--nesting == 0) {
-        EnableInterrupts;
+        IRQEN=1;
       }
     }
   }

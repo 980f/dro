@@ -2,7 +2,10 @@
 
 /* GNU gcc specific syntax for some special instructions */
 
+//some people do this:
 #define INTRINSICALLY [[always_inline]] static inline
+//others do this, not sure which is better or if they even differ ...
+#define URGENTLY __attribute__((always_inline))
 
 #if __linux__
 //then just compiling for syntax checking.

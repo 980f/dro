@@ -7,7 +7,7 @@
 volatile int CriticalSection::nesting = 0;
 /////////////////////////////////
 
-u8 IrqAccess::setPriority(u8 newvalue) const { // one byte each, often only some high bits are implemented
+u8 Irq::setPriority(u8 newvalue) const { // one byte each, often only some high bits are implemented
   u8 &priorityRegister(*reinterpret_cast<u8 *>(0xE000E400 + number));
   u8 oldvalue = priorityRegister;
 
@@ -17,24 +17,30 @@ u8 IrqAccess::setPriority(u8 newvalue) const { // one byte each, often only some
 
 /////////////////////////////////
 
-void Irq::enable(){
+void GatedIrq::enable(){
   if(locker > 0) { // if locked then reduce the lock such that the unlock will cause an enable
     --locker;  // one level earlier than it would have. This might be surprising so an
     // unmatched unlock might be the best enable.
   }
   if(locker == 0) { // if not locked then actually enable
-    IrqAccess::enable();
+    Irq::enable();
   }
 }
 
-void Irq::prepare(){
+void GatedIrq::lock(){
+  if(locker++ == 0) {
+    disable();
+  }
+}
+
+void GatedIrq::prepare(){
   clear(); // acknowledge to hardware
   enable(); // allow again
 }
 
 /////////////////////////////////
 
-IRQLock::IRQLock(Irq &irq, bool inIrq): irq(irq){
+IRQLock::IRQLock(GatedIrq &irq, bool inIrq): irq(irq){
   if(! inIrq) {
     irq.lock();
   }
@@ -141,7 +147,7 @@ struct InterruptController {
 soliton(InterruptController, 0xE000ED04);
 
 void configurePriorityGrouping(int code){
-  *atAddress(0xE000ED0C) = ((code & 7) << 8) | 0x05FA0000; //5FA is a guard against random writes.
+  *atAddress(0xE000ED0C) = ((code & 7) << 8) | (0x05FA<<16); //5FA is a guard against random writes.
 }
 
 extern "C" { // to keep names simple for "alias" processor
@@ -195,7 +201,7 @@ extern "C" { // to keep names simple for "alias" processor
   void unhandledInterruptHandler(void){
     int irqnum = theInterruptController.active - 16;
 
-    Irq(irqnum).disable();
+    GatedIrq(irqnum).disable();
   } /* unhandledInterruptHandler */
 } // end extern "C"
 
@@ -387,8 +393,18 @@ b generateHardReset
 
 //trying to get good assembler code on this one :)
 void generateHardReset(){
+  //maydo: DSB before and after the reset
+  //lsdigit: 1 worked on stm32, 4 should have worked but looped under the debugger.
+  unsigned pattern=0x5FA0005 | (theInterruptController.airc & bitMask(8,3));//retain priority group setting, JIC we don't reset that during startup
   do {//keep on hitting the bit until we reset.
-    theInterruptController.airc=0x5FA0005;//lsdigit: 1 worked on stm32, 4 should have worked but looped under the debugger.
+    theInterruptController.airc=pattern;
     //probably should try 5 above in case different vendors misread the arm spec differently.
   } while (1);
 }
+
+
+
+#ifndef __linux__
+//shared instances need this treatment.
+const CPSI_i IRQEN;
+#endif

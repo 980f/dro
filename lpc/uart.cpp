@@ -6,18 +6,10 @@
 #include "bitbanger.h" // for BitField
 #include "nvic.h"  // for isr
 
+
+const Irq uirq(uartIrq);
+
 using namespace LPC;
-
-// apb dev 2
-// interrupt
-#define uartIrq 46
-
-Irq uirq(uartIrq);
-
-Uart theUart;
-// vector isn't declared here as we need the concrete class.
-// if we use function pointers instead of extension then we can do it here.
-ObjectInterrupt(theUart.isr(), uartIrq);
 
 namespace LPC {
 
@@ -62,8 +54,6 @@ struct UART550 {
 };
 } // namespace LPC
 
-//__attribute__((section(".peripheral.uart0")))
-//UART550 theUART550;
 DefineSingle(UART550, apb0Device(2));
 // going through one level of computation in expectation that we will meet a part with more than one uart:
 constexpr unsigned uartRegister(unsigned offset){
@@ -96,12 +86,12 @@ SFRbit<IER,9> AutoBaudTimeoutInterruptEnable;
 /** level is 1,4,8, or 14 */
 //SFRfield<FCR,6,2> receiveFifoLevel;
 
+
+
 /** iopin pattern for uart pins: */
 constexpr PinBias pickUart = PinBias(0b11010001); // rtfm, not worth making syntax
 
-Uart::Uart():
-  receive(nullptr),
-  send(nullptr){
+void Uart::initializeInternals() const{
   uirq.disable();
   disableClock(12);
   // the 134x parts are picky about order here, the clock must be OFF when configuring the pins.
@@ -111,11 +101,16 @@ Uart::Uart():
 
   /* Enable UART clock */
   enableClock(12); //
-  uartClockDivider() = unsigned(1); // a functioning value, that allows for the greatest precision, if in range.
+  //system prescaler, before the uart's own 'DLAB' is applied.
+  uartClockDivider() = 1U; // a functioning value, that allows for the greatest precision, if in range.
 
-  theUART550.FCR=1;
-  theUART550.FCR=7;
+  theUART550.FCR=1;//enable fifo
+  theUART550.FCR=7;//clear fifos
+}
 
+Uart::Uart(Uart::Receiver receiver, Uart::Sender sender):
+receive(receiver),send(sender){
+  initializeInternals();
 }
 
 /** @param which 0:dsr, 1:dcd, 2:ri @param onP3 true: port 3 else port 2 */
@@ -155,7 +150,7 @@ unsigned Uart::setBaud(unsigned hertz, unsigned sysFreq) const {
   unsigned pclk;
   unsigned divider;
   unsigned overflow;
-  unsigned &clockDiv=uartClockDivider();
+  volatile unsigned &clockDiv=uartClockDivider();
   do {
     pclk = sysFreq / clockDiv;
     divider = pclk / hertz;
@@ -211,7 +206,7 @@ void Uart::setFraming(const char *coded) const {
   longStop = stopbits != 1;
 } // Uart::setFraming
 
-void Uart::beTransmitting(bool enabled){
+void Uart::beTransmitting(bool enabled)const{
   if(enabled){
     if(!transmitHoldingRegisterEmptyInterruptEnable){
       if(int nextch = (*send)() >= 0) {
@@ -226,7 +221,7 @@ void Uart::beTransmitting(bool enabled){
   }
 }
 
-void Uart::reception(bool enabled){
+void Uart::reception(bool enabled)const{
   receiveDataInterruptEnable=enabled;
   //how bout line status interrupts? .. yeah add those:
   lineStatusInterruptEnable=enabled;
@@ -243,7 +238,7 @@ Uart &Uart::setReceiver(Uart::Receiver receiver){
   return *this;
 }
 
-void Uart::irq(bool enabled){
+void Uart::irq(bool enabled)const{
   if(enabled){
     uirq.prepare();//clear and enable
   } else {
@@ -252,7 +247,7 @@ void Uart::irq(bool enabled){
 }
 
 //inner loop of sucking down the read fifo.
-unsigned Uart::tryInput(unsigned LSRValue){
+unsigned Uart::tryInput(unsigned LSRValue) const{
   typedef BitWad<7, 0> bits; // look just at the 'OR of 'some corruption' and the 'data available' bits
   for( ; bits::exactly(LSRValue, 1); LSRValue = theUART550.LSR) {
     if(receive){
@@ -263,7 +258,8 @@ unsigned Uart::tryInput(unsigned LSRValue){
 }
 
 
-void Uart::isr(){
+
+void Uart::isr()const{
   unsigned IIRValue = theUART550.IIR; // read once, so many of these registers have side effects let us practice on this one.
 
   BitField<1, 3> irqID(IIRValue);

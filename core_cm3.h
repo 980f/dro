@@ -1,28 +1,8 @@
+#pragma once
 /**************************************************************************//**
-* @file     core_cm3.h
-* @brief    CMSIS Cortex-M3 Core Peripheral Access Layer Header File
-* @version  V2.01
-* @date     06. December 2010
-*
-* @note
-* Copyright (C) 2009-2010 ARM Limited. All rights reserved.
-*
-* @par
-* ARM Limited (ARM) is supplying this software for use with Cortex-M
-* processor based microcontrollers.  This file can be freely distributed
-* within development tools that are supporting such ARM based processors.
-*
-* @par
-* THIS SOFTWARE IS PROVIDED "AS IS".  NO WARRANTIES, WHETHER EXPRESS, IMPLIED
-* OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, IMPLIED WARRANTIES OF
-* MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE APPLY TO THIS SOFTWARE.
-* ARM SHALL NOT, IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL, OR
-* CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
-*
-******************************************************************************/
+* operationally replaces CMSIS Cortex-M3 Core Peripheral Access Layer Header File
+*/
 
-#ifndef __CORE_CM3_H_GENERIC
-#define __CORE_CM3_H_GENERIC
 #include "peripheraltypes.h"
 
 #define DeclareCore(regname) extern CM3:: regname & the ## regname;
@@ -50,25 +30,21 @@ namespace CM3 {
 #define __CM3_CMSIS_VERSION_SUB   (0x00)                                                       /*!< [15:0]  CMSIS HAL sub version  */
 #define __CM3_CMSIS_VERSION       ((__CM3_CMSIS_VERSION_MAIN << 16) | __CM3_CMSIS_VERSION_SUB) /*!< CMSIS HAL version number       */
 
-#define __CORTEX_M                (0x03)                                                       /*!< Cortex core                    */
-
-
+#define __CORTEX_M                (3)                                                       /*!< Cortex core                    */
 
 #define __ASM            __asm                                      /*!< asm keyword for GNU Compiler          */
 #define __INLINE         inline /*!< inline keyword for GNU Compiler       */
-
 
 #include <stdint.h>                      /*!< standard types definitions                      */
 #include "core_cmInstr.h"                /*!< Core Instruction Access                         */
 #include "core_cmFunc.h"                 /*!< Core Function Access                            */
 
-#endif /* __CORE_CM3_H_GENERIC */
 
 
 #ifndef __CMSIS_GENERIC
 
-#ifndef __CORE_CM3_H_DEPENDANT
-#define __CORE_CM3_H_DEPENDANT
+#ifndef CORE_CM3_H_DEPENDANT
+#define CORE_CM3_H_DEPENDANT
 
 ///* IO definitions (access restrictions to peripheral registers) */
 // #ifdef __cplusplus
@@ -96,17 +72,11 @@ namespace CM3 {
  *  - Core MPU Register
  */
 
-/** \ingroup  CMSIS_core_register
- *   \defgroup CMSIS_CORE CMSIS Core
- *  Type definitions for the Cortex-M Core Registers
- *  @{
- */
 
-/** \brief  Union type to access the Application Program Status Register (APSR).
- */
+/** \brief  Union type to access the Application Program Status Register (APSR). */
 union APSR {
   struct {
-#if (__CORTEX_M != 0x04)
+#if (__CORTEX_M != 4)
     unsigned _reserved0 : 27;              /*!< bit:  0..26  Reserved                           */
 #else
     unsigned _reserved0 : 16;              /*!< bit:  0..15  Reserved                           */
@@ -126,18 +96,18 @@ union APSR {
 
 /** \brief  Union type to access the Interrupt Program Status Register (IPSR).
  */
-typedef union {
+union IPSR {
   struct {
     unsigned ISR : 9;                      /*!< bit:  0.. 8  Exception number                   */
     unsigned _reserved0 : 23;              /*!< bit:  9..31  Reserved                           */
   } b;                                   /*!< Structure used for bit  access                  */
   uint32_t w;                            /*!< Type      used for word access                  */
-} IPSR_Type;
+};
 
 
 /** \brief  Union type to access the Special-Purpose Program Status Registers (xPSR).
  */
-typedef union {
+union xPSR{
   struct {
     unsigned ISR : 9;                      /*!< bit:  0.. 8  Exception number                   */
 #if (__CORTEX_M != 0x04)
@@ -156,12 +126,12 @@ typedef union {
     unsigned N : 1;                        /*!< bit:     31  Negative condition code flag       */
   } b;                                   /*!< Structure used for bit  access                  */
   uint32_t w;                            /*!< Type      used for word access                  */
-} xPSR_Type;
+} ;
 
 
 /** \brief  Union type to access the Control Registers (CONTROL).
  */
-typedef union {
+union CONTROL{
   struct {
     unsigned nPRIV : 1;                    /*!< bit:      0  Execution privilege in Thread mode */
     unsigned SPSEL : 1;                    /*!< bit:      1  Stack to be used                   */
@@ -169,7 +139,7 @@ typedef union {
     unsigned _reserved0 : 29;              /*!< bit:  3..31  Reserved                           */
   } b;                                   /*!< Structure used for bit  access                  */
   uint32_t w;                            /*!< Type      used for word access                  */
-} CONTROL_Type;
+};
 
 /*@} end of group CMSIS_CORE */
 
@@ -423,12 +393,12 @@ struct SCB {
 
 /** \brief  Structure type to access the System Timer (SysTick).
  */
-typedef struct {
+struct SysTick{
   SFR CTRL;                   /*!< Offset: 0x000 (R/W)  SysTick Control and Status Register */
   SFR LOAD;                   /*!< Offset: 0x004 (R/W)  SysTick Reload Value Register       */
   SFR VAL;                    /*!< Offset: 0x008 (R/W)  SysTick Current Value Register      */
   const SFR CALIB;                 /*!< Offset: 0x00C (R/ )  SysTick Calibration Register        */
-} SysTick_Type;
+};
 
 /* SysTick Control / Status Register Definitions */
 #define SysTick_CTRL_COUNTFLAG_Pos         16                                             /*!< SysTick CTRL: COUNTFLAG Position */
@@ -476,7 +446,7 @@ typedef struct {
 struct InterruptType {
   uint32_t RESERVED0;
   const SFR ICTR;                  /*!< Offset: 0x004 (R/ )  Interrupt Control Type Register */
-#if ((defined __CM3_REV) && (__CM3_REV >= 0x200))
+#if (__CM3_REV >= 0x200)
   SFR ACTLR;                  /*!< Offset: 0x008 (R/W)  Auxiliary Control Register      */
 #else
   uint32_t RESERVED1;
@@ -650,20 +620,6 @@ struct MPU {
 
 
 
-///** \brief  System Reset
-
-//    This function initiate a system reset request to reset the MCU.
-// */
-// static __INLINE void NVIC_SystemReset(void)
-// {
-//  __DSB();                                                     /* Ensure all outstanding memory accesses included
-//                                                                  buffered write are completed before reset */
-//  SCB->AIRCR  = ((0x5FA << SCB_AIRCR_VECTKEY_Pos)      |
-//                 (SCB->AIRCR & SCB_AIRCR_PRIGROUP_Msk) |
-//                 SCB_AIRCR_SYSRESETREQ_Msk);                   /* Keep priority group unchanged */
-//  __DSB();                                                     /* Ensure completion of memory access */
-//  while(1);                                                    /* wait until reset */
-// }
 
 /*@} end of CMSIS_Core_NVICFunctions */
 
