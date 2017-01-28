@@ -69,7 +69,8 @@ HEADERS +=\
     cortexm/lpc/system_LPC13xx.h \
     cortexm/lpc/uart.h \
     cortexm/lpc/usbinterface.h \
-    cortexm/lpc/wdt.h
+    cortexm/lpc/wdt.h \
+    cortexm/lpc/pinirq.h
 
 
 SOURCES +=\
@@ -96,7 +97,6 @@ SOURCES +=\
     cortexm/lpc/uart.cpp \
     cortexm/lpc/iocon.cpp \
     cortexm/lpc/lpc13xx.cpp \
-    cortexm/lpc/startsignal.cpp \
     cortexm/lpc/syscon.cpp \
     cortexm/lpc/system_LPC13xx.cpp \
     cortexm/lpc/usbinterface.cpp \

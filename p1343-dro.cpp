@@ -19,30 +19,29 @@ using namespace SystemTimer;
 
 using namespace LPC;
 
-/** construction of this turns on internal peripherals and configures pins. */
-const P1343devkit board InitStep(InitApplication);
+/** construction of this has been emptied of significance, all members are templated. */
+const P1343devkit board;
 
 //the next line actually sets up the clocks before main and pretty much anything else gets called:
 const ClockStarter startup InitStep(InitHardware/2) (true,0,1000);//external clock wasn't working properly, need a test to check before switching to it.
 
 using namespace LPC;
 
-#include "startsignal.h"
+#include "pinirq.h"
 
-const StartSignal<board.button.pini> pbwup;
-const Irq<board.button.pini> pbalso;//until we decide to burden StartSignal with nvic knowledge we have to run these in parallel.
+const PinIrq<board.button.pini> pbwup;
 
 HandleInterrupt(33){//port 2.9
   board.toggleLed(7);
-  pbwup.prepare();
-  pbalso.clear();
+  pbwup.prepare(); 
 }
 
 const Irq<gpioBankInterrupt(2)> gp2irq;//interrupt 54
 
 HandleInterrupt(54){//this gets the button irq via any port 2 bit changing.
-  board.toggleLed(5);
-  board.button.irqAcknowledge();
+  //this got erratic board.toggleLed(5);
+  board.led6 = board.wakeup;
+  board.wakeup.irqAcknowledge();
 }
 
 //p0-4,p05 for qei.
@@ -118,11 +117,9 @@ int main(void) {
   int events=0;
   prime.enable();
   
-  pbalso.enable();//@nvic
   pbwup.configure(false,true);
 
-  board.button.setIrqStyle(AnyEdge,true);
-  
+  board.wakeup.setIrqStyle(AnyEdge,true);
   gp2irq.prepare();
   //no longer doing this prophylactically in the loop as we now use atomics rather than interrupt gating to deal with concurrency.
   IRQEN=1;//master enable
