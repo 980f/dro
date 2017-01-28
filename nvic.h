@@ -30,7 +30,7 @@ void setFaultHandlerPriority(int faultIndex, u8 level);
   * stm32F10x only implements the 4 msbs of the logic so values 3,2,1 are same as 0*/
 void configurePriorityGrouping(int code);
 
-/**  */
+/** unhandled interrupt handler needed random access by number, so we constexpr'd the pieces out of the template class */
 extern "C" void disableInterrupt(unsigned irqnum);
 
 constexpr unsigned biasFor(unsigned number){

@@ -7,7 +7,7 @@
 #include "nvic.h"  // for isr
 
 
-const Irq uirq(uartIrq);
+const Irq<uartIrq> uirq;
 
 using namespace LPC;
 
@@ -69,14 +69,14 @@ constexpr unsigned LCR = uartRegister(0x0c);
 /** number of bit, minus 5*/
 SFRfield<LCR, 0, 2> numbitsSub5;
 SFRbit<LCR, 2> longStop;
-/** only 5 relevent values, only 3 common ones*/
+/** only 5 relevant values, only 3 common ones*/
 SFRfield<LCR, 3, 3> parity;
 /** sends break for as long as this is true */
 SFRbit<LCR, 6> sendBreak;
 /** the heinous divisor latch access bit. */
 SFRbit<LCR, 7> dlab;
 
-//interrupt enable regsiter:
+//interrupt enable register:
 constexpr unsigned IER=uartRegister(0x04);
 SFRbit<IER,0> receiveDataInterruptEnable;
 SFRbit<IER,1> transmitHoldingRegisterEmptyInterruptEnable;

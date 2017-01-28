@@ -410,13 +410,13 @@ public:
 
 };
 
-/** Multiple contiguous bits in a register, this presumes the bits are configured elsewhere via GpioPin objects,
- * this class just expedites access using the gpio port 'masked[]' based access
+/** Multiple contiguous bits in a register.
+ * This class expedites access using the gpio port 'masked[]' based access
  */
 template <PortNumber portNum, unsigned msb, unsigned lsb> class PortField {
   enum {
     // read the lpc manual, certain address bits are used as a mask
-    address = portBase(portNum) + ((1 << (msb + 3)) - (1 << (lsb + 2)))
+    address = portBase(portNum) | bitMask(lsb+2,msb-lsb+1)
   };
 
 public:
@@ -436,7 +436,5 @@ public:
   }
 
 };
-
-
 
 } // namespace LPC

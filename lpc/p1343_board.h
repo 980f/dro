@@ -10,6 +10,7 @@ public:
   //other button is 'wakeup'
   const LPC::InputPin<1,4> wakeup;
   //reset button is pio0/0, if reset functionality is defeated.
+  //pin 1/0 is bootup select, avoid hanging anything important on it.
   const LPC::Output led0={3, 0};
   const LPC::Output led1={3, 1};
   const LPC::Output led2={3, 2};

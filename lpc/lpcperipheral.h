@@ -16,9 +16,14 @@ constexpr unsigned makeSFR(unsigned apbdev, unsigned offset){
 }
 
 /** address for syscon reg given offset listed in manual */
-//consexpr resulted in compiler insisting that the returned reference was to a const unsigned.
+constexpr unsigned sysConBase(unsigned byteOffset){
+  return makeSFR(18,byteOffset);
+}
+
+/** address for syscon reg given offset listed in manual */
+//constexpr resulted in compiler insisting that the returned reference was to a const unsigned.
 constexpr unsigned *sysConReg(unsigned byteOffset){
-  return atAddress(makeSFR(18,byteOffset));
+  return atAddress(sysConBase(byteOffset));
 }
 
 inline void powerUp(int which){
@@ -26,7 +31,7 @@ inline void powerUp(int which){
 }
 
 inline void powerDown(int which){
-  setBit(*sysConReg(0x238),which);
+  setBit(sysConReg(0x238),which);
 }
 
 /** iocon group */
