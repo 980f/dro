@@ -24,8 +24,6 @@ public:
   const GpioOutputField lownib={3, 3, 0};
   const GpioOutputField highnib={2, 7, 4};
 
-  P1343devkit();
-  ~P1343devkit();
   /** set lamps as an 8-bit number, not particularly swift in execution since they are scattered about the i/o space*/
   unsigned operator =(unsigned lamp )const;
   /** set led by ordinal.*/

@@ -6,16 +6,6 @@ const u32 EXTERNAL_HERTZ=12000000;
 
 using namespace LPC;
 
-P1343devkit::P1343devkit(){
-//  button.setIocon(PullUp);
-  this->operator =(0xB9);
-}
-
-
-P1343devkit::~P1343devkit(){
-  this->operator =(0); // lights off.
-}
-
 unsigned P1343devkit::operator =(unsigned lamp)const {
   lownib = lamp;
   highnib = lamp >> 4;

@@ -105,6 +105,15 @@ public:
     enable();
   }
 
+  void enable(bool on) const {
+    if(on){
+      enable();
+    } else {
+      disable();
+    }
+  }
+
+
 };
 
 /** instantiating more than one of these for a given interrupt defeats the nesting nature of its enable. */
