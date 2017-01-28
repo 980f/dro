@@ -1,9 +1,10 @@
 #pragma once
 
 #include "eztypes.h"
+#include "peripheraltypes.h"
+//but no banding for the NVIC
 
-
-//macro's for generating numbers don't work in the irqnumber slot below. The argument must be a simple digit string, no math or lookups or evenconsexpre's
+//macro's for generating numbers don't work in the irqnumber slot below. The argument must be a simple digit string, no math or lookups or even constexpr's
 #define IrqName(irqnumber) IRQ ## irqnumber
 
 //use this in front of the block statement of an irq handler:
@@ -18,32 +19,45 @@
 
 #define HandleFault(faultIndex) void FaultName(faultIndex) (void)
 
-/** base class to Irq which can be const'ed or even templated. */
-class Irq {
-public:
-  /** official number per your mcu's documents */
-  const u8 number;
-  /** which member of group of 32 this is */
-  const u8 bit;
-  /** memory offset for which group of 32 this is in */
-  const u32 bias;
-  /** bit pattern to go with @see bit index, for anding or oring into 32 bit grouped registers blah blah.*/
-  const u32 mask;
+/** @return previous setting while inserting new one*/
+static u8 setInterruptPriorityFor(unsigned irqnum, u8 newvalue);
 
-  /* using u8 data type to check validity, need an 'explicit' somewhere to make that fully true */
-  Irq(u8 number):
-    number(number),
-    bit(number & 0x1F),
-    bias(0xE000E000 + ((number>>5)<<2)),
-    mask(1<<(number & 0x1F)){//redo bit equation hoping to get init block instead of init routine
-    /*empty*/
-  }
+/** e.g. SysTick to lowest: setFaultHandlerPriority(15,255);*/
+void setFaultHandlerPriority(int faultIndex, u8 level);
+
+/** value to put into PRIGROUP field, see arm tech ref manual.
+  * 0: maximum nesting; 7: totally flat; 2<sup>7-code</sup> is number of different levels
+  * stm32F10x only implements the 4 msbs of the logic so values 3,2,1 are same as 0*/
+void configurePriorityGrouping(int code);
+
+/**  */
+extern "C" void disableInterrupt(unsigned irqnum);
+
+constexpr unsigned biasFor(unsigned number){
+  return 0xE000E000 + ((number>>5)<<2);
+}
+
+constexpr unsigned bitFor(unsigned number){
+  return number & bitMask(0,5);
+}
+
+/** Controls for an irq, which involves bit picking in a block of 32 bit registers */
+template <unsigned number> class Irq {
+public:
+  enum {
+    /** which member of group of 32 this is */
+    bit=bitFor(number),
+    /** memory offset for which group of 32 this is in */
+    bias=biasFor(number),
+    /** bit pattern to go with @see bit index, for anding or oring into 32 bit grouped registers blah blah.*/
+    mask=bitMask(bit)
+  };
 
 protected:
 
   /** @returns reference to word related to the feature. */
-  inline unsigned &controlWord(unsigned grup)const{
-    return *reinterpret_cast <unsigned *> (grup | bias);
+  inline constexpr unsigned &controlWord(unsigned grup)const{
+    return *atAddress(grup | bias);
   }
 
   /** this is for the registers where you write a 1 to a bit to make something happen. */
@@ -56,8 +70,11 @@ public:
   bool irqflag(unsigned grup)const{
     return (mask & controlWord(grup))!=0;
   }
-  /** @return previous setting while inserting new one*/
-  u8 setPriority(u8 newvalue) const;
+
+  u8 setPriority(u8 newvalue){
+    return setInterruptPriorityFor(number,newvalue);
+  }
+
 
   bool isActive(void) const {
     return irqflag(0x300);
@@ -91,15 +108,31 @@ public:
 };
 
 /** instantiating more than one of these for a given interrupt defeats the nesting nature of its enable. */
-class GatedIrq: public Irq {
+template <unsigned number> class GatedIrq: public Irq<number> {
   int locker; //tracking nested attempts to lock out the interrupt.
 public:
-  GatedIrq(int number): Irq(number), locker(0){}
+  GatedIrq():locker(0){}
 
-  void enable(void);
-  void lock(void);
-  /** clear any pending then enable, regular enable will cause an interrupt if one is pending.*/
-  void prepare(void);
+  void enable(void){
+    if(locker > 0) { // if locked then reduce the lock such that the unlock will cause an enable
+      --locker;  // one level earlier than it would have. This might be surprising so an
+      // unmatched unlock might be the best enable.
+    }
+    if(locker == 0) { // if not locked then actually enable
+      Irq<number>::enable();
+    }
+  }
+
+  void lock(){
+    if(locker++ == 0) {
+      Irq<number>::disable();
+    }
+  }
+
+  void prepare(){
+    Irq<number>::clear(); // acknowledge to hardware
+    enable(); // allow again
+  }
 
 };
 
@@ -110,19 +143,20 @@ public:
   *  Since each interrupt can be stifled at its source this should not be a problem.
   *  future: automate detection of being in the irq service and drop the argument.
   */
-struct IRQLock {
-  GatedIrq&irq;
+template <unsigned number> struct IRQLock {
+  GatedIrq<number> &irq;
 public:
-  IRQLock(GatedIrq&irq, bool inIrq = false);
-  ~IRQLock();
+  IRQLock(bool inIrq = false){
+    if(! inIrq) {
+      irq.lock();
+    }
+  }
+
+  ~IRQLock(){
+    irq.enable();
+  }
 };
 
-/** e.g. SysTick to lowest: setFaultHandlerPriority(15,255);*/
-void setFaultHandlerPriority(int faultIndex, u8 level);
-/** value to put into PRIGROUP field, see arm tech ref manual.
-  * 0: maximum nesting; 7: totally flat; 2<sup>7-code</sup> is number of different levels
-  * stm32F10x only implements the 4 msbs of the logic so values 3,2,1 are same as 0*/
-void configurePriorityGrouping(int code); //cortexm3.s or stm32.cpp
 
 #ifdef __linux__ //just compiling for syntax checking
 extern bool IRQEN;

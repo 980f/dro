@@ -7,48 +7,15 @@
 volatile int CriticalSection::nesting = 0;
 /////////////////////////////////
 
-u8 Irq::setPriority(u8 newvalue) const { // one byte each, often only some high bits are implemented
+u8 setInterruptPriorityFor(unsigned number,u8 newvalue) { // one byte each, often only some high bits are implemented
   u8 &priorityRegister(*reinterpret_cast<u8 *>(0xE000E400 + number));
   u8 oldvalue = priorityRegister;
-
   priorityRegister = newvalue;
   return oldvalue;
 }
 
 /////////////////////////////////
 
-void GatedIrq::enable(){
-  if(locker > 0) { // if locked then reduce the lock such that the unlock will cause an enable
-    --locker;  // one level earlier than it would have. This might be surprising so an
-    // unmatched unlock might be the best enable.
-  }
-  if(locker == 0) { // if not locked then actually enable
-    Irq::enable();
-  }
-}
-
-void GatedIrq::lock(){
-  if(locker++ == 0) {
-    disable();
-  }
-}
-
-void GatedIrq::prepare(){
-  clear(); // acknowledge to hardware
-  enable(); // allow again
-}
-
-/////////////////////////////////
-
-IRQLock::IRQLock(GatedIrq &irq, bool inIrq): irq(irq){
-  if(! inIrq) {
-    irq.lock();
-  }
-}
-
-IRQLock::~IRQLock(){
-  irq.enable();
-}
 
 /////////////////////////////////
 
@@ -197,12 +164,14 @@ extern "C" { // to keep names simple for "alias" processor
   } /* unhandledFault */
 
 
-/* turn it off so it doesn't happen again, and a handy breakpoint */
-  void unhandledInterruptHandler(void){
-    int irqnum = theInterruptController.active - 16;
+  void disableInterrupt(unsigned irqnum){
+    *atAddress(biasFor(irqnum)|0x180)=bitMask(bitFor(irqnum));
+  }
 
-    GatedIrq(irqnum).disable();
-  } /* unhandledInterruptHandler */
+  void unhandledInterruptHandler(void){
+    /* turn it off so it doesn't happen again, and a handy breakpoint */
+    disableInterrupt(theInterruptController.active - 16);
+  }
 } // end extern "C"
 
 // the stubs declare handler routines that deFault to unhandledInterruptHandler or unhandledFault if not otherwise declared.
