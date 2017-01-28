@@ -26,7 +26,7 @@
       build_intermediate_directory="built-$(ProjectName)-$(Configuration)"
       build_output_directory="built-$(ProjectName)-$(Configuration)"
       c_only_additional_options=""
-      c_preprocessor_definitions=""
+      c_preprocessor_definitions="__CORTEX_M=3"
       c_user_include_directories="cortexm;cortexm/lpc;ezcpp"
       debug_initial_breakpoint="cstartup"
       debug_initial_breakpoint_set_option="Never"
@@ -87,6 +87,8 @@
         <file file_name="cortexm/wtf.cpp" />
         <file file_name="cortexm/clockstarter.cpp" />
         <file file_name="cortexm/fifo.cpp" />
+        <file file_name="cortexm/cruntime.h" />
+        <file file_name="cortexm/core_cmfunc.cpp" />
       </folder>
       <folder Name="lpc">
         <file file_name="cortexm/lpc/gpio.cpp" />

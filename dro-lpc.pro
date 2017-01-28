@@ -2,6 +2,7 @@ TEMPLATE = app
 CONFIG -= console
 CONFIG -= app_bundle
 CONFIG -= qt
+CONFIG += c++11
 
 QMAKE_CFLAGS += -std=c99
 QMAKE_CFLAGS +=   -Wall
@@ -25,8 +26,6 @@ QMAKE_CXXFLAGS += -Wno-error=unused-function
 
 #for debug of macros:
 QMAKE_CXXFLAGS += -save-temps
-
-DEFINES += useSTM32=0
 
 INCLUDEPATH += cortexm cortexm/lpc ezcpp
 
@@ -85,7 +84,6 @@ SOURCES +=\
     cortexm/core-atomic.cpp \
     cortexm/fifo.cpp \
     cortexm/core_cm3.cpp \
-    cortexm/core_itm.cpp \
     cortexm/coredebug.cpp \
     cortexm/systick.cpp \
     cortexm/nvic.cpp \
