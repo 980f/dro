@@ -19,24 +19,31 @@ using namespace SystemTimer;
 
 using namespace LPC;
 
+/** construction of this turns on internal peripherals and configures pins. */
+const P1343devkit board InitStep(InitApplication);
+
 //the next line actually sets up the clocks before main and pretty much anything else gets called:
-ClockStarter startup InitStep(InitHardware/2) (true,0,1000);//external clock wasn't working properly, need a test to check before switching to it.
-P1343devkit board InitStep(InitApplication);//construction of this turns on internal peripherals and configures pins.
-Irq<board.button.pini> pushButton/*(board.button.pini )*/;
+const ClockStarter startup InitStep(InitHardware/2) (true,0,1000);//external clock wasn't working properly, need a test to check before switching to it.
 
 using namespace LPC;
 
-//HandleInterrupt(P1343ButtonIrqNum){
-//  board.toggleLed(4);
-//  board.button.irqAcknowledge();
-//}
+#include "startsignal.h"
 
-HandleInterrupt(54){//this gets the button irq
+const StartSignal<board.button.pini> pbwup;
+const Irq<board.button.pini> pbalso;//until we decide to burden StartSignal with nvic knowledge we have to run these in parallel.
+
+HandleInterrupt(33){//port 2.9
+  board.toggleLed(7);
+  pbwup.prepare();
+  pbalso.clear();
+}
+
+const Irq<gpioBankInterrupt(2)> gp2irq;//interrupt 54
+
+HandleInterrupt(54){//this gets the button irq via any port 2 bit changing.
   board.toggleLed(5);
   board.button.irqAcknowledge();
 }
-
-const Irq<gpioBankInterrupt(2)> gp2irq;
 
 //p0-4,p05 for qei.
 const InputPin<0,4> primePhase;
@@ -110,7 +117,10 @@ int main(void) {
   //soft stuff
   int events=0;
   prime.enable();
-  pushButton.enable();//@nvic
+  
+  pbalso.enable();//@nvic
+  pbwup.configure(false,true);
+
   board.button.setIrqStyle(AnyEdge,true);
   
   gp2irq.prepare();
