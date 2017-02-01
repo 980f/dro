@@ -1,0 +1,169 @@
+<!DOCTYPE CrossStudio_Project_File>
+<solution Name="dro-due" target="8" version="2">
+  <project Name="dro-due">
+    <configuration
+      Name="Common"
+      Target="SAM3X8E"
+      arm_architecture="v7M"
+      arm_core_type="Cortex-M3"
+      arm_fpu_type="None"
+      arm_gcc_target="arm-unknown-eabi"
+      arm_interwork="No"
+      arm_keep_assembly="Yes"
+      arm_keep_preprocessor_output="Yes"
+      arm_linker_gap_fill="0xff"
+      arm_linker_heap_size="0"
+      arm_linker_process_stack_size="0"
+      arm_linker_stack_size="0"
+      arm_simulator_memory_simulation_filename="$(TargetsDir)/SAM/SAMSimulatorMemory$(HostDLL)"
+      arm_simulator_memory_simulation_parameter="SAM3X;0x80000;0x0;0x10000;0x8000;0;0;0;0"
+      arm_supply_absolute_file_path="No"
+      arm_target_connect_with_reset="Yes"
+      arm_target_debug_interface_type="ADIv5"
+      arm_target_interface_type="SWD"
+      arm_target_loader_parameter="12000000"
+      arm_use_builtins="Yes"
+      arm_use_gcc_libraries="No"
+      build_intermediate_directory="built-$(ProjectName)-$(Configuration)"
+      build_output_directory="built-$(ProjectName)-$(Configuration)"
+      c_only_additional_options=""
+      c_preprocessor_definitions="__CORTEX_M=3"
+      c_user_include_directories="cortexm;cortexm/sam3;ezcpp"
+      debug_initial_breakpoint="cstartup"
+      debug_initial_breakpoint_set_option="Never"
+      double_is_float="Yes"
+      gcc_c_language_standard="c99"
+      gcc_cplusplus_language_standard="c++11"
+      gcc_dwarf_version="dwarf-4"
+      gcc_entry_point="cstartup"
+      gcc_wchar_size="16-Bit"
+      link_include_standard_libraries="Yes"
+      link_include_startup_code="No"
+      linker_memory_map_file="$(TargetsDir)/SAM/SAM3X8E_MemoryMap.xml"
+      linker_printf_fmt_level="int"
+      linker_printf_fp_enabled="No"
+      linker_printf_width_precision_supported="No"
+      linker_scanf_character_group_matching_enabled="No"
+      linker_scanf_fmt_level="int"
+      linker_scanf_fp_enabled="No"
+      macros="SAM_Series=sam3xa"
+      package_dependencies="SAM"
+      project_directory=""
+      project_type="Executable"
+      property_groups_file_path="$(TargetsDir)/SAM/propertyGroups.xml"
+      target_get_partname_script="GetPartName()"
+      target_match_partname_script="MatchPartName(&quot;$(Target)&quot;)"
+      target_reset_script="SAM3XA_Reset()" />
+    <configuration
+      Name="Flash"
+      Placement="Flash"
+      arm_target_flash_loader_file_path="$(TargetsDir)/SAM/Release/Loader_$(SAM_Series).elf"
+      arm_target_flash_loader_type="LIBMEM RPC Loader"
+      linker_section_placement_file="$(TargetsDir)/SAM/flash_placement.xml" />
+    <configuration
+      Name="RAM"
+      Placement="RAM"
+      linker_section_placement_file="$(TargetsDir)/SAM/ram_placement.xml" />
+    <folder Name="System Files">
+      <file file_name="$(TargetsDir)/SAM/SAM_Target.js">
+        <configuration Name="Common" file_type="Reset Script" />
+      </file>
+      <file file_name="dro-sam.ld" />
+      <file file_name="cortexm/cortexm.ld" />
+      <file file_name="cortexm/sam3/sam3x8e.ld" />
+      <file file_name="dro-due.cpp" />
+    </folder>
+    <folder Name="cortexm">
+      <file file_name="cortexm/clocks.h" />
+      <file file_name="cortexm/clockstarter.cpp" />
+      <file file_name="cortexm/core_cm3.cpp" />
+      <file file_name="cortexm/core_cm3.h" />
+      <file file_name="cortexm/core_cmInstr.h" />
+      <file file_name="cortexm/cruntime.h" />
+      <file file_name="cortexm/cstartup.cpp" />
+      <file file_name="cortexm/fifo.cpp" />
+      <file file_name="cortexm/fifo.h" />
+      <file file_name="cortexm/nvic.cpp" />
+      <file file_name="cortexm/nvic.h" />
+      <file file_name="cortexm/peripheralband.h" />
+      <file file_name="cortexm/peripheraltypes.h" />
+      <file file_name="cortexm/systick.cpp" />
+      <file file_name="cortexm/systick.h" />
+      <file file_name="cortexm/wtf.cpp" />
+      <file file_name="cortexm/wtf.h" />
+      <folder Name="sam3">
+        <file file_name="cortexm/sam3/arduinodue.cpp" />
+        <file file_name="cortexm/sam3/arduinodue.h" />
+        <file file_name="cortexm/sam3/clockgenerator.cpp" />
+        <file file_name="cortexm/sam3/clockgenerator.h" />
+        <file file_name="cortexm/sam3/feature.cpp" />
+        <file file_name="cortexm/sam3/feature.h" />
+        <file file_name="cortexm/sam3/gpio.cpp" />
+        <file file_name="cortexm/sam3/gpio.h" />
+        <file file_name="cortexm/sam3/samperipheral.h" />
+        <file file_name="cortexm/sam3/uart.cpp" />
+        <file file_name="cortexm/sam3/uart.h" />
+      </folder>
+      <file file_name="cortexm/core-atomic.h" />
+      <file file_name="cortexm/cortexm3.s" />
+    </folder>
+    <folder Name="ezcpp">
+      <file file_name="ezcpp/bitbanger.cpp" />
+      <file file_name="ezcpp/bitbanger.h" />
+      <file file_name="ezcpp/cheaptricks.cpp" />
+      <file file_name="ezcpp/cheaptricks.h" />
+      <file file_name="ezcpp/circularpointer.cpp" />
+      <file file_name="ezcpp/circularpointer.h" />
+      <file file_name="ezcpp/eztypes.h" />
+      <file file_name="ezcpp/minimath.cpp" />
+      <file file_name="ezcpp/minimath.h" />
+      <file file_name="ezcpp/polledtimer.cpp" />
+      <file file_name="ezcpp/polledtimer.h" />
+      <file file_name="ezcpp/tableofpointers.h" />
+    </folder>
+  </project>
+  <configuration
+    Name="THUMB-Flash-Debug"
+    inherited_configurations="THUMB;Flash;Debug" />
+  <configuration
+    Name="THUMB"
+    Platform="ARM"
+    arm_instruction_set="Thumb"
+    arm_library_instruction_set="Thumb"
+    c_preprocessor_definitions="__THUMB"
+    hidden="Yes" />
+  <configuration
+    Name="Flash"
+    c_preprocessor_definitions="__FLASH_BUILD"
+    hidden="Yes" />
+  <configuration
+    Name="Debug"
+    c_preprocessor_definitions="DEBUG"
+    gcc_debugging_level="Level 3"
+    gcc_optimization_level="Debug"
+    hidden="Yes" />
+  <configuration
+    Name="Common"
+    arm_architecture="v7M"
+    arm_core_type="Cortex-M3"
+    arm_instruction_set="Thumb"
+    arm_interwork="No"
+    arm_library_instruction_set="Thumb"
+    arm_library_optimization="Small"
+    arm_linker_heap_size="0"
+    arm_linker_stack_size="0"
+    arm_supply_absolute_file_path="No"
+    arm_target_read_only_software_breakpoints="Disabled"
+    arm_use_gcc_libraries="No"
+    debug_initial_breakpoint_set_option="Only With No Breakpoints Set"
+    fiqHandler_name=""
+    gcc_c_language_standard="c11"
+    gcc_cplusplus_language_standard="c++14"
+    gcc_dwarf_version="dwarf-4"
+    gcc_entry_point="cstartup"
+    gcc_optimization_level="Debug"
+    irqHandler_name=""
+    link_include_standard_libraries="No"
+    linker_printf_fp_enabled="No"
+    pabortHandler_name="" />
+</solution>
