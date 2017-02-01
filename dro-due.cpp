@@ -15,45 +15,44 @@ using namespace SystemTimer;
 #include "core_cmInstr.h"  //wfe OR wfi
 #include "cruntime.h"
 
-#include "due_board.h"
+#include "arduinodue.h" //ArduinoDue
 
 using namespace SAM;
 
 //the next line actually sets up the clocks before main and pretty much anything else gets called:
-ClockStarter startup InitStep(InitHardware/2) (true,0,1000);//external clock wasn't working properly, need a test to check before switching to it.
+ClockStarter startup InitStep(InitHardware/2) (true,0,1000);
+
 ArduinoDue board InitStep(InitApplication);//construction of this turns on internal peripherals and configures pins.
-//Irq pushButton(board.button.pini);
 
-HandleInterrupt(54){//this gets the button irq
-  board.toggleLed(5);
-  board.button.irqAcknowledge();
-}
+//HandleInterrupt(54){//this gets the button irq
+//  board.toggleLed(5);
+//  board.button.irqAcknowledge();
+//}
 
-//p0-4,p05 for qei.
-InputPin<0,4> primePhase;
-InputPin<0,5> otherPhase;
-Irq prime(primePhase.pini);
-#define myIrq 4
+////p0-4,p05 for qei.
+//InputPin<0,4> primePhase;
+//InputPin<0,5> otherPhase;
+//Irq prime(primePhase.pini);
+//#define myIrq 4
 
 //should go up and down depending upon the input signals;
 static int axis(0);
 
-HandleInterrupt( myIrq ) {
-  //prime phase interrupt
-  bool dirbit = otherPhase;
-  if (dirbit) {
-    --axis; //ignoring quarter phase for now
-  } else {
-    ++axis; //will be +/-4 here
-  }
-  //??lpc input clear
-}
+//HandleInterrupt( myIrq ) {
+//  //prime phase interrupt
+//  bool dirbit = otherPhase;
+//  if (dirbit) {
+//    --axis; //ignoring quarter phase for now
+//  } else {
+//    ++axis; //will be +/-4 here
+//  }
+//  //??lpc input clear
+//}
 
 #include "fifo.h"
 static FifoBuffer<33> outgoing;
 static FifoBuffer<63> incoming;
 
-#include "uart.h"
 /** called by isr on an input event.
  * negative values of @param are notifications of line errors, -1 for interrupts disabled */
 bool uartReceiver(int indata){
@@ -70,13 +69,12 @@ bool uartReceiver(int indata){
 int uartSender(){
   return outgoing;//negative for fifo empty
 }
+#include "uart.h"
+const SAM::Uart theUart(&uartReceiver,&uartSender);
 
 void prepUart(){
   theUart.setFraming("N81");
   theUart.setBaud(115200);
-  theUart.setTransmitter(&uartSender);
-  theUart.setReceiver(&uartReceiver);
-
   theUart.reception(true);
   theUart.irq(true);
 }
@@ -94,18 +92,16 @@ int main(void) {
   //soft stuff
   int events=0;
 
-  prime.enable();
-  pushButton.enable();//@nvic
-  board.button.setIrqStyle(IrqStyle::AnyEdge,true);
+//  prime.enable();
+//  pushButton.enable();//@nvic
+//  board.button.setIrqStyle(IrqStyle::AnyEdge,true);
 //  Irq gp2irq(gpioBankInterrupt(2));
 //  gp2irq.prepare();
   //no longer doing this prophylactically in the loop as we now use atomics rather than interrupt gating to deal with concurrency.
-  EnableInterrupts;//master enable
-//  events=sumObjs();
+  IRQEN=1;//master enable
   while (1) {
     MNE(WFE);//wait for event, expecting interrupts to also be events.
     ++events;
-//works, now will do using isr    board.led1 = board.button;
     if(slowToggle.hasFired()){
       board.toggleLed(0);
       if((outgoing='A'+(events&15))){

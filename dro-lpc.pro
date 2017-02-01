@@ -2,7 +2,7 @@ TEMPLATE = app
 CONFIG -= console
 CONFIG -= app_bundle
 CONFIG -= qt
-CONFIG += c++11
+CONFIG += c++14
 
 QMAKE_CFLAGS += -std=c99
 QMAKE_CFLAGS +=   -Wall
@@ -25,7 +25,7 @@ QMAKE_CXXFLAGS += -Wno-error=unused-parameter
 QMAKE_CXXFLAGS += -Wno-error=unused-function
 
 #for debug of macros:
-QMAKE_CXXFLAGS += -save-temps
+#QMAKE_CXXFLAGS += -save-temps
 
 INCLUDEPATH += cortexm cortexm/lpc ezcpp
 
