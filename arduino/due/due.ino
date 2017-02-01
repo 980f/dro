@@ -35,7 +35,7 @@ const InterruptPin<greenLight, button2.number, CHANGE> greenirq;
 void setup() {
   SerialUSB.begin(230400);
   //Pin structs take care of themselves, unless you need special modes outside arduino's libraries.
-  greenirq.attach();
+  greenirq.attach();//we don't build in attach() to the constructor as in many cases the isr needs stuff that isn't initialized until setup() is run.
 }
 
 void loop() {
