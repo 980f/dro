@@ -8,37 +8,38 @@ const SAM::Feature GPIO::feature(GpioFeature which,bool inverted)const{
   return SAM::Feature(base+(which<<4),mask,inverted);
 }
 
-GPIO::GPIO(Port portnum, unsigned bitnumber):
-  base(scmbase(portnum+6)),
-  mask(1<<bitnumber){
-  //#nada
-}
+//GPIO::GPIO(Port portnum, unsigned bitnumber):
+//  base(scmbase(portnum+6)),
+//  mask(1<<bitnumber){
+//  //#nada
+//}
 
-void GPIO::setMode(unsigned function, bool output, unsigned extras){
-  const Feature &justPin=feature(BeSimple,false);
+//void GPIO::setMode(unsigned function, bool output, unsigned extras){
+//  const Feature &justPin=feature(BeSimple,false);
 
-  if(function==0) {
-    justPin=1;
-    //and periph doesn't matter
-  } else {
-    justPin=0;
-    feature(WhichPeripheral,false)= (function==2);
-  }
+//  if(function==0) {
+//    justPin=1;
+//    //and periph doesn't matter
+//  } else {
+//    justPin=0;
+//    feature(WhichPeripheral,false)= (function==2);
+//  }
 
-  feature(BeOutput,false)=output;
+//  feature(BeOutput,false)=output;
 
-  if(output){
-    feature(OpenDrain,false)= extras==1;
-  } else {
-    feature(NoPullup,true)= extras==PullUp;
-  }
+//  if(output){
+//    feature(OpenDrain,false)= extras==1;
+//  } else {
+//    feature(NoPullup,true)= extras==PullUp;
+//  }
 
-}
+//}
 
-void GPIO::setStyle(IrqStyle irqStyle)
-{
+//void GPIO::setStyle(IrqStyle irqStyle){
+//  switch (irqStyle){
 
-}
+//  }
+//}
 
 
 

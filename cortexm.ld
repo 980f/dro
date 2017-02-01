@@ -6,10 +6,11 @@ This should be included *after* a script that defines MEMORY sections SRAM and F
 This takes advantage of gcc emitting data alignment commands in the input files, so we don't have to redundantly claim them herein.
 
 For the c startup initialization it trades off number of inline constants (register load immediates) with
-putting those constants explicitly in the rom and inlining only a pointer thereto.
+putting those constants explicitly in the rom and inlining only a pointer thereto. The compiler was able to do a load multiple versus seperate load immediates.
 
 The building of the vector table is shared between linker generated stack top and the vector table proper being
-declared elsewhere (@see alh's nvic.cpp) using the same facility that 'init' attributes uses.
+declared elsewhere (@see alh's nvic.cpp) using the same facility that 'init' attributes uses. I used SORT where others don't bother so that the vector table can be developed 
+in seperate files, such as stack init and reset vector where the code using them is, and the others in the nvic module.
 
 Some people (CMSIS- looking at you) conditionally include some special calls around the c startup (useful for things like powering up parts of the
 chip that need to be on before c-structs for accessing them are constructed), I have implemented that via weak references
@@ -19,8 +20,9 @@ Some people have multiple initialization call tables, I pack them into one segme
 which eliminates the need for a slew of shared symbols and counting. I may have unintentionaly altered the
 priority, the point of the multiple lists was to allow for some control over order in which initialization
 routines execute, which is done via the order of input declarations.
+
 ---
-The following dance is done for most sections:
+The following dance is done for some sections:
     KEEP (*(SORT(.data.*)))
     KEEP (*(.data))
 This allows one to build a table from pieces in different translation units. For each such table use __attribute__((section(".ramorrom.tablename.somenumber"))
@@ -34,7 +36,7 @@ a custom value to put them earlier or later in the table.
 No special provision has been made for a ram vector table. The compiler can align a user built array of function pointers
 and user code can assign to the vector table system control register to enable it.
 
-I have left off destructor and other 'atexit' functionality, my only 'atexit' is to generate a hard reset.
+I initially left off destructor and other 'atexit' functionality, my only 'atexit' is to generate a hard reset. I've added it back but it is untested.
 
 I have left off a no-init data section, that is a dangerous technology with many different possible implementations.
 The stm32 non-volatile data has holes in it beyond the ability of the linker to readily compensate for. Not zeroing some ram
@@ -134,7 +136,7 @@ __exit_table__ = LOADADDR(.exit);
   have a section name for each and an attribute in front of data declaration
   and then the linker can provide addresses for access.
   That also entails laying out a struct to match the hardware and given the number of 16 bit wide peripherals that can be quite a pain.
-  Without automated code generation that is all quite painful and error prone, and the code isn't any faster or smaller using constexpr
+  Without automated code generation that is all quite painful and error prone, and the code isn't any faster or smaller than using constexpr
   address calculation code (when the compiler is allowed to inline it).
 
   Nonetheless, if one wanted to do all that segment magic one could include a file here with the section per peripheral stuff, and likewise have an

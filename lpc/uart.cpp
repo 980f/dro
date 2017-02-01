@@ -114,7 +114,7 @@ receive(receiver),send(sender){
 }
 
 /** @param which 0:dsr, 1:dcd, 2:ri @param onP3 true: port 3 else port 2 */
-void configureModemWire(int which, bool onP3){
+void configureModemWire(unsigned which, bool onP3){
   *atAddress(ioConReg(0xb4+(which<<2)))=onP3;
 }
 
@@ -167,7 +167,7 @@ unsigned Uart::setBaud(unsigned hertz, unsigned sysFreq) const {
 } // Uart::setBaud
 
 void Uart::setFraming(const char *coded) const {
-  int numbits = *coded++ - '0';
+  unsigned numbits = *coded++ - '0';
 
   if(numbits < 5) {
     return;

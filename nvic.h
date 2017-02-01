@@ -20,7 +20,7 @@
 #define HandleFault(faultIndex) void FaultName(faultIndex) (void)
 
 /** @return previous setting while inserting new one*/
-static u8 setInterruptPriorityFor(unsigned irqnum, u8 newvalue);
+u8 setInterruptPriorityFor(unsigned irqnum, u8 newvalue);
 
 /** e.g. SysTick to lowest: setFaultHandlerPriority(15,255);*/
 void setFaultHandlerPriority(int faultIndex, u8 level);
@@ -105,7 +105,7 @@ public:
     enable();
   }
 
-  void enable(bool on) const {
+  void operator=(bool on) const {
     if(on){
       enable();
     } else {
@@ -183,15 +183,16 @@ extern const CPSI_i IRQEN;
 /** creating one of these in a function (or blockscope) disables interrupts until said function (or blockscope) exits.
   * By using this fanciness you can't accidentally leave interrupts disabled. */
 class CriticalSection {
-  static volatile int nesting;
+  static volatile unsigned nesting;
 public:
   CriticalSection(void){
-    IRQEN=0;
-    ++nesting;
+    if(!nesting++){
+      IRQEN=0;
+    }
   }
 
   ~CriticalSection (void){
-    if(nesting != 0) { //then interrupts are globally disabled
+    if(nesting) { //then interrupts are globally disabled
       if(--nesting == 0) {
         IRQEN=1;
       }

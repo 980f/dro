@@ -10,10 +10,11 @@ instantiate this in a project specific file:
 extern const u32 EXTERNAL_HERTZ;
 
 //clock rate:
-/** stm32: bus is: -1:sysclock; 0:ahb/core; 1:apb1; 2:apb2; 3:adc;
+/** @returns a clock rate selected by @param which, which depends upon processor family although many are common
+ * stm32: bus is: -1:sysclock; 0:ahb/core; 1:apb1; 2:apb2; 3:adc;
  * lpc13xx: -1:sysclock; 0:ahb/core; 1:apb1;
 */
-u32 clockRate(int bus);
+u32 clockRate(int which);
 
 /**set system clocks to the fastest possible*/
 void warp9(bool internal);

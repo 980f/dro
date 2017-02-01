@@ -372,8 +372,9 @@ void generateHardReset(){
 }
 
 
-
-#ifndef __linux__
+#ifdef __linux__ //just compiling for syntax checking
+bool IRQEN;
+#else
 //shared instances need this treatment.
 const CPSI_i IRQEN;
 #endif
