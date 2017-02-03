@@ -12,8 +12,8 @@ MakeRefTable(SystemTicker);
 
 namespace SystemTimer {
 //when the following were simple static's Rowley would not show them.
-  u32 milliTime(0); //storage for global tick time.
-  u32 macroTime(0);   //extended range tick time
+static u32 milliTime(0); //storage for global tick time.
+static u32 macroTime(0); //extended range tick time
 }
 using namespace SystemTimer;
 
@@ -32,6 +32,7 @@ HandleFault(15){ //15: system tick
 struct SysTicker {
   volatile unsigned int enableCounting : 1; //enable counting
   unsigned int enableInterrupt : 1; //enable interrupt
+  //note: some implementation do NOT implement this bit! Hopefully it read back as 0 even if you try to set it.
   unsigned int fullspeed : 1; //1: main clock, 0: that divided by 8 (St's choice, ignore their naming)
   unsigned int : 16 - 3;
   volatile unsigned int rolledOver : 1; //indicates rollover, clears on read
@@ -40,7 +41,7 @@ struct SysTicker {
   u32 reload; //(only 24 bits are implemented) cycle = this+1.
 
   u32 value; //
-  //following is info chip provides to user,
+  //following is info chip provides to user, some manufacturers are off by a power of 10 here.
   unsigned int tenms : 24; //value to get 100Hz
   unsigned int : 30 - 24;
   unsigned int refIsApproximate : 1;
@@ -136,6 +137,7 @@ u32 snapTime(void){
 }
 
 u32 snapTickTime(void){
+  //#some of the superficially gratuitous stuff in here exists to minimize the clocks spent with counting disabled.
   u32 snapms;
   u32 snaptick;
   theSysTicker.enableCounting = 0; //can't use bitlock on a field in a struct :(
