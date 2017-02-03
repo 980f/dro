@@ -217,25 +217,9 @@ Handler FaultTable[] __attribute__((section(".vectors.2"))) = {//0 is stack top,
 #define stub(irq) void IRQ ## irq(void) __attribute__((weak, alias("unhandledInterruptHandler")))
 
 //if the following table doesn't exist use mkIrqs to build it for your processor
-#include "../nvicTable.cpp"
+#include "../nvicTable.link" //table in parent directory as it is project specific. 
+//I've named the above .link as I am prebuilding tables for various processors and using a soft link to pick one.
 
-#if 0
-//asm code:
-.global generateHardReset
-.thumb
-.align 2
-.thumb_func
-
-generateHardReset:
-//AIRC register
-movw r0, #0xED0C
-movt r0, #0xE000
-//1:VECTRESET worked, 4:SYSRESETREQ just loops here, using rowley&jtag debugger. //probably should try 5 in case different vendors misread the arm spec differently.
-movw r1, #5
-movt r1, #0x05FA
-str r1,[r0]
-b generateHardReset
-#endif
 
 //trying to get good assembler code on this one :)
 void generateHardReset(){
