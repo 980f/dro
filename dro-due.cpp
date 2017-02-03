@@ -91,7 +91,6 @@ int main(void) {
   slowToggle.restart(ticksForSeconds(0.333));
   //soft stuff
   int events=0;
-
 //  prime.enable();
 //  pushButton.enable();//@nvic
 //  board.button.setIrqStyle(IrqStyle::AnyEdge,true);
@@ -103,7 +102,7 @@ int main(void) {
     MNE(WFE);//wait for event, expecting interrupts to also be events.
     ++events;
     if(slowToggle.hasFired()){
-      board.toggleLed(0);
+      board.LED.toggle();
       if((outgoing='A'+(events&15))){
         theUart.beTransmitting();
       }

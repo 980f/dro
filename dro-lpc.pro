@@ -70,7 +70,8 @@ HEADERS +=\
     cortexm/lpc/uart.h \
     cortexm/lpc/usbinterface.h \
     cortexm/lpc/wdt.h \
-    cortexm/lpc/pinirq.h
+    cortexm/lpc/pinirq.h \
+    ezcpp/stopwatch.h
 
 
 SOURCES +=\
@@ -101,7 +102,8 @@ SOURCES +=\
     cortexm/lpc/system_LPC13xx.cpp \
     cortexm/lpc/usbinterface.cpp \
     cortexm/lpc/p1343_board.cpp \
-    p1343-dro.cpp
+    p1343-dro.cpp \
+    ezcpp/stopwatch.cpp
 
 DISTFILES += \
     dro-lpc.ld \

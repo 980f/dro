@@ -93,7 +93,8 @@ DISTFILES += \
     dro-due.ld \
     cortexm/sam3/sam3x8e.ld \
     cortexm/cortexm3.s \
-    cortexm/cortexm.ld
+    cortexm/cortexm.ld \
+    cortexm/mkIrqs
 
 
 #end of file.

@@ -28,7 +28,7 @@
       build_output_directory="built-$(ProjectName)-$(Configuration)"
       c_only_additional_options=""
       c_preprocessor_definitions="__CORTEX_M=3"
-      c_user_include_directories="cortexm;cortexm/sam3;ezcpp"
+      c_user_include_directories="..;cortexm;cortexm/sam3;ezcpp"
       debug_initial_breakpoint="cstartup"
       debug_initial_breakpoint_set_option="Never"
       double_is_float="Yes"

@@ -96,9 +96,6 @@ ObjectInterrupt(theUart.isr(), uartIrq);
 void prepUart(){
   theUart.setFraming("N81");
   theUart.setBaud(115200);
-//  theUart.setTransmitter(&uartSender);
-//  theUart.setReceiver(&uartReceiver);
-
   theUart.reception(true);
   theUart.irq(true);
 }
