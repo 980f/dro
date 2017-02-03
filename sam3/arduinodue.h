@@ -5,14 +5,15 @@
 
 class ArduinoDue{
 public:
-  ArduinoDue();
+//  ArduinoDue();
 /** seeed studio protoshield rev A*/
-//D3-red,D4-green  leds buttons D6,D7
-  OutputPin red;       //D3=
-  OutputPin green;
-  InputPin button1;
-  InputPin button2;
-  OutputPin D13; //also an LED?
+  OutputPin<PC,28> red;       //D3=
+  OutputPin<PA,29> green;  //also PC26??? two device pins tied to one connection?
+  InputPin<PC,24> button1;
+  InputPin<PC,23> button2;
+/** standard arduino LED*/
+  OutputPin<PB,27> LED; //aka D13
+
 
 };
 

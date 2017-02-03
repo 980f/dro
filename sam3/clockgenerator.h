@@ -15,7 +15,7 @@ void clockOutPut(unsigned whichOf3, bool enable);
 */
 void masterClock(unsigned prescale, unsigned source);
 
-/** enable or disable a device clock. The frequency is clockRate(1) */
+/** enable or disable a device clock. The base frequency is clockRate(1) */
 void deviceClock(unsigned pid,unsigned enable);
 
 }

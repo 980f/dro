@@ -8,25 +8,33 @@
 enum Port {
   PA=0,
   PB,
-  PC
+  PC,
+  //sam u stops here, sam x continues
+  PD,
+  //commercially available samX stops here as far as pins go.
+  PE,
+  PF,
 };
 
 constexpr unsigned portBase(unsigned portnum){
-  return scmbase(portnum+6);
+  return scmbase(portnum+8);//6 for samU
 }
 
 /** declared outside of xxPin class so that we don't have to apply template args to each use.*/
-enum PinBias { //#ordered for MODE field of iocon register
+enum PinBias {
   LeaveFloating = 0, // in case someone forgets to explicitly select a mode
   PullUp, // level, pulled up
+  Bussed, //opendrain output
+
 };
 
+/** register groups, a private enum */
 enum GpioFeature {
   BeSimple=0,
   BeOutput,
   Glitcher,
   Data, // set 1's, set 0's, data port is 32 bit writable as well as bit mask readable., 4th group is actual pin level
-  DeltaInterrupt,//4: change interrupt, usual triplet, 4th member is 'interrupt latched', clears on read!:)
+  InterruptMask,//4: interrupt, usual triplet, 4th member is 'interrupt latched', clears on read!:)
   OpenDrain, //5: open collector/drain enable
   NoPullup, //6: *disable* pullup
   WhichPeripheral, //7: B-peripheral, else A (see also feature 0)
@@ -40,97 +48,74 @@ enum GpioFeature {
   ControlLock, //14: isLocked, writeprotect gizmo., writeprotect faulted (clear on read) (no dox on how to map 16 bit code to which register was attacked)
 };
 
+Handler &gpioVector(unsigned portnum,unsigned pinnumber);
+/** call all the gpioVector functions whose corresponding bits are set */
+void hike(unsigned portnum,unsigned bits);
 
 /** those settings that are shared across a port */
 template <unsigned portnum> class PIOPort {
   enum {
     base=portBase(portnum), /** unlike stm the base is not derivable from the pid */
-    pid=10+portnum,
+    pid=11+portnum,  /** used for clock enable and irq computation. */  //10 for samU
   };
 public:
 
-  void enable(bool clockOn)const;
+  void enable(bool clockOn)const{
+    //clock system
+  }
   /** @param on when true locks out spurious writes to the control register */
-  void configurationLock(bool on)const;
+  void configurationLock(bool on)const{
+  }
   /* set glitch filter options for the bank, @see also */
-  void setGlitchFilterBase(unsigned slowrate)const;
+  void setGlitchFilterBase(unsigned slowrate)const{
+    *atAddress(base+0x8C)=slowrate;
+  }
   /** read interrupt flag register, bit per pin, read resets flags so this must be done at group level */
-  unsigned getInterrupts()const;
+  unsigned getInterrupts()const{
+    return *atAddress(base+0x4C);
+  }
+
+  void setHandler(unsigned pinnumber, Handler handler)const{
+    gpioVector(portnum,pinnumber)=handler;
+  }
+
 };
-
-///** making out of line instance first, will template later */
-//class GPIO {
-//  const unsigned base;
-//  const unsigned mask;
-
-//public:
-//  /* there are around 14 features, @param which is 0 to 14 */
-//  const SAM::Feature feature(GpioFeature which, bool inverted) const;
-//public:
-//  GPIO(Port portnum, unsigned bitnumber);
-//  //do NOT add a destructor, we don't need to destruct pins.
-
-//  /** @param function is 0 for pin, 1 for A peripheral, 2 for B peripheral,
-//   * @param extras depends upon @param output:
-//for input see PinBias
-//for output this device supports: normal, bussed
-//*/
-//  void setMode(unsigned function, bool output, unsigned extras=0);
-//  /** this sets how the pin affects the grouped interrupt. */
-//  void setStyle(IrqStyle irqStyle);
-//  /** for input you can filter it: none=0, abit=1 (fast clock) , more=2 (per port slow rate) */
-//  void setGlitcher(unsigned howmuch);
-//};
 
 /** to configure a pin for a dedicated function one must merely construct a GpioPin with template args for which pin and constructor arg of control pattern*/
 template <unsigned portNum, unsigned bitPosition> class PortPin: public BoolishRef {
-
+  typedef PortPin<portNum,bitPosition> Base;
 protected: // for simple gpio you must use an extended class that defines read vs read-write capability.
   enum {
     mask = 1 << bitPosition, // used for port control register access
     base = portBase(portNum), // base for port control
   };
 
-  const SAM::Feature feature(GpioFeature which,bool inverted)const{
+  const SAM::Feature feature(GpioFeature which,bool inverted=false)const{
     return SAM::Feature(base+(which<<4),mask,inverted);
   }
 
-
-  inline void setIocon(unsigned pattern)const{
-
+  inline void setRegister(GpioFeature which)const{
+    feature(which)=1;
   }
 
-//  /** @returns reference to the masked access port of the register, mask set to the one bit for this pin. @see InputPin and @see OutputPin classes for use, unlike stm32 bitbanding some shifting is still needed. */
-//  inline unsigned &pin() const {
-//    return *reinterpret_cast<unsigned *>(/*PortPin<portNum, bitPosition>::*/pinn);
-//  }
-
-  inline void setRegister(unsigned which)const{
-    SAM::Feature arf=feature(which);
-    arf=1;
+  inline void clearRegister(GpioFeature which)const{
+    feature(which)=0;
   }
 
-  inline void clearRegister(unsigned which)const{
-    SAM::Feature arf=feature(which);
-    arf=0;
-  }
-
-  inline void assignRegister(unsigned which,bool level)const{
-    SAM::Feature arf=feature(which);
-    arf=level;
+  inline void assignRegister(GpioFeature which,bool level)const{
+    feature(which)=level;
   }
 
   void setDirection(bool asOutput)const{
     assignRegister(BeOutput,asOutput);
   }
 
-public:
-
-//  /** only special pins should use this directly. */
-//  inline PortPin(unsigned pattern){
-//    setIocon(pattern);
-//  }
-
+protected:
+  /** 0==just a pin,  1: selection A, 2==selection B, rtfm.*/
+  void setFunction(unsigned noAB){
+    assignRegister(BeSimple,noAB==0);
+    assignRegister(WhichPeripheral,noAB==2);
+  }
 
   /** read the pin as if it were a boolean variable. */
   inline operator bool() const {
@@ -143,45 +128,31 @@ public:
 
 /** simple digital input */
 template <unsigned portNum, unsigned bitPosition> class InputPin: public PortPin<portNum, bitPosition> {
-  using PortPin<portNum, bitPosition>::clearRegister;
-  using PortPin<portNum, bitPosition>::setRegister;
-  using PortPin<portNum, bitPosition>::assignRegister;
+  typedef  PortPin<portNum, bitPosition> Base;
 
 private:
   bool operator =(bool)const {return false;} // private because this is a read-only entity.
 
 public:
   /** @param yanker controls pullup modality */
-  InputPin(PinBias yanker = PullUp): PortPin<portNum, bitPosition>(this->ioconPattern(yanker)){
+  InputPin(PinBias yanker = PullUp): PortPin<portNum, bitPosition>(){
     //todo: set direction to 0, which is the power up setting so not urgent in our typical use of static configuration.
     PortPin<portNum, bitPosition>::setDirection(0);
   }
 
-  void irqAcknowledge() const {
-    setRegister();
-  }
-
+  /** enable within the group, still will need to nvic enable the group and scan bits in the grouped status register. */
   void irq(bool enable)const{
-    assignRegister(16,enable);
+    Base::feature(InterruptMask) = enable;
   }
 
   void setIrqStyle(IrqStyle style, bool andEnable)const{
-    switch(style){
-    NotAnInterrupt = 0, // in case someone forgets to explicitly select a mode
-    AnyEdge, // edge, either edge, input mode buslatch
-    LowActive, // level, pulled up
-    HighActive, // level, pulled down
-    LowEdge, // edge, pulled up
-    HighEdge   // edge, pulled down
+    Base::feature(PolarInterrupt) = style>AnyEdge;
 
-DeltaInterrupt;
-    PolarInterrupt; //11: additional interrupt mode(0=both edge per feature 4), no readback
-    EdgyInterrupt; //12: edge else level, inverted readback?
-    InterruptPolarity; //13: low edge/low active, inverted readback?
+    Base::feature(EdgyInterrupt) =     style==LowEdge || style==HighEdge;
+    Base::feature(InterruptPolarity) = style==HighActive|| style==HighEdge;
 
-    }
     if(andEnable){
-      irq(1);
+      irq( style>=AnyEdge );
     }
   }
 
@@ -189,52 +160,53 @@ DeltaInterrupt;
 
 /** simple digital output */
 template <unsigned portNum, unsigned bitPosition> class OutputPin: public PortPin<portNum, bitPosition>{
-  typedef  PortPin<portNum, bitPosition> super;
+  typedef PortPin<portNum, bitPosition> Base;
 public:
   /** @param yanker controls pull-up modality */
-  OutputPin(PinBias yanker = BusLatch): PortPin<portNum, bitPosition>(this->ioconPattern(yanker)){
-    super::setDirection(1);
+  OutputPin(PinBias yanker = Bussed): PortPin<portNum, bitPosition>(){
+    Base::setDirection(1);
+    Base::feature(OpenDrain) = yanker==Bussed;
   }
 
   bool operator =(bool newvalue)const{
-    super::pin() = newvalue ? ~0 : 0; // don't need to mask or shift, just present all ones or all zeroes and let the hardware 'mask with address' take care of business.
+    Base::feature(Data) = newvalue;
     return newvalue;
   }
 
-};
-
-/** Multiple contiguous bits in a register.
- * This class expedites access using the gpio port 'masked[]' based access
- */
-template <PortNumber portNum, unsigned msb, unsigned lsb> class PortField {
-  enum {
-    // read the lpc manual, certain address bits are used as a mask
-    address = portBase(portNum) | bitMask(lsb+2,msb-lsb+1)
-  };
-
-public:
-  // read
-  inline operator unsigned() const {
-    return *atAddress(address) >> lsb;
-  }
-  // write
-  inline void operator =(unsigned value) const {
-    *atAddress(address) = value << lsb;
-  }
-  void configurePins(unsigned pattern){
-    unsigned pini= pinIndex(portNum, lsb);
-    for(unsigned which=lsb;which++<=msb;){
-      GPIO::setIocon(pini++,pattern);
-    }
+  /** enabling the lock means that further setting of the pin is ignored */
+  void lock(bool enable)const {
+    Base::feature(LockOutputState)=enable;
   }
 
 };
 
+///** Multiple contiguous bits in a register.
+// * This class expedites access using the gpio port 'masked[]' based access
+// */
+//template <unsigned portNum, unsigned msb, unsigned lsb> class PortField {
+//  enum {
+//    // read the lpc manual, certain address bits are used as a mask
+//    address = portBase(portNum),
+//    mask= bitMask(lsb,msb-lsb+1)
+//  };
 
-#if 0
+//public:
+//  // read
+//  inline operator unsigned() const {
+//    return *atAddress(address) >> lsb;
+//  }
+//  // write
+//  inline void operator =(unsigned value) const {
+//    *atAddress(address) = value << lsb;
+//  }
+//  void configurePins(unsigned pattern){
+////    unsigned pini= pinIndex(portNum, lsb);
+////    for(unsigned which=lsb;which++<=msb;){
+////      GPIO::setIocon(pini++,pattern);
+////    }
+//  }
 
-there is a write protect feature, "PIO "+0 to allow configuration, 1 to disable it.
+//};
 
-#endif
 
 #endif // GPIO_H
