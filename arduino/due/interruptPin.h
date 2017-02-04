@@ -18,8 +18,11 @@ The Due board allows also:
 template <Isr isr, unsigned pinNumber,unsigned style>  struct InterruptPin {
 
   /** typically invoked in setup() */
-  void attach()const{
-    attachInterrupt(digitalPinToInterrupt(pinNumber), isr, style); 
+  void attach(bool andInvoke=false)const{
+    attachInterrupt(digitalPinToInterrupt(pinNumber), isr, style);
+    if(andInvoke){
+      isr();
+    }
   }
 
   /** no provision for temporary disabling, so use this then call attach() again later. */
