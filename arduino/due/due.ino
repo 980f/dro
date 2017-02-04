@@ -15,9 +15,6 @@ const InputPin<7, LOW> button2;
 
 
 #define Show(arg) SerialUSB.print("\n" #arg ":");SerialUSB.print(arg)
-void dump() {
- 
-}
 
 #include "interruptPin.h"
 void greenLight() {
@@ -59,13 +56,11 @@ RegisterTimer(shorttimer);
 
 void setup() {
   SerialUSB.begin(230400);//'native' usb port
-  SerialUSB.println("Playing hooky\n");
   Serial.begin(115200);//an actual uart
   //Pin structs take care of themselves, unless you need special modes outside arduino's libraries.
   greenirq.attach(true);//we don't build in attach() to the constructor as in many cases the isr needs stuff that isn't initialized until setup() is run.
   redirq.attach(true);
 }
-
 
 char indicator='-';
 void loop() {
