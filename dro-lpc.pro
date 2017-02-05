@@ -71,7 +71,8 @@ HEADERS +=\
     cortexm/lpc/usbinterface.h \
     cortexm/lpc/wdt.h \
     cortexm/lpc/pinirq.h \
-    ezcpp/stopwatch.h
+    ezcpp/stopwatch.h \
+    ezcpp/retriggerablemonostable.h
 
 
 SOURCES +=\
@@ -103,7 +104,8 @@ SOURCES +=\
     cortexm/lpc/usbinterface.cpp \
     cortexm/lpc/p1343_board.cpp \
     p1343-dro.cpp \
-    ezcpp/stopwatch.cpp
+    ezcpp/stopwatch.cpp \
+    ezcpp/retriggerablemonostable.cpp
 
 DISTFILES += \
     dro-lpc.ld \

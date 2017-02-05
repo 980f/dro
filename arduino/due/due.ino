@@ -1,3 +1,21 @@
+#include <circularpointer.h>
+#include <sam3xcounter.h>
+#include <retriggerablemonostable.h>
+#include <bitbanger.h>
+#include <interruptGuard.h>
+#include <boolish.h>
+#include <stopwatch.h>
+#include <tableofpointers.h>
+#include <cheaptricks.h>
+#include <limitedcounter.h>
+#include <interruptPin.h>
+#include <eztypes.h>
+#include <limitedpointer.h>
+#include <polledtimer.h>
+#include <minimath.h>
+#include <bundler.h>
+#include <pinclass.h>
+
 
 
 #include "pinclass.h"
@@ -13,6 +31,20 @@ const OutputPin<4> green;
 const InputPin<6, LOW> button1;
 const InputPin<7, LOW> button2;
 
+#include "polledtimer.h"
+extern "C" int sysTickHook(){
+  PolledTimerServer();//all of our millisecond stuff hangs off of here.
+  return false; //allowed standard code to run
+}
+
+//#include "retriggerablemonostable.h"
+RetriggerableMonostable lamprey(red,350);
+RegisterTimer(lamprey);
+
+void triggerPulse(){
+  lamprey.trigger();
+}
+const InterruptPin<triggerPulse,button1.number,FALLIN> redirq;
 
 #define Show(arg) SerialUSB.print("\n" #arg ":");SerialUSB.print(arg)
 
@@ -27,15 +59,10 @@ void redLight(){
   TX=red;
 }
 
-const InterruptPin<redLight, button1.number, CHANGE> redirq;
+//const InterruptPin<redLight, button1.number, CHANGE> redirq;
 
 const InterruptPin<greenLight, button2.number, CHANGE> greenirq;
   
-#include "polledtimer.h"
-extern "C" int sysTickHook(){
-  PolledTimerServer();//all of our millisecond stuff hangs off of here.
-  return false; //allowed standard code to run
-}
 
 class Flasher: public CyclicTimer {
   using CyclicTimer::CyclicTimer;
@@ -45,7 +72,7 @@ class Flasher: public CyclicTimer {
   }
 } flashLamp(451);
 
-#include "tableofpointers.h"
+//#include "tableofpointers.h"
 RegisterTimer(flashLamp);
 
 CyclicTimer noncritical(1250);
@@ -53,6 +80,7 @@ RegisterTimer(noncritical);
 
 CyclicTimer shorttimer(250);
 RegisterTimer(shorttimer);
+
 
 void setup() {
   SerialUSB.begin(230400);//'native' usb port
