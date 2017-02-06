@@ -1,0 +1,2 @@
+## link an ezcpp module to arduino dev, until we find out how to link a static lib.
+ln -s ../../ezcpp/$1 due/$1
