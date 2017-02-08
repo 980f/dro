@@ -1,6 +1,9 @@
-# This file is used to ignore files which are generated
-# ----------------------------------------------------------------------------
-
+*bak
+*.bak.[2-9]
+dro
+dro.pro.user
+verbose.map
+dro.hzs
 *~
 *.autosave
 *.a

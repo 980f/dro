@@ -1,7 +1,7 @@
-# dro
-Digital ReadOut, training project for getting gnu arm tools tamed.
+# cortexm
+C++ application base for cortexM* microcontrollers.
+The goal is to have hardware bits look like booleans.
+The biggest improvement over what most IDE's generate is a linker script that allows for ordering of static initializations across all modules, for data not just init code.
+That script also allows you to assemble a table of items each declared privately in their own module, but accessible as an array.
 
-Some of the pieces started out from LPC expresso, but I doubt much but a few names remain as I am converting it all to C++.
-Especially note that the linker script is getting very small due to reliance on gcc as the compiler and its diligence in declaring alignments in input files.
-
-
+This is all investigative work, use entirely at your own risk.
