@@ -71,6 +71,7 @@ void setup() {
   //Pin structs take care of themselves, unless you need special modes outside arduino's libraries.
   greenirq.attach(true);//we don't build in attach() to the constructor as in many cases the isr needs stuff that isn't initialized until setup() is run.
   redirq.attach(true);
+  flashLamp.retrigger();//have to manually fire it off once, after that it toggles in its own.
 }
 
 char indicator='-';
