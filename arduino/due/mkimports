@@ -1,0 +1,13 @@
+## make a script that will rebuild links to external files
+# this is needed as arduino insists on incorporating 100% of the .h and .cpp files it finds inteh project directory.
+# the 'add file' feature of the IDE *copies* the file into the current directory
+# there is also no easy way to have a per-project list of include paths and lib paths. With difficulty one can set that up for all projects via editing a properties file in a hard to find location.
+
+find . -type l -exec readlink {} \+ >externals.list
+
+rm importer
+
+while read extname; do 
+  echo >>importer ln -sf $extname $(basename $extname) 
+done <externals.list
+
