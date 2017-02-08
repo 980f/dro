@@ -27,6 +27,8 @@ QMAKE_CXXFLAGS += -Wno-error=unused-function
 #for debug of macros:
 #QMAKE_CXXFLAGS += -save-temps
 
+DEFINES += __CORTEX_M=3
+
 INCLUDEPATH += cortexm cortexm/lpc ezcpp
 
 HEADERS +=\

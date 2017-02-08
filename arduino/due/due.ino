@@ -1,21 +1,3 @@
-#include <circularpointer.h>
-#include <sam3xcounter.h>
-#include <retriggerablemonostable.h>
-#include <bitbanger.h>
-#include <interruptGuard.h>
-#include <boolish.h>
-#include <stopwatch.h>
-#include <tableofpointers.h>
-#include <cheaptricks.h>
-#include <limitedcounter.h>
-#include <interruptPin.h>
-#include <eztypes.h>
-#include <limitedpointer.h>
-#include <polledtimer.h>
-#include <minimath.h>
-#include <bundler.h>
-#include <pinclass.h>
-
 
 
 #include "pinclass.h"
@@ -36,15 +18,16 @@ extern "C" int sysTickHook(){
   PolledTimerServer();//all of our millisecond stuff hangs off of here.
   return false; //allowed standard code to run
 }
-
-//#include "retriggerablemonostable.h"
-RetriggerableMonostable lamprey(red,350);
+#include "tableofpointers.h"
+#include "retriggerablemonostable.h"
+RetriggerableMonostable lamprey(red, Ticks(350));
 RegisterTimer(lamprey);
 
 void triggerPulse(){
   lamprey.trigger();
 }
-const InterruptPin<triggerPulse,button1.number,FALLIN> redirq;
+#include "interruptPin.h"
+const InterruptPin<triggerPulse,button1.number,FALLING> redirq;
 
 #define Show(arg) SerialUSB.print("\n" #arg ":");SerialUSB.print(arg)
 
@@ -72,7 +55,7 @@ class Flasher: public CyclicTimer {
   }
 } flashLamp(451);
 
-//#include "tableofpointers.h"
+
 RegisterTimer(flashLamp);
 
 CyclicTimer noncritical(1250);
