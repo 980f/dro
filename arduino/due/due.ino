@@ -1,21 +1,8 @@
-#include <circularpointer.h>
 #include <sam3xcounter.h>
-#include <retriggerablemonostable.h>
-#include <bitbanger.h>
 #include <interruptGuard.h>
-#include <boolish.h>
-#include <stopwatch.h>
-#include <tableofpointers.h>
-#include <cheaptricks.h>
-#include <limitedcounter.h>
+#include <ignoresignwarnings.h>
 #include <interruptPin.h>
-#include <eztypes.h>
-#include <limitedpointer.h>
-#include <polledtimer.h>
-#include <minimath.h>
-#include <bundler.h>
 #include <pinclass.h>
-
 
 
 #include "pinclass.h"
