@@ -1,0 +1,19 @@
+Arduino libraries indexing
+
+index: $preferences/"library_index.json"
+
+path: preferencesFolder, "staging"), "libraries";
+
+$preferences: ("preferences.txt")
+1st: PreferencesData.get("settings.path")
+2nd: $(user.home)/.arduino15
+
+
+default sketchbook folder:
+("user.home")/"Arduino"
+
+Content files path:
+APP_DIR || CWD /
+
+Content file instances:
+"portable/"
