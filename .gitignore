@@ -1,9 +1,7 @@
+*Debug/
 *bak
 *.bak.[2-9]
-dro
-dro.pro.user
-verbose.map
-dro.hzs
+*.pro.user
 *~
 *.autosave
 *.a
@@ -75,3 +73,6 @@ Thumbs.db
 *.exe
 
 *.hzs
+ezcpp/ 
+cortexm/
+gitlist
