@@ -1,0 +1,52 @@
+<html>
+  <head>
+    <meta content="text/html; charset=windows-1252" http-equiv="content-type">
+    <link rel="alternate stylesheet" type="text/css" href="resource://gre-resources/plaintext.css" title="Wrap Long Lines">
+  </head>
+  <body> Quadrature counting with typical counter
+    <br>
+    <br>
+    Quadrature tracking counters are a bit rare in the microcontroller world, and rarely more than one per chip.
+    <br>
+    ---
+    <br>
+    Using just io-pin interrupts:
+    <br>
+    Up to a moderate speed one can feed the quadrature signals to interrupts, and in each isr inspect the other signal to decide
+    whether to count up or down.
+    At high speeds the mechanism limits the ability to change direction, so after some threshold of time between pulses one can
+    switch into just counting edges of one signal after recording the direction of travel.
+    <br>
+    As the mechanism slows down one can switch back to using isr's to do the decode. <br>
+    If one is setting a motion breakpoint, for example to trigger data acquisition when a sensor is in position, one can figure out
+    which quarter phase matters and use that to decide which edge is fed into the counter.
+    <br>
+    <br>
+    ---
+    <br>
+    Using a timer/counter that has external enable and external clock modes:
+    <br>
+    <br>
+    Most counters have an operational mode where they measure a pulse width, by using the input signal as a count enable. That can
+    provide a speed measurement when using the isr to decode steps.
+    When the number rises past a threshold then one has a quarter of that time to reconfigure the counter to count future edges.
+    <br>
+    Since the counter usually will only count up when externally clocked one must maintain the position as sign+magnitude rather
+    than 2's complement.
+    <br>
+    Since the counter isn't as many bits as you should support you would use the counter overflow to increment and extended value.
+    <br>
+    ---
+    <br>
+    In all cases an index input must be handled as such:
+    <br>
+    In one direction a rising edge is the index location, in the other direction the falling edge is of interest. If hovering on the
+    edge then life can be difficult, you will have to analog/debounce filter the quadrature signals to keep them from changing
+    faster than the time it takes to reconfigure the interrupt polarity (unless you have a system which offers 'any change') <br>
+    Nice systems guarantee that the index signal will be active slightly before and after only one quarter phase. If so then one can
+    sample the index pin when responding to a quadrature clock (slow speed operation).<br>
+    For systems where the index is sloppier one may choose to simple record index changes and not reset the steps counter. One can
+    then use modulo math to determine the cycle phase. That works even of the steps counter wraps, so long as one implements the
+    modulo operation to take that into account.
+  </body>
+</html>

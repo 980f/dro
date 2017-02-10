@@ -65,8 +65,9 @@ template <unsigned arduinoNumber,unsigned mode,unsigned polarity=HIGH> struct Pi
     return value!=0;
   }
   
-/// the following are utility functions, not essential to this class
-  bool toggle()const { //const is allowed as this operation doesn't change the code, only the real world pin
+/// the following are utility functions, not essential to this class.
+  /** using 'flip' instead of toggle due to derived classes also deriving from BoolishRef which has a 'toggle' that works for this but may not be as fast */
+  bool flip() const { //const is allowed as this operation doesn't change the code, only the real world pin
     return setto(inverse(get()));
   }
   
@@ -82,10 +83,11 @@ template <unsigned arduinoNumber,unsigned polarity=HIGH> struct InputPin: public
   }
 };
 
-template <unsigned arduinoNumber,unsigned polarity=HIGH> struct OutputPin: public Pin<arduinoNumber, OUTPUT, polarity>{
+#include "boolish.h" // so that it may be passed to a generic bit flipping service
+template <unsigned arduinoNumber,unsigned polarity=HIGH> struct OutputPin: public Pin<arduinoNumber, OUTPUT, polarity>, public BoolishRef {
   using Pin<arduinoNumber, OUTPUT, polarity>::setto;
   
-  bool operator =(bool value)const {
+  bool operator =(bool value)const override {
     return setto(value);
   }
 

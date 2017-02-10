@@ -1,7 +1,6 @@
-*Debug/
-*bak
-*.bak.[2-9]
-*.pro.user
+# This file is used to ignore files which are generated
+# ----------------------------------------------------------------------------
+
 *~
 *.autosave
 *.a
@@ -72,7 +71,3 @@ Thumbs.db
 *.dll
 *.exe
 
-*.hzs
-ezcpp/ 
-cortexm/
-gitlist
