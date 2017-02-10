@@ -23,21 +23,21 @@ static constexpr unsigned tcBase(unsigned tc1of9){
 
 CountPin::CountPin(unsigned tc1of9, unsigned arduinoPinNumber):
   tcu(tc1of9%3),
-  tmod(tc10f9/3),
+  tmod(tc1of9/3),
   base(tcBase(tmod,tcu)){
   configure(arduinoPinNumber);
 }
 
-void CountPin::configure(arduinoPinNumber) const {
+void CountPin::configure(unsigned arduinoPinNumber) const {
   //5+xc#
 }
 
 void CountPin::start(bool withReset) const{
-  *atAddress(base(tcnum))=withReset?5:1;
+  *atAddress(base)=withReset?5:1;
 }
 
 void CountPin::stop() const{
-  *atAddress(base(tcnum))=2;
+  *atAddress(base)=2;
 }
 
 

@@ -5,7 +5,7 @@ The 9 timers are nearly independent, the only interaction is that you can route 
 First pass we will only try to count external inputs.
 
 */
-struct Tc;
+//struct Tc;
 class CountPin {
   /** an integer 0 to 2 */
   const unsigned tcu;
@@ -14,7 +14,7 @@ class CountPin {
 
 public:
   CountPin(unsigned tc1of9, unsigned arduinoPinNumber);
-  void configure(arduinoPinNumber)const;
+  void configure(unsigned arduinoPinNumber)const;
 
   void start(bool withReset=true)const;
   void stop()const;
