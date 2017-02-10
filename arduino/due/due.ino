@@ -53,15 +53,15 @@ class Flasher: public CyclicTimer {
     CyclicTimer::onDone();
     lamp.toggle();
   }
-} flashLamp(451);
+} flashLamp(451,true);
 
 
 RegisterTimer(flashLamp);
 
-CyclicTimer noncritical(1250);
+CyclicTimer noncritical(1250,true);
 RegisterTimer(noncritical);
 
-CyclicTimer shorttimer(250);
+CyclicTimer shorttimer(250,true);
 RegisterTimer(shorttimer);
 
 
@@ -71,7 +71,6 @@ void setup() {
   //Pin structs take care of themselves, unless you need special modes outside arduino's libraries.
   greenirq.attach(true);//we don't build in attach() to the constructor as in many cases the isr needs stuff that isn't initialized until setup() is run.
   redirq.attach(true);
-  flashLamp.retrigger();//have to manually fire it off once, after that it toggles in its own.
 }
 
 char indicator='-';
@@ -79,6 +78,7 @@ void loop() {
   __WFE();//this made the beat between the two timers go away, which is a good thing.
   if(shorttimer.hasFired()){
     SerialUSB.print(indicator);
+    Serial.print('v');
   }
   if(noncritical.hasFired()){
     SerialUSB.println();
