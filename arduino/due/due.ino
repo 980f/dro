@@ -1,6 +1,8 @@
-
+#include <sam3xcounter.h>
+#include <interruptGuard.h>
 
 #include "pinclass.h"
+
 /** attached to the high side of an LED */
 const OutputPin<LED_BUILTIN> lamp;
 /** by putting a LOW in the items below, a true turns the lamp on */
@@ -20,6 +22,7 @@ extern "C" int sysTickHook(){
 }
 #include "tableofpointers.h"
 #include "retriggerablemonostable.h"
+
 RetriggerableMonostable lamprey(red, Ticks(350));
 RegisterTimer(lamprey);
 
@@ -47,6 +50,7 @@ void redLight(){
 const InterruptPin<greenLight, button2.number, CHANGE> greenirq;
   
 
+//example of acting on timing event within the timer isr:
 class Flasher: public CyclicTimer {
   using CyclicTimer::CyclicTimer;
   void onDone(void) override {
@@ -54,10 +58,9 @@ class Flasher: public CyclicTimer {
     lamp.toggle();
   }
 } flashLamp(451,true);
-
-
 RegisterTimer(flashLamp);
 
+//now for some mostly soft timers, one's whose actions occur in the main loop():
 CyclicTimer noncritical(1250,true);
 RegisterTimer(noncritical);
 
