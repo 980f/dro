@@ -6,7 +6,7 @@
 /** attached to the high side of an LED */
 const OutputPin<LED_BUILTIN> lamp;
 /** by putting a LOW in the items below, a true turns the lamp on */
-const OutputPin<PIN_LED_RXL,LOW> RX;
+const OutputPin<PIN_LED_RXL,LOW> RX;  //72,73
 const OutputPin<PIN_LED_TXL,LOW> TX;
 
 //olimex protoshield:
@@ -14,6 +14,31 @@ const OutputPin<3> red;
 const OutputPin<4> green;
 const InputPin<6, LOW> button1;
 const InputPin<7, LOW> button2;
+
+//seeed motor shield v1.0
+template <unsigned e,unsigned f,unsigned b> struct Hbridge {
+const OutputPin<e> Enab;
+const OutputPin<f> Forward;
+const OutputPin<b> Reverse;
+public:
+  /* taking an int for future use in setting a pwm on the enable pin */
+  void operator =(int dir){
+    Enab=false;
+    Forward=dir>0;
+    Reverse=dir<0;
+    Enab=dir!=0;
+  }
+  
+  void freeze(){
+     Reverse=true;
+     Forward=true;
+     Enab=true;  
+  }
+  
+};
+
+Hbridge<10,12,13> M2;
+Hbridge<9,8,11> M1;
 
 #include "polledtimer.h"
 extern "C" int sysTickHook(){
@@ -29,8 +54,6 @@ RegisterTimer(lamprey);
 void triggerPulse(){
   lamprey.trigger();
 }
-#include "interruptPin.h"
-const InterruptPin<triggerPulse,button1.number,FALLING> redirq;
 
 #define Show(arg) SerialUSB.print("\n" #arg ":");SerialUSB.print(arg)
 
@@ -38,14 +61,18 @@ const InterruptPin<triggerPulse,button1.number,FALLING> redirq;
 void greenLight() {
   green = button2;
   RX=green;
+  M2=button2;
 }
 
 void redLight(){
   red = button1;
   TX=red;
+  M2=-button1;
 }
 
-//const InterruptPin<redLight, button1.number, CHANGE> redirq;
+#include "interruptPin.h"
+//const InterruptPin<triggerPulse,button1.number,FALLING> redirq;
+const InterruptPin<redLight, button1.number, CHANGE> redirq;
 
 const InterruptPin<greenLight, button2.number, CHANGE> greenirq;
   
@@ -57,7 +84,7 @@ class Flasher: public CyclicTimer {
     CyclicTimer::onDone();
     lamp.toggle();
   }
-} flashLamp(451,true);
+} flashLamp(451,false);
 RegisterTimer(flashLamp);
 
 
@@ -113,7 +140,7 @@ public:
     SerialUSB.print(millis());
   }
     
-} spwmdemo(250,750,true);
+} spwmdemo(250,750,false);
 
 RegisterTimer(spwmdemo);
 
