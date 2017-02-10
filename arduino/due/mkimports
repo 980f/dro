@@ -5,9 +5,12 @@
 
 find . -type l -exec readlink {} \+ >externals.list
 
-rm importer
+rm -f importer
 
 while read extname; do 
-  echo >>importer ln -sf $extname $(basename $extname) 
+  echo >>importer ln -sf $extname 
+  #this gets done too many places, will do this manually at need: echo >>.gitignore $(basename $extname) 
 done <externals.list
 
+## occasionally do the following:
+# find . -type l -exec echo >>.gitignore {} \;

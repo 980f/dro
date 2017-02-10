@@ -1,0 +1,6 @@
+## make a link to the $1 file
+## see mkImports for a utility to manage them
+ln -sf $1 $local
+echo >>.gitignore $(basename $1)
+
+
