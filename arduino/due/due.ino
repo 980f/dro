@@ -1,5 +1,5 @@
 //#include "sam3xcounter.h"
-Print &dbg(SerialUSB);
+Print &dbg(Serial);
 
 #include "pinclass.h"
 
@@ -15,63 +15,39 @@ const OutputPin<4> green;
 const InputPin<6, LOW> button1;
 const InputPin<7, LOW> button2;
 
-//seeed motor shield v1.0
-template <unsigned e,unsigned f,unsigned b> struct Hbridge {
-const OutputPin<e> Enab;
-const OutputPin<f> Forward;
-const OutputPin<b> Reverse;
-public:
-  /* taking an int for future use in setting a pwm on the enable pin */
-  void operator =(int dir){
-    Enab=false;
-    Forward=dir>0;
-    Reverse=dir<0;
-    Enab=dir!=0;
-  }
-  
-  void freeze(){
-     Reverse=true;
-     Forward=true;
-     Enab=true;  
-  }
-  
-};
+#include "motorshield1.h"
 
-Hbridge<10,12,13> M2;
-Hbridge<9,8,11> M1;
-//end seeed motor shield v1.0
+#include "timerservice.h"
 
-#include "polledtimer.h"
-extern "C" int sysTickHook(){
-  PolledTimerServer();//all of our millisecond stuff hangs off of here.
-  return false; //allowed standard code to run
-}
-#include "tableofpointers.h"
 #include "retriggerablemonostable.h"
 
 RetriggerableMonostable lamprey(red, Ticks(350));
 RegisterTimer(lamprey);
-
 void triggerPulse(){
   lamprey.trigger();
 }
 
-#define Show(arg) SerialUSB.print("\n" #arg ":");SerialUSB.print(arg)
+#define Show(arg) dbg.print("\n" #arg ":");dbg.print(arg)
 
 #include "interruptPin.h"
 void greenLight() {
   green = button2;
   RX=green;
-  M2=1*(1-button1);//go forward unless other button is pressed in which case stop
-  Serial.print("G");
+  if(button2){
+    M2=1*(1-button1);//go forward unless other button is pressed in which case stop
+  }
+  dbg.print("G");
+  dbg.print(millis());
 }
 const InterruptPin<greenLight, button2.number, CHANGE> greenirq;
 
 void redLight(){
   red = button1;
   TX=red;
-  M2=-1*(1-button2);//see greenLight();
-  Serial.print("R");
+  if(button1){
+    M2=-1*(1-button2);//see greenLight();
+  }
+  dbg.print("R");
 }
 const InterruptPin<redLight, button1.number, CHANGE> redirq;
 //const InterruptPin<triggerPulse,button1.number,FALLING> redirq;
@@ -91,7 +67,7 @@ RegisterTimer(flashLamp);
 /**
  * this could have been implemented with two PolledTimer's triggering each other, but that uses more critical resources than coding it directly.
 */
-class SlowPWM: public PolledTimer {
+class SoftPWM: public PolledTimer {
 protected:
   Ticks pair[2];
   bool phase;
@@ -109,7 +85,7 @@ public:
     pair[1]=high;   
   }
   
-  SlowPWM(Ticks low, Ticks high, bool andStart=false){
+  SoftPWM(Ticks low, Ticks high, bool andStart=false){
     setCycle(low,high);
     if(andStart){
       onDone();
@@ -130,20 +106,20 @@ public:
 };
 
  
-class SlowPWMdemo: public SlowPWM {
+class SlowPWMdemo: public SoftPWM {
 public:
-  using SlowPWM::SlowPWM;
+  using SoftPWM::SoftPWM;
   //it is a bad idea to do this much in an isr ...
   virtual void onToggle(bool on){
     if(!on){
-      dbg.print("\nSlowpwm:");
+      dbg.print("\nSoftPWM:");
     } else {
       dbg.print(" to ");
     }
     dbg.print(millis());
   }
     
-} spwmdemo(250,750,true);
+} spwmdemo(250,750,false);
 
 RegisterTimer(spwmdemo);
 
@@ -157,7 +133,7 @@ void setup() {
   M1=0;
 }
 
-char indicator='-';
 void loop() {
   __WFE();
+  //dbg.print("+");
 }
