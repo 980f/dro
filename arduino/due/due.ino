@@ -1,9 +1,10 @@
-#include "sam3xcounter.h"
+//#include "sam3xcounter.h"
+Print &dbg(SerialUSB);
 
 #include "pinclass.h"
 
 /** attached to the high side of an LED */
-const OutputPin<LED_BUILTIN> lamp;
+//const OutputPin<LED_BUILTIN> lamp;//13, also a motor control line on motor shield
 /** by putting a LOW in the items below, a true turns the lamp on */
 const OutputPin<PIN_LED_RXL,LOW> RX;  //72,73
 const OutputPin<PIN_LED_TXL,LOW> TX;
@@ -38,6 +39,7 @@ public:
 
 Hbridge<10,12,13> M2;
 Hbridge<9,8,11> M1;
+//end seeed motor shield v1.0
 
 #include "polledtimer.h"
 extern "C" int sysTickHook(){
@@ -60,20 +62,19 @@ void triggerPulse(){
 void greenLight() {
   green = button2;
   RX=green;
-  M2=button2;
+  M2=1*(1-button1);//go forward unless other button is pressed in which case stop
+  Serial.print("G");
 }
+const InterruptPin<greenLight, button2.number, CHANGE> greenirq;
 
 void redLight(){
   red = button1;
   TX=red;
-  M2=-button1;
+  M2=-1*(1-button2);//see greenLight();
+  Serial.print("R");
 }
-
-#include "interruptPin.h"
-//const InterruptPin<triggerPulse,button1.number,FALLING> redirq;
 const InterruptPin<redLight, button1.number, CHANGE> redirq;
-
-const InterruptPin<greenLight, button2.number, CHANGE> greenirq;
+//const InterruptPin<triggerPulse,button1.number,FALLING> redirq;
   
 
 //example of acting on timing event within the timer isr:
@@ -81,7 +82,7 @@ class Flasher: public CyclicTimer {
   using CyclicTimer::CyclicTimer;
   void onDone(void) override {
     CyclicTimer::onDone();
-    lamp.toggle();
+    RX.toggle();
   }
 } flashLamp(451,false);
 RegisterTimer(flashLamp);
@@ -114,43 +115,37 @@ public:
       onDone();
     }
   }
-  //since onDone is virtual we make this virtual also. We should try to replace that with a function member.
-  virtual void onToggle(bool on){
-    // a hook, overload with a pin toggle to make a PWM output.
-  }
-  
+
   void onDone(void) override {
     phase ^=1;
     restart(pair[phase]-1);//# the polledtimer stuff adds a 1 for good luck, we don't need no stinking luck. //todo: guard against a zero input 
     onToggle(phase);
   }
+
+  //since onDone is virtual we make this virtual also. We should try to replace that with a function member.
+  virtual void onToggle(bool on){
+    // a hook, overload with a pin toggle to make a PWM output.
+  }
+  
 };
 
+ 
 class SlowPWMdemo: public SlowPWM {
 public:
   using SlowPWM::SlowPWM;
   //it is a bad idea to do this much in an isr ...
   virtual void onToggle(bool on){
     if(!on){
-      SerialUSB.print("\nSlowpwm:");
+      dbg.print("\nSlowpwm:");
     } else {
-      SerialUSB.print(" to ");
+      dbg.print(" to ");
     }
-    SerialUSB.print(millis());
+    dbg.print(millis());
   }
     
-} spwmdemo(250,750,false);
+} spwmdemo(250,750,true);
 
 RegisterTimer(spwmdemo);
-
-const bool showtheTimers=false;
-//now for some mostly soft timers, one's whose actions occur in the main loop():
-CyclicTimer noncritical(1250,showtheTimers);
-RegisterTimer(noncritical);
-
-CyclicTimer shorttimer(250,showtheTimers);
-RegisterTimer(shorttimer);
-
 
 void setup() {
   SerialUSB.begin(230400);//'native' usb port
@@ -158,15 +153,11 @@ void setup() {
   //Pin structs take care of themselves, unless you need special modes outside arduino's libraries.
   greenirq.attach(true);//we don't build in attach() to the constructor as in many cases the isr needs stuff that isn't initialized until setup() is run.
   redirq.attach(true);
+  M2=0;
+  M1=0;
 }
 
 char indicator='-';
 void loop() {
-  __WFE();//this made the beat between the two timers go away, which is a good thing.
-  if(shorttimer.hasFired()){
-    SerialUSB.print(indicator);    
-  }
-  if(noncritical.hasFired()){
-    SerialUSB.println();
-  }
+  __WFE();
 }
