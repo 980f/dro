@@ -3,7 +3,7 @@ CONFIG += console c++11
 CONFIG -= app_bundle
 CONFIG -= qt
 
-INCLUDEPATH += ../ezcpp ../cortexm
+INCLUDEPATH += ../ezcpp ../cortexm  ../cortexm/sam3
 
 DEFINES += ARDUINOnot
 
