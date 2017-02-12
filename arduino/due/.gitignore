@@ -21,3 +21,5 @@ cstr.h
 tableofpointers.h
 bitbanger.h
 hook.h
+softpwm.cpp
+softpwm.h
