@@ -30,7 +30,7 @@ template <Isr isr, unsigned pinNumber,unsigned style>  struct InterruptPin {
   }
 
   //this always works, howevre most chips have a seperate bit for doing this, so ... we code enable/disable as an assignment to a bit:
-  void operator=(bool enable){
+  void operator=(bool enable)const{
     if(enable){
       attach(false);
     } else {
@@ -40,7 +40,8 @@ template <Isr isr, unsigned pinNumber,unsigned style>  struct InterruptPin {
 
 };
 
-/** abstract base class, overload to add isr rather than pass one in to template, reduces naming efforts. */
+/** abstract base class, overload to add isr rather than pass one in to template, reduces naming efforts.
+@deprecated: untested.  This appraich doesn't seem useful for cases where the isr needs access to data outside the object. */
 template <unsigned pinNumber,unsigned style>  struct Interruptor {
   virtual void isr(void)=0;
 
@@ -57,8 +58,8 @@ template <unsigned pinNumber,unsigned style>  struct Interruptor {
     detachInterrupt(digitalPinToInterrupt(pinNumber));
   }
 
-  //this always works, howevre most chips have a seperate bit for doing this, so ... we code enable/disable as an assignment to a bit:
-  void operator=(bool enable){
+  //this always works, however most chips have a seperate bit for doing this, so ... we code enable/disable as an assignment to a bit:
+  void operator=(bool enable)const{
     if(enable){
       attach(false);
     } else {

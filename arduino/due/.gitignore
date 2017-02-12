@@ -20,3 +20,4 @@ bitbanger.cpp
 cstr.h
 tableofpointers.h
 bitbanger.h
+hook.h

@@ -37,4 +37,5 @@ HEADERS += \
     ../ezcpp/textkey.h \
     ../due/streamformatter.h \
     ../due/streamprintf.h \
-    ../due/interruptPin.h
+    ../due/interruptPin.h \
+    ../due/due.ino
