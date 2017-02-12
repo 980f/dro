@@ -1,6 +1,9 @@
 //#include "sam3xcounter.h"
 Print &dbg(Serial);
 
+//use a macro to get variable name:
+#define Show(arg) dbg.print("\n" #arg ":");dbg.print(arg)
+
 #include "pinclass.h"
 
 /** attached to the high side of an LED */
@@ -17,6 +20,10 @@ const InputPin<7, LOW> button2;
 
 #include "motorshield1.h"
 
+const InputPin<5, HIGH> phB;
+const InputPin<4, HIGH> phA;
+const InputPin<3, HIGH> Index;
+
 #include "timerservice.h"
 
 #include "retriggerablemonostable.h"
@@ -27,10 +34,9 @@ void triggerPulse(){
   lamprey.trigger();
 }
 
-#define Show(arg) dbg.print("\n" #arg ":");dbg.print(arg)
 
 #include "interruptPin.h"
-void greenLight() {
+void b2irqhandler() {
   green = button2;
   RX=green;
   if(button2){
@@ -39,9 +45,9 @@ void greenLight() {
   dbg.print("G");
   dbg.print(millis());
 }
-const InterruptPin<greenLight, button2.number, CHANGE> greenirq;
+const InterruptPin<b2irqhandler, button2.number, FALLING> b2irq;
 
-void redLight(){
+void b1irqhandler(){
   red = button1;
   TX=red;
   if(button1){
@@ -49,9 +55,38 @@ void redLight(){
   }
   dbg.print("R");
 }
-const InterruptPin<redLight, button1.number, CHANGE> redirq;
-//const InterruptPin<triggerPulse,button1.number,FALLING> redirq;
-  
+const InterruptPin<b1irqhandler, button1.number, FALLING> b1irq;
+
+
+/** quadrature table:
+ *      ___     ___
+ *  ___/   \___/    
+ *        ___     ___
+ *  _____/   \___/    
+ *  
+ *  A:HL=++
+ *  A:LH=++
+ *  B:HH=++
+ *  B:LL=++
+  */
+int location=0;
+
+void phAirqHandler(){
+  if(phB==phA){
+    --location;
+  } else {
+    ++location;
+  }
+}
+void phBirqHandler(){
+  if(phA==phB){
+    ++location;
+  } else {
+    --location;
+  }
+}
+const InterruptPin<phAirqHandler, phA.number, CHANGE> phAirq;
+const InterruptPin<phBirqHandler, phB.number, CHANGE> phBirq;
 
 //example of acting on timing event within the timer isr:
 class Flasher: public CyclicTimer {
@@ -127,13 +162,20 @@ void setup() {
   SerialUSB.begin(230400);//'native' usb port
   Serial.begin(115200);//an actual uart
   //Pin structs take care of themselves, unless you need special modes outside arduino's libraries.
-  greenirq.attach(true);//we don't build in attach() to the constructor as in many cases the isr needs stuff that isn't initialized until setup() is run.
-  redirq.attach(true);
+  b2irq.attach(true);//we don't build in attach() to the constructor as in many cases the isr needs stuff that isn't initialized until setup() is run.
+  b1irq.attach(true);
   M2=0;
   M1=0;
+  phAirq.attach(false);
+  phBirq.attach(false);
 }
 
+int lastlocation=0;
 void loop() {
   __WFE();
   //dbg.print("+");
+  if(changed(lastlocation,location)){
+    dbg.print('\t');
+    dbg.print(location);
+  }
 }

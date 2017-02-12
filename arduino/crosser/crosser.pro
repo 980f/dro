@@ -36,4 +36,5 @@ HEADERS += \
     ../ezcpp/tableofpointers.h \
     ../ezcpp/textkey.h \
     ../due/streamformatter.h \
-    ../due/streamprintf.h
+    ../due/streamprintf.h \
+    ../due/interruptPin.h
