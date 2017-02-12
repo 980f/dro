@@ -1,5 +1,17 @@
-//#include "sam3xcounter.h"
+
 Print &dbg(Serial);
+
+template <Print &one,Print &two> struct PrintFork {
+  template <typename Any> void print(Any thing){
+    one.print(thing);
+    two.print(thing);
+  }
+  template <typename Any> void println(Any thing){
+    one.println(thing);
+    two.println(thing);
+  }
+
+};
 
 //use a macro to get variable name:
 #define Show(arg) dbg.print("\n" #arg ":");dbg.print(arg)
@@ -160,7 +172,7 @@ RegisterTimer(spwmdemo);
 
 void setup() {
   SerialUSB.begin(230400);//'native' usb port
-  Serial.begin(115200);//an actual uart
+  Serial.begin(2625000);//an actual uart, on DUE DMA is used so we should be able to push the baud rate quite high without choking the processor with interrupts.
   //Pin structs take care of themselves, unless you need special modes outside arduino's libraries.
   b2irq.attach(true);//we don't build in attach() to the constructor as in many cases the isr needs stuff that isn't initialized until setup() is run.
   b1irq.attach(true);
@@ -173,9 +185,9 @@ void setup() {
 int lastlocation=0;
 void loop() {
   __WFE();
-  //dbg.print("+");
   if(changed(lastlocation,location)){
-    dbg.print('\t');
+    //initially this printed sequential values, but eventually only every 6 or 7, then choked.Will try usbserial again, maybe it can keep up.
+    dbg.print('\n');
     dbg.print(location);
   }
 }
