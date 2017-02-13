@@ -4,6 +4,7 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 INCLUDEPATH += ../ezcpp ../cortexm  ../cortexm/sam3
+INCLUDEPATH += /d/bin/arduino/hardware/arduino/sam/cores/arduino/
 
 DEFINES += ARDUINOnot
 
