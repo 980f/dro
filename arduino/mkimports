@@ -14,3 +14,9 @@ done <externals.list
 
 ## occasionally do the following:
 # find . -type l -exec echo >>.gitignore {} \;
+#
+# to ignore links:
+#
+# find -type l  -exec  basename {} \; >>.gitignore 
+# sort .gitignore >sort.tmp
+# uniq <sort.tmp >.gitignore 
