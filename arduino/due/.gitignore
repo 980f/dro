@@ -25,3 +25,11 @@ interruptPin.h
 motorshield1.h
 pinclass.h
 timerservice.h
+softpwm.cpp
+softpwm.h
+quadrater.h
+quadrater.cpp
+hook.h
+softpwm.h
+softpwm.cpp
+olimexprotov1.h

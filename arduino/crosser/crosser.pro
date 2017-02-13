@@ -4,6 +4,7 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 INCLUDEPATH += ../ezcpp ../cortexm  ../cortexm/sam3
+INCLUDEPATH += /d/bin/arduino/hardware/arduino/sam/cores/arduino/
 
 DEFINES += ARDUINOnot
 
@@ -19,7 +20,8 @@ SOURCES += main.cpp \
     ../ezcpp/stopwatch.cpp \
     ../ezcpp/textkey.cpp \
     ../due/streamformatter.cpp \
-    ../due/streamprintf.cpp
+    ../due/streamprintf.cpp \
+    ../ezcpp/softpwm.cpp
 
 HEADERS += \
     ../ezcpp/bitbanger.h \
@@ -38,4 +40,5 @@ HEADERS += \
     ../due/streamformatter.h \
     ../due/streamprintf.h \
     ../due/interruptPin.h \
-    ../due/due.ino
+    ../due/due.ino \
+    ../ezcpp/softpwm.h
