@@ -21,3 +21,7 @@ cstr.h
 tableofpointers.h
 bitbanger.h
 hook.h
+interruptPin.h
+motorshield1.h
+pinclass.h
+timerservice.h
