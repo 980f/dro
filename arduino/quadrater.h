@@ -1,7 +1,8 @@
 #ifndef QUADRATER_H
 #define QUADRATER_H
 
-//#include "Arduino.h"
+//
+#include "Arduino.h"  //pinMode et al declarations
 
 /** quadrature table:
  *      ___     ___
@@ -74,8 +75,8 @@ protected:
 //need forward references to change functions, so use a Hook to indirect those.
   static HookOnce<bool /*otherPin*/> cruiseChange;
 
-  static const InputPin<pinB, High> phB;   //5
-  static const InputPin<pinA, High> phA;   //4
+  static const InputPin<pinB> phB;   //5
+  static const InputPin<pinA> phA;   //4
 //    const InputPin<3, HIGH> Index; //3
 
 
@@ -96,10 +97,10 @@ protected:
     pos.step<false>(phA==phB);
     //we never change sensing modality on B events, makes life much simpler and would provide no real benefit.
   }
-  static const InterruptPin<phAirqHandler, phA.number, Change> phAirq;
-  static const InterruptPin<phBirqHandler, phB.number, Change> phBirq;
+  static const InterruptPin<phAirqHandler, phA.number, CHANGE> phAirq;
+  static const InterruptPin<phBirqHandler, phB.number, CHANGE> phBirq;
   //using seperate entity for different interrupt style until we see how an attachInterrupt goes about its business. 
-  static const InterruptPin<phFastHandler, phA.number,Falling> phFast;
+  static const InterruptPin<phFastHandler, phA.number,FALLING> phFast;
 
 /** isr part of going to cruise mode */
   static void startCruise(bool phb){

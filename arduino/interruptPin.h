@@ -1,6 +1,31 @@
 #pragma once
 
+
 typedef void (*Isr)();
+
+#ifdef ARDUINO_MAPLE_RET6
+//patch around DUE addition:
+constexpr uint8 digitalPinToInterrupt(unsigned arduinoNumber){
+  return arduinoNumber;
+}
+/////**
+//// * The kind of transition on an external pin which should trigger an
+//// * interrupt.
+//// */
+////typedef enum ExtIntTriggerMode {
+////    RISING, /**< To trigger an interrupt when the pin transitions LOW
+////                 to HIGH */
+////    FALLING, /**< To trigger an interrupt when the pin transitions
+////                  HIGH to LOW */
+////    CHANGE /**< To trigger an interrupt when the pin transitions from
+////                LOW to HIGH or HIGH to LOW (i.e., when the pin
+////                changes). */
+////} ExtIntTriggerMode;  c:2, f:3, r:4  ->    c:2  f:1  r:0 ==4-
+//
+//void attachInterrupt(uint8 pinn, Isr isr, unsigned dueEnum){
+//  attachInterrupt(pinn,isr, ExtIntTriggerMode(4-dueEnum));
+//}
+#endif
 
 /**
 Per pin interrupts.
@@ -18,7 +43,7 @@ template <Isr isr, unsigned pinNumber,unsigned style>  struct InterruptPin {
 
   /** typically invoked in setup(). Invoking the isr once without an interrupt is often useful to deal with an interrupt possibly having occurred while the program was restarting. */
   void attach(bool andInvoke=false)const{
-    attachInterrupt(digitalPinToInterrupt(pinNumber), isr, style);
+    attachInterrupt(digitalPinToInterrupt(pinNumber), isr, ExtIntTriggerMode(style));
     if(andInvoke){
       isr();
     }

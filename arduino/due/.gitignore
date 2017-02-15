@@ -35,3 +35,7 @@ softpwm.cpp
 olimexprotov1.h
 samplesmasher.h
 pinclass.h
+samplesmasher.h
+retriggerablemonostable.h
+boolish.h
+boolish.cpp
