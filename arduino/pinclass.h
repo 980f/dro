@@ -1,11 +1,13 @@
 #pragma once
 
-enum IrqMode {
-  Low, High,  //used for digital i/o level
-  Change, Falling,Rising //only use for Irq mode
-};
- 
-enum PinMode { Input, Output, InputPullup }; //carefully matched to ARDUINO values
+//this ran afould of the maple ide, back tousing #defines so that thye can vary wildly between implementations
+//enum IrqMode {
+//  Low, High,  //used for digital i/o level
+//  Change, Falling,Rising //only use for Irq mode
+//};
+// 
+//enum PinMode { Input, Output, InputPullup }; //carefully matched to ARDUINO values
+
 
 #ifndef ARDUINO
 //stubs to test compile
@@ -34,10 +36,10 @@ There is a number() method added so that you can pass that piece of into about t
 
 /** pretending to not know that HIGH=1 and LOW=0 ... constexpr should inline '1-active' at each place of use and not actually do a function call */
 static constexpr bool inverse(bool active){
-  return (High+Low)-active;
+  return (HIGH+LOW)-active;
 }
 
-template <unsigned arduinoNumber,unsigned mode,unsigned polarity=High> struct Pin {  
+template <unsigned arduinoNumber,unsigned mode,unsigned polarity=HIGH> struct Pin {  
 
   enum Bits {
   /** in case you have to interface with something that takes the digitalXXX number*/
@@ -47,7 +49,7 @@ template <unsigned arduinoNumber,unsigned mode,unsigned polarity=High> struct Pi
   };
   
   Pin(){
-    pinMode(arduinoNumber,mode);
+    pinMode(arduinoNumber,WiringPinMode(mode)); //MAPLE made us do this cast
   }
   
   bool get()const{
@@ -76,15 +78,15 @@ template <unsigned arduinoNumber,unsigned mode,unsigned polarity=High> struct Pi
  *  Note that the InputPin used pullup mode, it is rare that that is not what you want. 
  *  Also note that some devices have more options such as pulldown, that arduino does not provide access to.
  */
-template <unsigned arduinoNumber,unsigned polarity=High> struct InputPin: public Pin<arduinoNumber, InputPullup, polarity>{
+template <unsigned arduinoNumber,unsigned polarity=HIGH> struct InputPin: public Pin<arduinoNumber, INPUT_PULLUP, polarity>{
   operator bool() const {
-    return Pin<arduinoNumber, InputPullup, polarity>::get();
+    return Pin<arduinoNumber, INPUT_PULLUP, polarity>::get();
   }
 };
 
 #include "boolish.h" // so that it may be passed to a generic bit flipping service
-template <unsigned arduinoNumber,unsigned polarity=High> struct OutputPin: public Pin<arduinoNumber, Output, polarity>, public BoolishRef {
-  using Pin<arduinoNumber, Output, polarity>::setto;
+template <unsigned arduinoNumber,unsigned polarity=HIGH> struct OutputPin: public Pin<arduinoNumber, OUTPUT, polarity>, public BoolishRef {
+  using Pin<arduinoNumber, OUTPUT, polarity>::setto;
   
   bool operator =(bool value)const override {
     return setto(value);
@@ -92,7 +94,7 @@ template <unsigned arduinoNumber,unsigned polarity=High> struct OutputPin: publi
 
   //reading an output pin is ambiguous, it is not clear if you are reading the pin or the requested output value. most of the time that makes no difference so ...:
   operator bool()const {
-    return Pin<arduinoNumber, Output, polarity>::get();
+    return Pin<arduinoNumber, OUTPUT, polarity>::get();
   }
   
   /** an active edge is one which ends up at the given polarity*/

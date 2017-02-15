@@ -1,3 +1,5 @@
+//tab says this is due, but it should be maple.ino ...
+
 Print &dbg(Serial);
 
 //use a macro to get variable name:
@@ -7,9 +9,15 @@ Print &dbg(Serial);
 
 /** attached to the high side of an LED */
 //const OutputPin<LED_BUILTIN> lamp;//13, also a motor control line on motor shield
+
+#ifdef DUE_BOARD
 /** by putting a LOW in the items below, a true turns the lamp on */
 const OutputPin<PIN_LED_RXL,LOW> RX;  //72,73
 const OutputPin<PIN_LED_TXL,LOW> TX;
+#else
+CachedBoolish RX;
+CachedBoolish TX;
+#endif
 
 #include "olimexprotov1.h"
 
@@ -87,8 +95,10 @@ public:
 RegisterTimer(spwmdemo);
 
 void setup(){
+  #ifdef DUE
   SerialUSB.begin(230400);//'native' usb port
-  Serial.begin(460800);//an actual uart, on DUE DMA is used so we should be able to push the baud rate quite high without choking the processor with interrupts.
+  #endif
+  Serial.begin(460800);//on DUE this is an actual uart, on DUE DMA is used so we should be able to push the baud rate quite high without choking the processor with interrupts.
   //Pin structs take care of themselves, unless you need special modes outside arduino's libraries.
   b2irq.attach(true);//we don't build in attach() to the constructor as in many cases the isr needs stuff that isn't initialized until setup() is run.
   b1irq.attach(true);//if we can establish that interrupts aren't globally on until after setup then we shall move attach() invocations to constructors.
@@ -99,7 +109,7 @@ void setup(){
 
 int lastlocation = 0;
 void loop(){
-  __WFE();
+  //due specific: __WFE();
   if(changed(lastlocation,tracker.position())) {
     //initially this printed sequential values, but eventually only every 6 or 7, then choked.Will try usbserial again, maybe it can keep up.
     dbg.print('\n');
