@@ -28,3 +28,4 @@ softpwm.h
 tableofpointers.h
 textkey.h
 timerservice.h
+olimexprotov1.h

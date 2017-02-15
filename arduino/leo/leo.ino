@@ -10,10 +10,9 @@ Print &dbg(Serial);//on leonardo this is the USB, Serial1 is hardware port
 const OutputPin<LED_BUILTIN_RX> RX;// 17
 const OutputPin<LED_BUILTIN_TX>TX; // 30
 
-
-
-
 #include "motorshield1.h"
+
+#include "olimexprotov1.h" 
 
 #include "quadrater.h" // quadrature tracker.
 Quadrater<4,5,3> tracker;
@@ -39,7 +38,7 @@ void b2irqhandler(){
   dbg.print(millis());
 }
 
-const InterruptPin<b2irqhandler, button2.number, FALLING> b2irq;
+const InterruptPin<b2irqhandler, button2.number, Falling> b2irq;
 
 void b1irqhandler(){
   TX = button1;
@@ -50,7 +49,7 @@ void b1irqhandler(){
   dbg.print("R");
 }
 
-const InterruptPin<b1irqhandler, button1.number, FALLING> b1irq;
+const InterruptPin<b1irqhandler, button1.number, Falling> b1irq;
 
 //example of acting on timing event within the timer isr:
 class Flasher: public CyclicTimer {
@@ -83,7 +82,7 @@ RegisterTimer(spwmdemo);
 
 void setup(){
   SerialUSB.begin(230400);//'native' usb port
-  Serial.begin(57600);//an actual uart, on DUE DMA is used so we should be able to push the baud rate quite high without choking the processor with interrupts.
+  Serial.begin(115200);//an actual uart, on DUE DMA is used so we should be able to push the baud rate quite high without choking the processor with interrupts.
   //Pin structs take care of themselves, unless you need special modes outside arduino's libraries.
   b2irq.attach(true);//we don't build in attach() to the constructor as in many cases the isr needs stuff that isn't initialized until setup() is run.
   b1irq.attach(true);
@@ -103,7 +102,7 @@ void loop(){
   if(lastlocation>500){
     tracker.beginCruising();
   }
-  if(Serial){
+  if(Serial.available()){
     char c=Serial.read();
     Serial.print(c);
     switch(c){
@@ -113,4 +112,5 @@ void loop(){
       case '?': Serial.println(tracker.position()); break;
     }
   }
+  
 }

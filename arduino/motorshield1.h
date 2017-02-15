@@ -1,6 +1,8 @@
 #ifndef MOTORSHIELD1
 #define MOTORSHIELD1
 
+#include "pinclass.h"
+
 /** seeed motor shield v1.0 */
 template <unsigned e,unsigned f,unsigned b> struct Hbridge {
 const OutputPin<e> Enab;
@@ -15,12 +17,20 @@ public:
     Enab=dir!=0;
   }
   
+  operator int () const {
+    if(Enab){
+      return Forward?1:-1;
+    } else {
+      return 0;
+    }
+  }
+  
   void freeze(){
      Reverse=true;
      Forward=true;
      Enab=true;
   }
-  
+    
 };
 
 Hbridge<10,12,13> M2;

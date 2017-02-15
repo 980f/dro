@@ -1,4 +1,4 @@
-Print &dbg(SerialUSB);
+Print &dbg(Serial);
 
 //use a macro to get variable name:
 #define Show(arg) dbg.print("\n" #arg ":"); dbg.print(arg)
@@ -35,6 +35,7 @@ void b2irqhandler(){
   if(button2) {
     //analogWrite(10,100);
     M2 = 1 * (1 - button1);//go forward unless other button is pressed in which case stop
+    M1=M2;
   }
   dbg.print("G");
   dbg.print(millis());
@@ -48,6 +49,7 @@ void b1irqhandler(){
   if(button1) {
     //analogWrite(10,200);
     M2 = -1 * (1 - button2);//see greenLight();
+    M1=M2;
   }
   dbg.print("R");
 }
@@ -85,7 +87,7 @@ RegisterTimer(spwmdemo);
 
 void setup(){
   SerialUSB.begin(230400);//'native' usb port
-  Serial.begin(57600);//an actual uart, on DUE DMA is used so we should be able to push the baud rate quite high without choking the processor with interrupts.
+  Serial.begin(460800);//an actual uart, on DUE DMA is used so we should be able to push the baud rate quite high without choking the processor with interrupts.
   //Pin structs take care of themselves, unless you need special modes outside arduino's libraries.
   b2irq.attach(true);//we don't build in attach() to the constructor as in many cases the isr needs stuff that isn't initialized until setup() is run.
   b1irq.attach(true);//if we can establish that interrupts aren't globally on until after setup then we shall move attach() invocations to constructors.
@@ -103,9 +105,9 @@ void loop(){
     dbg.print(lastlocation);
   }
   if(lastlocation>500){
-    tracker.beginCruising();
+    //tracker.beginCruising();
   }
-  if(Serial){
+  if(Serial.available()){
     char c=Serial.read();
     Serial.print(c);
     switch(c){
