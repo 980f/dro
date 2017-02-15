@@ -13,7 +13,8 @@ const OutputPin<PIN_LED_TXL,LOW> TX;
 
 #include "olimexprotov1.h"
 
-#include "motorshield1.h"  //two motors, M1 and M2. 
+//#include "motorshield1.h"  //two motors, M1 and M2. 
+#include "samplesmasher.h"
 
 #include "quadrater.h" // quadrature tracker.
 Quadrater<4,5,3> tracker;
@@ -110,11 +111,18 @@ void loop(){
   if(Serial.available()){
     char c=Serial.read();
     Serial.print(c);
+    Serial.print(M2);
+    Serial.print(M1);
+    
     switch(c){
       case '<': M2=1; break;
       case '>': M2=-1; break;
       case 27: M2=0; break;
       case '?': Serial.println(tracker.position()); break;
     }
+    M1=M2;
+    Serial.print(M2);
+    Serial.print(M1);
+    
   }
 }

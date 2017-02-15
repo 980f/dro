@@ -33,3 +33,4 @@ hook.h
 softpwm.h
 softpwm.cpp
 olimexprotov1.h
+samplesmasher.h

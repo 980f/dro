@@ -1,0 +1,3 @@
+## run picocom with settings for adrduino due monitor.
+## arg should be 0 for programming port, 1 for native usb port
+picocom  --noreset --imap lfcrlf  -b460800 /dev/ttyACM0
