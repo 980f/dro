@@ -12,10 +12,11 @@ const OutputPin<f> Forward;
 
 public:
   /* taking an int for future use in setting a pwm on the enable pin */
-  void operator =(int dir){
+  int operator =(int dir){
     Enab=false;
     Forward=dir>0;
     Enab=dir!=0;
+    return dir;
   }
   
   operator int () const {
