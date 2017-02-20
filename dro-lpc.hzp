@@ -1,0 +1,148 @@
+<!DOCTYPE CrossStudio_Project_File>
+<solution Name="dro-lpc" target="8" version="2">
+  <project Name="dro-lpc">
+    <configuration
+      Name="Common"
+      Target="LPC1343"
+      arm_architecture="v7M"
+      arm_core_type="Cortex-M3"
+      arm_gcc_target="arm-unknown-eabi"
+      arm_interwork="No"
+      arm_library_optimization="Small"
+      arm_linker_heap_size="0"
+      arm_linker_process_stack_size="0"
+      arm_linker_stack_size="0"
+      arm_simulator_memory_simulation_filename="$(TargetsDir)/LPC1000/LPC1000SimulatorMemory.dll"
+      arm_simulator_memory_simulation_parameter="LPC13;0x8000;0x2000;0x0"
+      arm_supply_absolute_file_path="No"
+      arm_target_debug_interface_type="ADIv5"
+      arm_target_interface_type="SWD"
+      arm_target_loader_parameter="12000000"
+      arm_use_gcc_libraries="No"
+      build_intermediate_directory="$(ProjectName)-$(Configuration)"
+      build_output_directory="$(ProjectName)-$(Configuration)"
+      c_only_additional_options=""
+      c_preprocessor_definitions=""
+      c_user_include_directories=".;ezcpp;cortexm;cortexm/lpc"
+      debug_initial_breakpoint_set_option="Never"
+      gcc_c_language_standard="c11"
+      gcc_cplusplus_language_standard="c++14"
+      link_include_standard_libraries="No"
+      link_include_startup_code="No"
+      linker_additional_files="$(TargetsDir)/LPC1000/lib/liblpc1000$(LibExt)$(LIB)"
+      linker_memory_map_file="$(TargetsDir)/LPC1000/LPC1343_MemoryMap.xml"
+      linker_printf_fmt_level="int"
+      linker_printf_fp_enabled="No"
+      linker_printf_width_precision_supported="No"
+      linker_scanf_character_group_matching_enabled="No"
+      linker_scanf_fmt_level="int"
+      linker_scanf_fp_enabled="No"
+      macros="LPC1000_Series=LPC13xx"
+      oscillator_frequency="12MHz"
+      project_directory=""
+      project_type="Executable"
+      property_groups_file_path="$(TargetsDir)/LPC1000/propertyGroups13xx.xml" />
+    <configuration
+      Name="Flash"
+      Placement="Flash"
+      arm_target_flash_loader_file_path="$(TargetsDir)/LPC1000/Release/Loader_lpc1300.elf"
+      arm_target_flash_loader_type="LIBMEM RPC Loader"
+      linker_patch_build_command="&quot;$(StudioDir)/bin/crossscript&quot; &quot;load(\&quot;$(TargetsDir)/LPC1000/LPC1000_LinkPatch.js\&quot;);patch(\&quot;$(TargetPath)\&quot;);&quot;"
+      linker_section_placement_file="$(StudioDir)/targets/Cortex_M/flash_placement.xml"
+      target_reset_script="FLASHReset()" />
+    <configuration
+      Name="RAM"
+      Placement="RAM"
+      linker_section_placement_file="$(StudioDir)/targets/Cortex_M/ram_placement.xml"
+      target_reset_script="SRAMReset()" />
+    <folder Name="System Files">
+      <file file_name="$(TargetsDir)/LPC1000/LPC1300_Target.js">
+        <configuration Name="Common" file_type="Reset Script" />
+      </file>
+      <file file_name="dro-lpc.cpp" />
+      <file file_name="dro-lpc.ld" />
+    </folder>
+    <folder Name="ezcpp">
+      <configuration Name="Common" filter="ezcpp/*.(cpp|h)" />
+      <file file_name="ezcpp/bitbanger.cpp" />
+      <file file_name="ezcpp/bitbanger.h" />
+      <file file_name="ezcpp/boolish.cpp" />
+      <file file_name="ezcpp/boolish.h" />
+      <file file_name="ezcpp/char.cpp" />
+      <file file_name="ezcpp/char.h" />
+      <file file_name="ezcpp/cheaptricks.cpp" />
+      <file file_name="ezcpp/cheaptricks.h" />
+      <file file_name="ezcpp/cstr.cpp" />
+      <file file_name="ezcpp/cstr.h" />
+      <file file_name="ezcpp/eztypes.h" />
+      <file file_name="ezcpp/hook.h" />
+      <file file_name="ezcpp/index.h" />
+      <file file_name="ezcpp/minimath.cpp" />
+      <file file_name="ezcpp/minimath.h" />
+      <file file_name="ezcpp/polledtimer.cpp" />
+      <file file_name="ezcpp/polledtimer.h" />
+      <file file_name="ezcpp/retriggerablemonostable.cpp" />
+      <file file_name="ezcpp/retriggerablemonostable.h" />
+      <file file_name="ezcpp/softpwm.cpp" />
+      <file file_name="ezcpp/softpwm.h" />
+      <file file_name="ezcpp/stopwatch.cpp" />
+      <file file_name="ezcpp/stopwatch.h" />
+      <file file_name="ezcpp/tableofpointers.h" />
+      <file file_name="ezcpp/textkey.cpp" />
+      <file file_name="ezcpp/textkey.h" />
+      <file file_name="ezcpp/quadraturecounter.cpp" />
+      <file file_name="ezcpp/quadraturecounter.h" />
+    </folder>
+    <folder Name="cortexm">
+      <file file_name="cortexm/clocks.h" />
+      <file file_name="cortexm/clockstarter.cpp" />
+      <file file_name="cortexm/core-atomic.cpp" />
+      <file file_name="cortexm/core-atomic.h" />
+      <file file_name="cortexm/core_cm3.cpp" />
+      <file file_name="cortexm/core_cm3.h" />
+      <file file_name="cortexm/cruntime.h" />
+      <file file_name="cortexm/cstartup.cpp" />
+      <file file_name="cortexm/fifo.cpp" />
+      <file file_name="cortexm/fifo.h" />
+      <file file_name="cortexm/nvic.cpp" />
+      <file file_name="cortexm/nvic.h" />
+      <file file_name="cortexm/peripheralband.h" />
+      <file file_name="cortexm/peripheraltypes.h" />
+      <file file_name="cortexm/systick.cpp" />
+      <file file_name="cortexm/systick.h" />
+      <file file_name="cortexm/wtf.cpp" />
+      <file file_name="cortexm/wtf.h" />
+      <folder Name="lpc">
+        <file file_name="cortexm/lpc/gpio.h" />
+        <file file_name="cortexm/lpc/iocon.h" />
+        <file file_name="cortexm/lpc/lpc13xx.h" />
+        <file file_name="cortexm/lpc/lpcperipheral.h" />
+        <file file_name="cortexm/lpc/p1343_board.h" />
+        <file file_name="cortexm/lpc/pinirq.h" />
+        <file file_name="cortexm/lpc/startsignal.h" />
+        <file file_name="cortexm/lpc/uart.h" />
+        <file file_name="cortexm/lpc/uart.cpp" />
+      </folder>
+    </folder>
+  </project>
+  <configuration
+    Name="THUMB Flash Debug"
+    inherited_configurations="THUMB;Flash;Debug" />
+  <configuration
+    Name="THUMB"
+    Platform="ARM"
+    arm_instruction_set="Thumb"
+    arm_library_instruction_set="Thumb"
+    c_preprocessor_definitions="__THUMB"
+    hidden="Yes" />
+  <configuration
+    Name="Flash"
+    c_preprocessor_definitions="__FLASH_BUILD"
+    hidden="Yes" />
+  <configuration
+    Name="Debug"
+    c_preprocessor_definitions="DEBUG"
+    gcc_debugging_level="Level 3"
+    gcc_optimization_level="None"
+    hidden="Yes" />
+</solution>
