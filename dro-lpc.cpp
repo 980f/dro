@@ -65,21 +65,29 @@ const char testMessage[]="Jello Whirled\r\n";
 #include "uart.h"
 Uart theUart(&uartReceiver,&uartSender);
 
+HandleInterrupt(uartIrq){
+  theUart.isr();
+}
 
 P1343devkit kit;
 //CyclicTimer ledToggle;
 
 int main(void){
   theUart.setBaud(115200,ExpectedClock);
+  theUart.reception(true);
+
+  outgoing.stuff(testMessage,sizeof(testMessage));
+  theUart.beTransmitting();
+
+  theUart.irq(true);//most likely this is superfluous
 
   // interrupt defaults to edge sensitive
   qeiPrimeIrq.enable();
 
-
   startPeriodicTimer(1000);//shoot for millisecond resolution
-  ledToggle.trigger();//seconds
+  ledToggle.retrigger();//seconds
   while(1) {
-    __WFE();//WFE is more inclusive than WFI, events don't call an isr but do wakeup the core.
+    MNE(WFE);//WFE is more inclusive than WFI, events don't call an isr but do wakeup the core.
     if(ledToggle){
       kit.led3=!kit.led3;
     }

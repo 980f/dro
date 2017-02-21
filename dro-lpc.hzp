@@ -27,6 +27,7 @@
       debug_initial_breakpoint_set_option="Never"
       gcc_c_language_standard="c11"
       gcc_cplusplus_language_standard="c++14"
+      gcc_entry_point="cstartup"
       link_include_standard_libraries="No"
       link_include_startup_code="No"
       linker_additional_files="$(TargetsDir)/LPC1000/lib/liblpc1000$(LibExt)$(LIB)"
@@ -96,7 +97,6 @@
     <folder Name="cortexm">
       <file file_name="cortexm/clocks.h" />
       <file file_name="cortexm/clockstarter.cpp" />
-      <file file_name="cortexm/core-atomic.cpp" />
       <file file_name="cortexm/core-atomic.h" />
       <file file_name="cortexm/core_cm3.cpp" />
       <file file_name="cortexm/core_cm3.h" />
@@ -104,7 +104,9 @@
       <file file_name="cortexm/cstartup.cpp" />
       <file file_name="cortexm/fifo.cpp" />
       <file file_name="cortexm/fifo.h" />
-      <file file_name="cortexm/nvic.cpp" />
+      <file file_name="cortexm/nvic.cpp">
+        <configuration Name="Common" arm_keep_preprocessor_output="Yes" />
+      </file>
       <file file_name="cortexm/nvic.h" />
       <file file_name="cortexm/peripheralband.h" />
       <file file_name="cortexm/peripheraltypes.h" />
@@ -122,7 +124,16 @@
         <file file_name="cortexm/lpc/startsignal.h" />
         <file file_name="cortexm/lpc/uart.h" />
         <file file_name="cortexm/lpc/uart.cpp" />
+        <file file_name="../cortexm/lpc/gpio.cpp" />
+        <file file_name="../cortexm/lpc/clocks.cpp" />
+        <file file_name="../cortexm/lpc/clocks.h" />
+        <file file_name="../cortexm/lpc/iocon.cpp" />
+        <file file_name="../cortexm/lpc/lpc13xx.cpp" />
+        <file file_name="../cortexm/lpc/p1343_board.cpp" />
+        <file file_name="../cortexm/lpc/syscon.cpp" />
       </folder>
+      <file file_name="../cortexm/core_cmInstr.h" />
+      <file file_name="../cortexm/cortexm3.s" />
     </folder>
   </project>
   <configuration
