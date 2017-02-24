@@ -73,7 +73,8 @@ P1343devkit kit;
 //CyclicTimer ledToggle;
 
 int main(void){
-  theUart.setBaud(115200,ExpectedClock);
+  unsigned actualBaud=theUart.setBaudPieces(6,12,1,ExpectedClock);//externally generated 
+  
   theUart.reception(true);
 
   outgoing.stuff(testMessage,sizeof(testMessage));
