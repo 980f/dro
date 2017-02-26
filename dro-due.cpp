@@ -7,11 +7,7 @@
 #include "nvic.h"
 #include "clocks.h"
 
-#include "systick.h"
-using namespace SystemTimer;
-#include "polledtimer.h"
-#include "tableofpointers.h"
-
+#include "msservice.h"
 #include "core_cmInstr.h"  //wfe OR wfi
 #include "cruntime.h"
 
@@ -24,30 +20,6 @@ ClockStarter startup InitStep(InitHardware/2) (true,0,1000);
 
 ArduinoDue board InitStep(InitApplication);//construction of this turns on internal peripherals and configures pins.
 
-//HandleInterrupt(54){//this gets the button irq
-//  board.toggleLed(5);
-//  board.button.irqAcknowledge();
-//}
-
-////p0-4,p05 for qei.
-//InputPin<0,4> primePhase;
-//InputPin<0,5> otherPhase;
-//Irq prime(primePhase.pini);
-//#define myIrq 4
-
-//should go up and down depending upon the input signals;
-static int axis(0);
-
-//HandleInterrupt( myIrq ) {
-//  //prime phase interrupt
-//  bool dirbit = otherPhase;
-//  if (dirbit) {
-//    --axis; //ignoring quarter phase for now
-//  } else {
-//    ++axis; //will be +/-4 here
-//  }
-//  //??lpc input clear
-//}
 
 #include "fifo.h"
 static FifoBuffer<33> outgoing;
@@ -83,8 +55,6 @@ void prepUart(){
 
 static CyclicTimer slowToggle; //since action is polled might as well wait until main to declare the object.
 RegisterTimer(slowToggle);
-
-MakeRef(SystemTicker,PolledTimerServer);
 
 int main(void) {
   prepUart();
