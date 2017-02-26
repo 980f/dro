@@ -13,6 +13,8 @@ QuadratureCounter pos;//as in 'position'
 using namespace SystemTimer;
 #include "polledtimer.h"
 #include "tableofpointers.h"
+MakeRef(SystemTicker,PolledTimerServer);
+
 
 CyclicTimer ledToggle(750);//todo: clearer timebase
 RegisterTimer(ledToggle);
@@ -76,10 +78,7 @@ int main(void){
   unsigned actualBaud=theUart.setBaudPieces(6,12,1,ExpectedClock);//externally generated 
   
   theUart.reception(true);
-
-  outgoing.stuff(testMessage,sizeof(testMessage));
   theUart.beTransmitting();
-
   theUart.irq(true);//most likely this is superfluous
 
   // interrupt defaults to edge sensitive
@@ -91,6 +90,9 @@ int main(void){
     MNE(WFE);//WFE is more inclusive than WFI, events don't call an isr but do wakeup the core.
     if(ledToggle){
       kit.led3=!kit.led3;
+    }
+    if(outgoing.free()>sizeof(testMessage)){
+      outgoing.stuff(testMessage,sizeof(testMessage));
     }
   }
   return 0;//avert useless warning
