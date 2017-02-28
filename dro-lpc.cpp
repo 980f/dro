@@ -95,18 +95,10 @@ int main(void){
     if(ledToggle){
       kit.led3=!kit.led3;
     }
-    if(outgoing.available()==0){
-      outgoing.stuff(testMessage,sizeof(testMessage)); 
+    if(outgoing.free()>sizeof(testMessage)){
+      outgoing.stuff(testMessage,sizeof(testMessage));
     }
   }
   return 0;//avert useless warning
 } // main
 
-#ifdef HOST_SIM // cross compilation fakeouts
-//// vendore specific code must provide a clock source, architecture varies greatly across vendors.
-//unsigned clockRate(unsigned which){
-//  return 12000000;
-//}
-#else //target build
-
-#endif
