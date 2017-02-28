@@ -8,7 +8,7 @@ INCLUDEPATH += /d/bin/arduino/hardware/arduino/sam/cores/arduino/
 
 DEFINES += ARDUINOnot
 
-SOURCES += main.cpp \
+SOURCES += \
     ../ezcpp/bitbanger.cpp \
     ../ezcpp/boolish.cpp \
     ../ezcpp/char.cpp \
@@ -21,7 +21,16 @@ SOURCES += main.cpp \
     ../ezcpp/textkey.cpp \
     ../due/streamformatter.cpp \
     ../due/streamprintf.cpp \
-    ../ezcpp/softpwm.cpp
+    ../ezcpp/softpwm.cpp \
+    ../cortexm/lpc/baudsearch.cpp \
+    ../cortexm/lpc/clocks.cpp \
+    ../cortexm/lpc/gpio.cpp \
+    ../cortexm/lpc/iocon.cpp \
+    ../cortexm/lpc/lpc13xx.cpp \
+    ../cortexm/lpc/p1343_board.cpp \
+    ../cortexm/lpc/syscon.cpp \
+    ../cortexm/lpc/uart.cpp \
+    ../../dro-lpc.cpp
 
 HEADERS += \
     ../ezcpp/bitbanger.h \
@@ -41,4 +50,14 @@ HEADERS += \
     ../due/streamprintf.h \
     ../due/interruptPin.h \
     ../due/due.ino \
-    ../ezcpp/softpwm.h
+    ../ezcpp/softpwm.h \
+    ../cortexm/lpc/baudsearch.h \
+    ../cortexm/lpc/clocks.h \
+    ../cortexm/lpc/gpio.h \
+    ../cortexm/lpc/iocon.h \
+    ../cortexm/lpc/lpc13xx.h \
+    ../cortexm/lpc/lpcperipheral.h \
+    ../cortexm/lpc/p1343_board.h \
+    ../cortexm/lpc/pinirq.h \
+    ../cortexm/lpc/syscon.h \
+    ../cortexm/lpc/uart.h
