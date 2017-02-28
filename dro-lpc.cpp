@@ -79,10 +79,10 @@ P1343devkit kit;
 //CyclicTimer ledToggle;
 
 int main(void){
+  theUart.setFraming("8N1");
   unsigned actualBaud=theUart.setBaudPieces(6,12,1,ExpectedClock);//externally generated 
   
   theUart.reception(true);
-  theUart.beTransmitting();
   theUart.irq(true);//most likely this is superfluous
 
   // interrupt defaults to edge sensitive
@@ -97,6 +97,7 @@ int main(void){
     }
     if(outgoing.free()>sizeof(testMessage)){
       outgoing.stuff(testMessage,sizeof(testMessage));
+      theUart.beTransmitting();
     }
   }
   return 0;//avert useless warning
