@@ -19,11 +19,11 @@ CyclicTimer ledToggle(750);//todo: clearer timebase
 RegisterTimer(ledToggle); //a polled timer, a macro for 'declare and reigster' could be made but it would have to be variadic to allow constructor args.
 
 #include "core_cmInstr.h"  //wfe OR wfi
-#include "cruntime.h" 
-
 #include "p1343_board.h" //P1343devkit //for led's
 #include "wtf.h" 
+
 using namespace LPC;
+P1343devkit kit;
 
 //todo: should inherit from a board description header
 const unsigned ExpectedClock=12000000;
@@ -53,8 +53,10 @@ static FifoBuffer<63> incoming;
  * negative values of @param are notifications of line errors, -1 for interrupts disabled */
 bool uartReceiver(int indata){
   if((incoming=u8(indata))){
+    kit.led7.toggle();
     return true;
   } else {
+    kit.led6.toggle();
     wtf(24);
     return false;
   }
@@ -63,6 +65,7 @@ bool uartReceiver(int indata){
 /** called by isr when transmission becomes possible.
  *  @returns either an 8 bit unsigned character, or -1 to disable transmission events*/
 int uartSender(){
+  kit.led5.toggle();
   return outgoing;//negative for fifo empty
 }
 
@@ -75,10 +78,9 @@ HandleInterrupt(uartIrq){
   theUart.isr();
 }
 
-P1343devkit kit;
-//CyclicTimer ledToggle;
 
 int main(void){
+  kit.led4=0;//for intensity reference.
   theUart.setFraming("8N1");
   unsigned actualBaud=theUart.setBaudPieces(6,12,1,ExpectedClock);//externally generated 
   
