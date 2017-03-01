@@ -73,6 +73,10 @@ Thumbs.db
 *.exe
 
 *.hzs
-ezcpp/ 
-cortexm/
+
+cortexm
 gitlist
+arduino/ezcpp
+ezcpp
+
+nvicTable.link
