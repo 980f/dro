@@ -85,13 +85,15 @@ int main(void){
   unsigned actualBaud=theUart.setBaudPieces(6,12,1,ExpectedClock);//externally generated 
   
   theUart.reception(true);
-  theUart.irq(true);//most likely this is superfluous
+//set in constructor of uart object  theUart.irq(true);//most likely this is superfluous
 
+  theUart.setLoopback(1);
   // interrupt defaults to edge sensitive
-  qeiPrimeIrq.enable();
+//later++  qeiPrimeIrq.enable();
 
   startPeriodicTimer(1000);//shoot for millisecond resolution
   ledToggle.retrigger();//seconds
+//set by powerup/reset  IRQEN=1;//should already be on ...
   while(1) {
     MNE(WFE);//WFE is more inclusive than WFI, events don't call an isr but do wakeup the core.
     if(ledToggle){
