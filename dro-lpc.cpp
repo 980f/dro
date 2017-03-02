@@ -16,14 +16,14 @@ using namespace SystemTimer;
 MakeRef(SystemTicker,PolledTimerServer); //put the polledtimer poller in the systick isr handler list
 
 CyclicTimer ledToggle(750);//todo: clearer timebase
-RegisterTimer(ledToggle); //a polled timer, a macro for 'declare and reigster' could be made but it would have to be variadic to allow constructor args.
+RegisterTimer(ledToggle); //a polled timer, a macro for 'declare and register' could be made but it would have to be variadic to allow constructor args.
 
 #include "core_cmInstr.h"  //wfe OR wfi
 #include "p1343_board.h" //P1343devkit //for led's
 #include "wtf.h" 
 
 using namespace LPC;
-P1343devkit kit;
+const P1343devkit kit;
 
 //todo: should inherit from a board description header
 const unsigned ExpectedClock=12000000;
@@ -95,9 +95,10 @@ int main(void){
   ledToggle.retrigger();//seconds
 //set by powerup/reset  IRQEN=1;//should already be on ...
   while(1) {
+    //the WFE below wakes up at least every millisecond due to the systick being programmed for 1kHz.
     MNE(WFE);//WFE is more inclusive than WFI, events don't call an isr but do wakeup the core.
     if(ledToggle){
-      kit.led3=!kit.led3;
+      kit.led0=!kit.led0;
     }
     if(outgoing.free()>sizeof(testMessage)){
       outgoing.stuff(testMessage,sizeof(testMessage));
