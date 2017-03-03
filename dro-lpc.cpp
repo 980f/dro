@@ -23,8 +23,8 @@ const P1343devkit kit;
 
 
 // using p0-4,p05 for qei.
-const InputPin<PortNumber(0), BitNumber(4)> primePhase(BusLatch);
-const InputPin<0, 5> otherPhase(BusLatch);
+const InputPin<PortNumber(0), BitNumber(4)> primePhase;
+const InputPin<0, 5> otherPhase;
 
 const Irq<4> qeiPrimeIrq;
 const Irq<5> qeiOtherIrq;

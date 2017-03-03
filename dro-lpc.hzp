@@ -28,7 +28,7 @@
       gcc_c_language_standard="c11"
       gcc_cplusplus_language_standard="c++14"
       gcc_entry_point="cstartup"
-      gcc_optimization_level="Optimize For Size"
+      gcc_optimization_level="Debug"
       link_include_standard_libraries="No"
       link_include_startup_code="No"
       linker_additional_files="$(TargetsDir)/LPC1000/lib/liblpc1000$(LibExt)$(LIB)"
