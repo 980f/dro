@@ -19,8 +19,8 @@
       arm_target_interface_type="SWD"
       arm_target_loader_parameter="12000000"
       arm_use_gcc_libraries="No"
-      build_intermediate_directory="$(ProjectName)-$(Configuration)"
-      build_output_directory="$(ProjectName)-$(Configuration)"
+      build_intermediate_directory="built-$(ProjectName)"
+      build_output_directory="built-$(ProjectName)"
       c_only_additional_options=""
       c_preprocessor_definitions=""
       c_user_include_directories=".;ezcpp;cortexm;cortexm/lpc"
@@ -133,6 +133,7 @@
       </folder>
       <file file_name="cortexm/core_cmInstr.h" />
       <file file_name="cortexm/cortexm3.s" />
+      <file file_name="cortexm/cortexm.ld" />
     </folder>
   </project>
   <configuration
