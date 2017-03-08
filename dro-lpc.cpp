@@ -48,7 +48,7 @@ FifoBuffer<33> outgoing;
 FifoBuffer<63> incoming;
 
 class BufferedUart : public UartHandler {
-public:
+
 public:
   bool receive(int indata) const override {
     if ((incoming = u8(indata))) {
@@ -67,6 +67,7 @@ public:
     return outgoing; //negative for fifo empty
   }
 
+  /** try to put whole message into the sendbuffer */
   bool tryStuff(const char *message, unsigned sizeofMessage) const {
     bool didsomething = false;
     if (outgoing.free() > sizeofMessage) {
@@ -74,7 +75,7 @@ public:
       didsomething = true;
     }
     beTransmitting();
-    stuffsome();
+ //   stuffsome();
     return didsomething;
   }
 };
@@ -112,6 +113,9 @@ int main(void) {
     }
     if (theUart.tryStuff(testMessage, sizeof(testMessage))) {
       kit.led3.toggle();
+    }
+    if(int error=outgoing.boundsError(1)){
+
     }
   }
   return 0;
