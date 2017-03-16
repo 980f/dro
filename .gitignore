@@ -80,3 +80,6 @@ arduino/ezcpp
 ezcpp
 
 nvicTable.link
+c[0-9]
+
+built-dro-lpc/
