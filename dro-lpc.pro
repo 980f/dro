@@ -31,8 +31,7 @@ SOURCES += \
     cortexm/fifo.cpp \
     cortexm/nvic.cpp \
     cortexm/systick.cpp \
-    cortexm/wtf.cpp \
-    ezcpp/countdown.cpp
+    cortexm/wtf.cpp
 
 HEADERS += \
     ezcpp/bitbanger.h \
@@ -65,5 +64,4 @@ HEADERS += \
     cortexm/peripheralband.h \
     cortexm/peripheraltypes.h \
     cortexm/systick.h \
-    cortexm/wtf.h \
-    ezcpp/countdown.h
+    cortexm/wtf.h
