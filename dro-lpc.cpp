@@ -43,14 +43,17 @@ HandleInterrupt(5) { // interrupt number and bit number coincidentally the same.
 
 #include "uart.h"
 
-//the mutable parts of BufferedUart, removed so that that class can be const.
+FifoBuffer<2048> trace;
+class BufferedUart : public UartHandler {
+public:
+
 FifoBuffer<33> outgoing;
 FifoBuffer<63> incoming;
 
-class BufferedUart : public UartHandler {
-
 public:
-  bool receive(int indata) const override {
+  bool loopback=false;
+
+  bool receive(int indata) override {
     if ((incoming = u8(indata))) {
       kit.led7.toggle();
       return true;
@@ -62,43 +65,64 @@ public:
   }
   /** called when transmission becomes possible.
        *  @return either an 8 bit unsigned character, or -1 to disable transmission events*/
-  int send() const override {
+  int send() override {
     kit.led5.toggle();
-    return outgoing; //negative for fifo empty
+    int datum=outgoing;
+    if(datum>=0){
+      trace=datum;
+    }
+    return datum; //negative for fifo empty
   }
 
   /** try to put whole message into the sendbuffer */
-  bool tryStuff(const char *message, unsigned sizeofMessage) const {
+  bool tryStuff(const char *message, unsigned sizeofMessage) {
     bool didsomething = false;
-    if (outgoing.free() > sizeofMessage) {
+    while (outgoing.free() > sizeofMessage) {
       outgoing.stuff(message, sizeofMessage);
       didsomething = true;
     }
     beTransmitting();
- //   stuffsome();
+    stuffsome();//uart is flawed, can't test THRE without potentially losing an incoming error.
     return didsomething;
+  }
+  void testFifo(){
+    for(int i=1;i<1000;++i){
+      outgoing=u8(i);
+      int val=outgoing;
+      if(val!=u8(i)){
+        wtf(21);
+      }
+    }
   }
 };
 
-const BufferedUart theUart;
+BufferedUart theUart;
 
 HandleInterrupt(uartIrq) {
   theUart.isr();
 }
 
-const char testMessage[] = "Jello Whirled\r\n";
+const char testMessage[] = "3.1415962\r\n";
+//"Jello Whirled\r\n";
+const unsigned testBlockSize=sizeof(testMessage);
 
 int main(void) {
+
+  theUart.testFifo();
+
+
   kit.led4 = 0; //for intensity reference.
-  theUart.initializeInternals();
+  theUart.initializeInternals(); //todo: use InitPriority mechanism for this?
 
-  theUart.setFraming("8N1");
-  unsigned actualBaud = theUart.setBaudPieces(6, 12, 1, kit.ExpectedClock); //externally generated
-
+  theUart.setFraming(8,Uart::NoParity,1);
+//  /*9603*/71,1,10
+  unsigned actualBaud = theUart.setBaudPieces(/*9603*/71,10,1, kit.ExpectedClock); //externally generated
+  theUart.setRxLevel(14);
   theUart.reception(true);
   //set in constructor of uart object  theUart.irq(true);//most likely this is superfluous
 
-  theUart.setLoopback(0);
+  theUart.setLoopback(0);//hardware loopback
+  theUart.loopback=1; //soft loopback.
   // interrupt defaults to edge sensitive
   //later++  qeiPrimeIrq.enable();
 
@@ -111,11 +135,24 @@ int main(void) {
     if (ledToggle) {
       kit.led0.toggle();
     }
-    if (theUart.tryStuff(testMessage, sizeof(testMessage))) {
+
+//    if(theUart.incoming.available()>=testBlockSize){
+//      for(unsigned count=0;count <testBlockSize;++count){
+//        if(theUart.incoming != testMessage[count]){
+//          wtf(20); //fired off falsely, outgoing was shifted one,
+//        }
+//      }
+//    }
+
+    if (theUart.tryStuff(testMessage, testBlockSize)) {
       kit.led3.toggle();
     }
-    if(int error=outgoing.boundsError(1)){
 
+
+    int error=theUart.outgoing.boundsError(1);
+    if(error){
+      //failures quit happening ...
+      wtf(19);
     }
   }
   return 0;
