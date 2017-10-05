@@ -129,7 +129,7 @@ int main(void) {
   startPeriodicTimer(1000); //shoot for millisecond resolution
   ledToggle.retrigger();    //seconds
                             //set by powerup/reset  IRQEN=1;//should already be on ...
-  while (1) {
+  while (true) {
     //the WFE below wakes up at least every millisecond due to the systick being programmed for 1kHz.
     MNE(WFE); //WFE is more inclusive than WFI, events don't call an isr but do wakeup the core.
     if (ledToggle) {

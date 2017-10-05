@@ -1,6 +1,6 @@
 #pragma once
 
-//this ran afould of the maple ide, back tousing #defines so that thye can vary wildly between implementations
+//this ran afoul of the maple ide, back to using #defines so that they can vary wildly between implementations
 //enum IrqMode {
 //  Low, High,  //used for digital i/o level
 //  Change, Falling,Rising //only use for Irq mode
@@ -19,7 +19,7 @@ void digitalWrite(unsigned pinnum, bool);
 /* @param arduinoNumber is such as 13 for the typical LED pin.
 @param mode should be one of:: INPUT(0), INPUT_PULLUP(2), and OUTPUT(1) 
 @param polarity is HIGH(1) if true means output pin high, LOW(0) if true means pin low.
-Via polarity you can adde an inverting buffer to a line and change that in one place. 
+Via polarity you can add an inverting buffer to a line and change that in one place.
 Also if driving a FET to operate a higher voltage load a HIGH on a pin is usually a LOW on the device.
 
 Since this is template code the compiler should generate the traditional line of arduino code, these should have no overhead whatsoever compared to using the digitalXXX calls explicitly.
@@ -75,7 +75,7 @@ template <unsigned arduinoNumber,unsigned mode,unsigned polarity=HIGH> struct Pi
 };
 
 /* some convenience class names:
- *  Note that the InputPin used pullup mode, it is rare that that is not what you want. 
+ *  Note that the InputPin uses pullup mode, it is rare that that is not what you want.
  *  Also note that some devices have more options such as pulldown, that arduino does not provide access to.
  */
 template <unsigned arduinoNumber,unsigned polarity=HIGH> struct InputPin: public Pin<arduinoNumber, INPUT_PULLUP, polarity>{
