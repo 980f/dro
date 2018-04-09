@@ -3,8 +3,7 @@ CONFIG += console c++14
 CONFIG -= app_bundle
 CONFIG -= qt
 
-INCLUDEPATH += ezcpp cortexm  cortexm/lpc
-
+INCLUDEPATH += ezcpp cortexm cortexm/lpc
 
 SOURCES += \
     ezcpp/bitbanger.cpp \
@@ -64,4 +63,12 @@ HEADERS += \
     cortexm/peripheralband.h \
     cortexm/peripheraltypes.h \
     cortexm/systick.h \
-    cortexm/wtf.h
+    cortexm/wtf.h \
+    Arduino.h \
+    SPI.h
+
+#QTcreator add this on its own, but I want source linkage, not object linkage.
+#SUBDIRS += \
+#    sdfat.pro
+
+include (sdfat.pro)
