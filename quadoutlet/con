@@ -1,0 +1,1 @@
+picocom  --imap=lfcrlf --noinit --noreset /dev/ttyACM$1
