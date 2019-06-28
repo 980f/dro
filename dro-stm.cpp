@@ -18,12 +18,12 @@ ClockStarter startup InitStep(InitHardware/2) (true,0,1000);//external wasn't wo
 
 //For pins the stm32 lib is using const init'ed objects, LPC templated. It will take some work to reconcile how the two vendors like to describe their ports,
 //however the objects have the same usage syntax so only declarations need to be conditional on vendor.
-#if useSTM32
+#ifdef STM32
 #include "exti.h"  //interrupts only tangentially coupled to i/o pins.
 #include "p103_board.h"
 P103_board board;
 
-Irq &pushButton(Exti::enablePin(board.buttonPin,false,true));
+const Irq &pushButton(Exti::enablePin(board.buttonPin,false,true));
 
 void IrqName(6) (void){
   board.toggleLed();
@@ -35,7 +35,7 @@ const InputPin primePhase(primePin);
 Pin otherPin(PB,12);
 const InputPin otherPhase(otherPin);
 
-Irq &prime(Exti::enablePin(primePin,true,true));
+const Irq &prime(Exti::enablePin(primePin,true,true));
 
 #define myIrq 40
 
@@ -82,10 +82,10 @@ HandleInterrupt( myIrq ) {
 
 #include "fifo.h"
 
-u8 outbuf[33];
+uint8_t outbuf[33];
 Fifo outgoing(sizeof(outbuf),outbuf);
 
-u8 inbuf[33];
+uint8_t inbuf[33];
 Fifo incoming(sizeof(inbuf),inbuf);
 
 #include "uart.h"
@@ -107,25 +107,27 @@ int uartSender(){
   return outdata;//negative for fifo empty
 }
 
-void prepUart(){
-  theUart.setFraming("N81");
-  theUart.setBaud(115200);
-  theUart.setTransmitter(&uartSender);
-  theUart.setReceiver(&uartReceiver);
+//LPC
+//void prepUart(){
+//  theUart.setFraming("N81");
+//  theUart.setBaud(115200);
+//  theUart.setTransmitter(&uartSender);
+//  theUart.setReceiver(&uartReceiver);
+//
+//  theUart.reception(true);
+//  theUart.irq(true);
+//}
 
-  theUart.reception(true);
-  theUart.irq(true);
-}
 #include "minimath.h"
 
-#include "packdatatest.h"
-static packdatatest ender  __attribute((section(".rodata.packdata.last"))) ={'\0'};
+//LPC specific:
+//#include "packdatatest.h"
+//static packdatatest ender  __attribute((section(".rodata.packdata.last"))) ={'\0'};
 
 
 int main(void) {
-  prepUart();
-  CyclicTimer slowToggle; //since action is polled might as well wait until main to declare the object.
-  slowToggle.restart(ticksForSeconds(3));
+//  prepUart();
+  CyclicTimer slowToggle(ticksForSeconds(3)); //since action is polled might as well wait until main to declare the object.
   //soft stuff
   //lb2 call got compiled into 1+lb2(1234/2), lb<1234>::exponent fully resolved into a number.
   int events=0;//lb2(1234);//lb<1234>::exponent;//should reduce to a constant ~10 for 1234 (>-1024, <2048)
@@ -137,14 +139,14 @@ int main(void) {
   while (1) {
     stackFault();//useless here, present to test compilation.
     //re-enabling in the loop to preclude some handler shutting them down. That is unacceptable, although individual ones certainly can be masked.
-    EnableInterrupts;//master enable
+    IrqEnable=1;//master enable
     MNE(WFI);//wait for interrupt. Can't get a straight answer from arm on whether WFE also triggers on interrupts.
     ++events;
-    board.led1=board.button;
+    board.led=board.button;
     if(slowToggle.hasFired()){
       board.toggleLed();
       if(outgoing.insert('A'+(events&15))){
-        theUart.beTransmitting();
+//        theUart.beTransmitting();
       }
     }
   }
