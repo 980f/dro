@@ -18,7 +18,7 @@ ClockStarter startup InitStep(InitHardware/2) (true,0,1000);//external wasn't wo
 
 //For pins the stm32 lib is using const init'ed objects, LPC templated. It will take some work to reconcile how the two vendors like to describe their ports,
 //however the objects have the same usage syntax so only declarations need to be conditional on vendor.
-#ifdef STM32
+#if DRO== STM32
 #include "exti.h"  //interrupts only tangentially coupled to i/o pins.
 #include "p103_board.h"
 P103_board board;
@@ -129,8 +129,7 @@ int main(void) {
 //  prepUart();
   CyclicTimer slowToggle(ticksForSeconds(3)); //since action is polled might as well wait until main to declare the object.
   //soft stuff
-  //lb2 call got compiled into 1+lb2(1234/2), lb<1234>::exponent fully resolved into a number.
-  int events=0;//lb2(1234);//lb<1234>::exponent;//should reduce to a constant ~10 for 1234 (>-1024, <2048)
+  int events=0;
   //  Exti::enablePin(otherPin);
 
   prime.enable();
