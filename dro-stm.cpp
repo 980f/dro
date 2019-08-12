@@ -20,8 +20,8 @@ ClockStarter startup InitStep(InitHardware/2) (true,0,1000);//external wasn't wo
 //however the objects have the same usage syntax so only declarations need to be conditional on vendor.
 #if DRO== STM32
 #include "exti.h"  //interrupts only tangentially coupled to i/o pins.
-#include "p103_board.h"
-P103_board board;
+#include "bluepill.h" //declares a board.
+
 
 const Irq &pushButton(Exti::enablePin(board.buttonPin,false,true));
 
@@ -30,9 +30,9 @@ void IrqName(6) (void){
   Exti::clearPending(board.buttonPin);
 }
 
-Pin primePin(PB,11);
+Pin primePin(PB,1);
 const InputPin primePhase(primePin);
-Pin otherPin(PB,12);
+Pin otherPin(PB,2);
 const InputPin otherPhase(otherPin);
 
 const Irq &prime(Exti::enablePin(primePin,true,true));
