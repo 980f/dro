@@ -1,10 +1,8 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.6)  #actually developing with 3.14 and 3.15, might have to bump this.
 message(STATUS "******************************************************************************")
-unset(QT_QMAKE_EXECUTABLE)
+project(dro-stm)
 
-project(dro)
-
-#had to add this to get cortexm3.s to be processed
+#had to add this to get cortexm3.s to be processed:
 enable_language(ASM)
 
 set(STMUSAGES
@@ -37,7 +35,5 @@ set(SOURCES
   ${STMUSAGES}
   ${EZUSAGES}
   )
-
-#set(LINK_LIBRARIES -lgcc)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
