@@ -14,55 +14,34 @@ using namespace SystemTimer;
 
 #include "core_cmInstr.h"  //wfe OR wfi
 #include "cruntime.h"
-ClockStarter startup InitStep(InitHardware/2) (true,0,1000);//external wasn't working properly, need a test to check before switching to it.
+static ClockStarter startup InitStep(InitHardware/2) (true,0,1000);//external wasn't working properly, need a test to check before switching to it.
 
 //For pins the stm32 lib is using const init'ed objects, LPC templated. It will take some work to reconcile how the two vendors like to describe their ports,
 //however the objects have the same usage syntax so only declarations need to be conditional on vendor.
-#if DRO== STM32
 #include "exti.h"  //interrupts only tangentially coupled to i/o pins.
 #include "bluepill.h" //declares a board.
 
 
-const Irq &pushButton(Exti::enablePin(board.buttonPin,false,true));
+static Pin buttonPin(PA,9);
+
+static const Irq &pushButton(Exti::enablePin(buttonPin,false,true));
 
 void IrqName(6) (void){
   board.toggleLed();
-  Exti::clearPending(board.buttonPin);
+  Exti::clearPending(buttonPin);
 }
 
-Pin primePin(PB,1);
+static Pin primePin(PB,1);
 const InputPin primePhase(primePin);
-Pin otherPin(PB,2);
+static Pin otherPin(PB,2);
 const InputPin otherPhase(otherPin);
 
-const Irq &prime(Exti::enablePin(primePin,true,true));
+static const Irq &prime(Exti::enablePin(primePin,true,true));
 
 #define myIrq 40
 
-#else
-
-#include "p1343_board.h"
-InitStep(InitApplication)
-P1343devkit board;//construction of this turns on internal peripherals and configures pins.
-
-
-Irq pushButton(board.button.pini);
-
-using namespace LPC;
-
-//p0-4,p05 for qei.
-InputPin<0,4> primePhase;
-InputPin<0,5> otherPhase;
-
-
-Irq prime(primePhase.pini);
-
-#define myIrq 4
-
-#endif
-
 //should go up and down depending upon the input signals;
-int axis(0);
+static int axis(0);
 
 HandleInterrupt( myIrq ) {
   //prime phase interrupt
@@ -73,26 +52,22 @@ HandleInterrupt( myIrq ) {
   } else {
     ++axis; //will be +/-4 here
   }
-#if useSTM32
   Exti::clearPending(primePin);
-#else
-  //??lpc input clear
-#endif
 }
 
 #include "fifo.h"
 
-uint8_t outbuf[33];
-Fifo outgoing(sizeof(outbuf),outbuf);
+static uint8_t outbuf[33];
+static Fifo outgoing(sizeof(outbuf),outbuf);
 
-uint8_t inbuf[33];
-Fifo incoming(sizeof(inbuf),inbuf);
+static uint8_t inbuf[33];
+static Fifo incoming(sizeof(inbuf),inbuf);
 
 #include "uart.h"
 /** called by isr on an input event.
  * negative values of @param are notifications of line errors, -1 for interrupts disabled */
 bool uartReceiver(int indata){
-  if(incoming.insert(indata)){
+  if(incoming.insert(char(indata))){
     return true;
   } else {
     wtf(24);
@@ -141,7 +116,7 @@ int main(void) {
     IrqEnable=1;//master enable
     MNE(WFI);//wait for interrupt. Can't get a straight answer from arm on whether WFE also triggers on interrupts.
     ++events;
-    board.led=board.button;
+    board.led=bool(buttonPin);
     if(slowToggle.hasFired()){
       board.toggleLed();
       if(outgoing.insert('A'+(events&15))){
