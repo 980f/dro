@@ -34,6 +34,6 @@ set(SOURCES
   ${CORTEXUSAGES}
   ${STMUSAGES}
   ${EZUSAGES}
-  )
+        cortexm/newclass.cpp cortexm/newclass.h)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
