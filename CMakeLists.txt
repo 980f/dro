@@ -13,7 +13,7 @@ set(STMUSAGES
   "cortexm/stm32/flashcontrol.cpp"
   "cortexm/stm32/afio.cpp"
   "cortexm/stm32/stm32.cpp"
-  )
+)
 
 set(CORTEXUSAGES
   "cortexm/clockstarter.cpp"
@@ -23,17 +23,17 @@ set(CORTEXUSAGES
   "cortexm/cstartup.cpp"
   "cortexm/nvic.cpp"
   "cortexm/cortexm3.s"
-  )
+)
 
 set(EZUSAGES
   "ezcpp/polledtimer.cpp"
-  )
+)
 
 set(SOURCES
   "dro-stm.cpp"
   ${CORTEXUSAGES}
   ${STMUSAGES}
   ${EZUSAGES}
-        cortexm/newclass.cpp cortexm/newclass.h)
+)
 
 add_executable(${PROJECT_NAME} ${SOURCES})

@@ -1,6 +1,7 @@
 # This file is used to ignore files which are generated
 # ----------------------------------------------------------------------------
-
+*Debug/
+build*/
 *~
 *.autosave
 *.a
@@ -35,6 +36,9 @@ Thumbs.db
 /.qmake.cache
 /.qmake.stash
 
+*.bak
+*.bak.*
+
 # qtcreator generated files
 *.pro.user*
 
@@ -44,20 +48,6 @@ Thumbs.db
 # Vim temporary files
 .*.swp
 
-# Visual Studio generated files
-*.ib_pdb_index
-*.idb
-*.ilk
-*.pdb
-*.sln
-*.suo
-*.vcproj
-*vcproj.*.*.user
-*.ncb
-*.sdf
-*.opensdf
-*.vcxproj
-*vcxproj.*
 
 # MinGW generated files
 *.Debug
@@ -66,8 +56,4 @@ Thumbs.db
 # Python byte code
 *.pyc
 
-# Binaries
-# --------
-*.dll
-*.exe
 
