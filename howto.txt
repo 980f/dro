@@ -1,0 +1,14 @@
+Quadrature counting with typical counter
+
+Quadrature tracking counters are a bit rare in the microcontroller world, and rarely more than one per chip.
+
+Up to a moderate speed one can feed the quadrature signals to interrupts, and in each isr inspect the other signal to decide whether to count up or down.
+At high speeds the mechanism limits the ability to change direction, so after some threshold of time between pulses one can switch into just counting edges of one signal after recording the direction of travel.
+As the mechanism slows down one can switch back to using isr's to do the decode. 
+
+If one is setting a motion breakpoint, for example to trigger data acquisition when a sensor is in position, one can figure out which quarter phase matters and use that to decide which edge is fed into the counter.
+
+Most counters have an operational mode where they measure a pulse width, by using the input signal as a count enable. That can provide a speed measurement when using the isr to decode steps.
+When the number rises past a threshold then one has a quarter of that time to reconfigure the counter to count future edges.
+
+
