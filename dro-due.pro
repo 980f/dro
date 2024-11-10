@@ -30,7 +30,7 @@ QMAKE_CXXFLAGS += -save-temps
 INCLUDEPATH += cortexm cortexm/sam3 ezcpp
 
 HEADERS +=\
-    ezcpp/bitbanger.h \
+    ezcpp/bitbasher.h \
     ezcpp/boolish.h \
     ezcpp/bundler.h \
     ezcpp/cheaptricks.h \
@@ -68,7 +68,7 @@ SOURCES +=\
     ezcpp/minimath.cpp \
     ezcpp/polledtimer.cpp \
     ezcpp/boolish.cpp \
-    ezcpp/bitbanger.cpp \
+    ezcpp/bitbasher.cpp \
     ezcpp/circularpointer.cpp \
     ezcpp/limitedcounter.cpp \
     ezcpp/limitedpointer.cpp \

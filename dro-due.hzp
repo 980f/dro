@@ -109,7 +109,7 @@
     </folder>
     <folder Name="ezcpp">
       <file file_name="ezcpp/bitbanger.cpp" />
-      <file file_name="ezcpp/bitbanger.h" />
+      <file file_name="ezcpp/bitbasher.h" />
       <file file_name="ezcpp/cheaptricks.cpp" />
       <file file_name="ezcpp/cheaptricks.h" />
       <file file_name="ezcpp/circularpointer.cpp" />

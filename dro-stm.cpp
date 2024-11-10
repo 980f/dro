@@ -10,7 +10,7 @@
 #include "systick.h"
 using namespace SystemTimer;
 
-#include "polledtimer.h"
+#include "sharedtimer.h"
 
 #include "core_cmInstr.h"  //wfe OR wfi
 #include "cruntime.h"
@@ -20,24 +20,36 @@ ClockStarter startup InitStep(InitHardware/2) (true,0,1000);//external wasn't wo
 //however the objects have the same usage syntax so only declarations need to be conditional on vendor.
 #if useSTM32
 #include "exti.h"  //interrupts only tangentially coupled to i/o pins.
-#include "p103_board.h"
-P103_board board;
-
-Irq &pushButton(Exti::enablePin(board.buttonPin,false,true));
-
-void IrqName(6) (void){
-  board.toggleLed();
-  Exti::clearPending(board.buttonPin);
-}
 
 Pin primePin(PB,11);
 const InputPin primePhase(primePin);
 Pin otherPin(PB,12);
 const InputPin otherPhase(otherPin);
 
-Irq &prime(Exti::enablePin(primePin,true,true));
-
+const Irq &prime(Exti::enablePin(primePin,true,true));
 #define myIrq 40
+
+#include "uart.h"
+
+#if useP103
+#include "p103_board.h"
+P103_board board;
+
+Irq &pushButton(Exti::enablePin(board.buttonPin,false,true));
+
+void IrqName(6) (){
+  board.toggleLed();
+  Exti::clearPending(board.buttonPin);
+}
+
+Uart theUart(2);
+#else//presume bluepill for now, add other boards as the need arises
+#include "bluepill.h"
+Uart theUart(1);
+#endif
+
+// #include "dmabuffereduart.h"
+
 
 #else
 
@@ -108,41 +120,39 @@ int uartSender(){
 }
 
 void prepUart(){
-  theUart.setFraming("N81");
-  theUart.setBaud(115200);
-  theUart.setTransmitter(&uartSender);
-  theUart.setReceiver(&uartReceiver);
-
-  theUart.reception(true);
-  theUart.irq(true);
+  theUart.setParams(115200),
+  // theUart.setTransmitter(&uartSender);
+  // theUart.setReceiver(&uartReceiver);
+  //
+  // theUart.reception(true);
+  theUart.irq.enable();
 }
 #include "minimath.h"
 
-#include "packdatatest.h"
-static packdatatest ender  __attribute((section(".rodata.packdata.last"))) ={'\0'};
+// #include "packdatatest.h"
+// static packdatatest ender  __attribute((section(".rodata.packdata.last"))) ={'\0'};
 
 
-int main(void) {
+[[noreturn]] int main() {
   prepUart();
-  CyclicTimer slowToggle; //since action is polled might as well wait until main to declare the object.
-  slowToggle.restart(ticksForSeconds(3));
-  //soft stuff
-  //lb2 call got compiled into 1+lb2(1234/2), lb<1234>::exponent fully resolved into a number.
-  int events=0;//lb2(1234);//lb<1234>::exponent;//should reduce to a constant ~10 for 1234 (>-1024, <2048)
-  //  Exti::enablePin(otherPin);
+  CyclicTimer slowToggle(ticksForHertz(3)); //since action is polled might as well wait until main to declare the object.
+  int events=0;
 
   prime.enable();
+  #ifdef useP103
   pushButton.enable();
-
-  while (1) {
+  #endif
+  while (true) {
     stackFault();//useless here, present to test compilation.
     //re-enabling in the loop to preclude some handler shutting them down. That is unacceptable, although individual ones certainly can be masked.
-    EnableInterrupts;//master enable
+    IRQEN = true;//master enable
     MNE(WFI);//wait for interrupt. Can't get a straight answer from arm on whether WFE also triggers on interrupts.
     ++events;
-    board.led1=board.button;
+
     if(slowToggle.hasFired()){
-      board.toggleLed();
+#ifdef useP103
+      board.toggleLed();  //replace with psuedo boolean and conditionally create it to either useless gpio or one that has an LED
+#endif
       if(outgoing.insert('A'+(events&15))){
         theUart.beTransmitting();
       }
