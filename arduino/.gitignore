@@ -71,3 +71,7 @@ Thumbs.db
 *.dll
 *.exe
 
+samlib
+*externals.list
+duestuff
+*/c[0-9]

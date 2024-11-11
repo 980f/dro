@@ -1,3 +1,4 @@
+#pragma ide diagnostic ignored "hicpp-signed-bitwise"
 /* dro project
  */
 
@@ -8,17 +9,18 @@
 #include "clocks.h"
 
 #include "systick.h"
+
 using namespace SystemTimer;
 
 #include "sharedtimer.h"
 
 #include "core_cmInstr.h"  //wfe OR wfi
 #include "cruntime.h"
-ClockStarter startup InitStep(InitHardware/2) (true,0,1000);//external wasn't working properly, need a test to check before switching to it.
+
+static ClockStarter startup InitStep(InitHardware / 2)(true, 0, 1000);//external wasn't working properly, need a test to check before switching to it.
 
 //For pins the stm32 lib is using const init'ed objects, LPC templated. It will take some work to reconcile how the two vendors like to describe their ports,
 //however the objects have the same usage syntax so only declarations need to be conditional on vendor.
-#if useSTM32
 #include "exti.h"  //interrupts only tangentially coupled to i/o pins.
 
 Pin primePin(PB,11);
@@ -94,17 +96,18 @@ HandleInterrupt( myIrq ) {
 
 #include "fifo.h"
 
-u8 outbuf[33];
-Fifo outgoing(sizeof(outbuf),outbuf);
+static uint8_t outbuf[33];
+static Fifo outgoing(sizeof(outbuf), outbuf);
 
-u8 inbuf[33];
-Fifo incoming(sizeof(inbuf),inbuf);
+static uint8_t inbuf[33];
+static Fifo incoming(sizeof(inbuf), inbuf);
 
 #include "uart.h"
+
 /** called by isr on an input event.
  * negative values of @param are notifications of line errors, -1 for interrupts disabled */
-bool uartReceiver(int indata){
-  if(incoming.insert(indata)){
+bool uartReceiver(int indata) {
+  if (incoming.insert(char(indata))) {
     return true;
   } else {
     wtf(24);
@@ -114,8 +117,8 @@ bool uartReceiver(int indata){
 
 /** called by isr when transmission becomes possible.
  *  @return either an 8 bit unsigned character, or -1 to disable transmission events*/
-int uartSender(){
-  int outdata=outgoing.remove();
+int uartSender() {
+  int outdata = outgoing.remove();
   return outdata;//negative for fifo empty
 }
 
@@ -128,10 +131,6 @@ void prepUart(){
   theUart.irq.enable();
 }
 #include "minimath.h"
-
-// #include "packdatatest.h"
-// static packdatatest ender  __attribute((section(".rodata.packdata.last"))) ={'\0'};
-
 
 [[noreturn]] int main() {
   prepUart();
@@ -158,5 +157,6 @@ void prepUart(){
       }
     }
   }
-  return 0;
 }
+
+#pragma clang diagnostic pop

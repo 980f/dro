@@ -1,47 +1,12 @@
 <!DOCTYPE CrossStudio_Project_File>
 <solution Name="dro-lpc" target="8" version="2">
-  <configuration
-    Name="Common"
-    arm_architecture="v6M"
-    arm_linker_fiq_stack_size="0"
-    arm_linker_heap_size="0"
-    arm_linker_irq_stack_size="0"
-    arm_linker_stack_size="0"
-    gcc_c_language_standard="c11"
-    gcc_cplusplus_language_standard="c++17"
-    link_include_standard_libraries="No"
-    linker_printf_fmt_level="long"
-    linker_printf_width_precision_supported="No"
-    linker_scanf_character_group_matching_enabled="No"
-    linker_scanf_fmt_level="int"
-    linker_scanf_fp_enabled="No" />
-  <configuration
-    Name="Debug"
-    c_preprocessor_definitions="DEBUG"
-    gcc_debugging_level="Level 3"
-    gcc_optimization_level="None"
-    hidden="Yes" />
-  <configuration
-    Name="Flash"
-    c_preprocessor_definitions="__FLASH_BUILD"
-    hidden="Yes" />
-  <configuration
-    Name="THUMB"
-    Platform="ARM"
-    arm_instruction_set="Thumb"
-    arm_library_instruction_set="Thumb"
-    c_preprocessor_definitions="__THUMB"
-    hidden="Yes" />
-  <configuration
-    Name="THUMB Flash Debug"
-    inherited_configurations="THUMB;Flash;Debug" />
   <project Name="dro-lpc">
     <configuration
       Name="Common"
       Target="LPC1343"
       arm_architecture="v7M"
       arm_core_type="Cortex-M3"
-      arm_gcc_target="arm-none-eabi"
+      arm_gcc_target="arm-unknown-eabi"
       arm_interwork="No"
       arm_library_optimization="Small"
       arm_linker_heap_size="0"
@@ -62,7 +27,7 @@
       c_user_include_directories=".;ezcpp;cortexm;cortexm/lpc"
       debug_initial_breakpoint_set_option="Never"
       gcc_c_language_standard="c11"
-      gcc_cplusplus_language_standard="c++17"
+      gcc_cplusplus_language_standard="c++14"
       gcc_debugging_level="Level 3"
       gcc_entry_point="cstartup"
       gcc_omit_frame_pointer="Yes"
@@ -99,8 +64,8 @@
       <file file_name="$(TargetsDir)/LPC1000/LPC1300_Target.js">
         <configuration Name="Common" file_type="Reset Script" />
       </file>
-      <file file_name="dro-lpc.cpp" />
-      <file file_name="dro-lpc.ld" />
+      <file file_name="keypad.ld" />
+      <file file_name="keypad.cpp" />
     </folder>
     <folder Name="ezcpp">
       <configuration Name="Common" filter="" />
@@ -134,17 +99,6 @@
       <file file_name="ezcpp/quadraturecounter.h" />
     </folder>
     <folder Name="cortexm">
-      <folder Name="lpc">
-        <file file_name="cortexm/lpc/gpio.h" />
-        <file file_name="cortexm/lpc/iocon.h" />
-        <file file_name="cortexm/lpc/lpc13xx.h" />
-        <file file_name="cortexm/lpc/lpcperipheral.h" />
-        <file file_name="cortexm/lpc/p1343_board.h" />
-        <file file_name="cortexm/lpc/pinirq.h" />
-        <file file_name="cortexm/lpc/startsignal.h" />
-        <file file_name="cortexm/lpc/uart.cpp" />
-        <file file_name="cortexm/lpc/uart.h" />
-      </folder>
       <file file_name="cortexm/clocks.h" />
       <file file_name="cortexm/clockstarter.cpp" />
       <file file_name="cortexm/core-atomic.h" />
