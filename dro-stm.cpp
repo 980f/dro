@@ -32,6 +32,7 @@ const Irq &prime(Exti::enablePin(primePin,true,true));
 #define myIrq 40
 
 #include "uart.h"
+#ifdef useSTM32
 
 #if useP103
 #include "p103_board.h"
@@ -47,14 +48,9 @@ void IrqName(6) (){
 Uart theUart(2);
 #else//presume bluepill for now, add other boards as the need arises
 #include "bluepill.h"
-Uart theUart(1);
 #endif
-
-// #include "dmabuffereduart.h"
-
-
+Uart theUart(1);
 #else
-
 #include "p1343_board.h"
 InitStep(InitApplication)
 P1343devkit board;//construction of this turns on internal peripherals and configures pins.
@@ -144,7 +140,7 @@ void prepUart(){
   while (true) {
     stackFault();//useless here, present to test compilation.
     //re-enabling in the loop to preclude some handler shutting them down. That is unacceptable, although individual ones certainly can be masked.
-    IRQEN = true;//master enable
+    IrqEnable = true;//master enable
     MNE(WFI);//wait for interrupt. Can't get a straight answer from arm on whether WFE also triggers on interrupts.
     ++events;
 

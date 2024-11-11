@@ -25,11 +25,10 @@ include(cortexm/postamble.cmake)
 enable_language(ASM)
 
 set(STMUSAGES
-  "cortexm/stm32/clocks.cpp"
   "cortexm/stm32/bluepill.cpp"
-  "cortexm/stm32/gpio.cpp"
+  "cortexm/stm32/${GPIO_MODULE}.cpp"
   "cortexm/stm32/exti.cpp"
-  "cortexm/stm32/flashcontrol.cpp"
+  "cortexm/stm32/${CLOCK_MODULE}.cpp"
   "cortexm/stm32/afio.cpp"
   "cortexm/stm32/stm32.cpp"
 )
