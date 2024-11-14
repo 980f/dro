@@ -27,12 +27,12 @@ INCLUDE_DIRECTORIES("cortexm")
 set(CORTEXUSAGES  ${CORTEXUSAGES}
     "cortexm/bitbanding.cpp"
     "cortexm/clockstarter.cpp"
-    "cortexm/fifo.cpp"
+    "cortexm/fifo.cpp" "cortexm/core-atomic.cpp"
     "cortexm/systick.cpp"
     "cortexm/wtf.cpp"
     "cortexm/nvic.cpp"
     "cortexm/core_cmfunc.cpp"
-    "cortexm/cortexm3.cpp"
+    "cortexm/${gcccpu}.cpp"
     "cortexm/stackfault.cpp"
 )
 
