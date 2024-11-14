@@ -56,4 +56,7 @@ Thumbs.db
 # Python byte code
 *.pyc
 
-
+#sym links
+cortexm
+ezcpp
+nvicTable.inc
