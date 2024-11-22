@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.29)
 
 set(CortexmVendor stm32)
 set(VendorPartname f103)
+set(VendorVariant c8)
 set(BoardName bluepill)
 #processor selection:
 

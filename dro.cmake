@@ -45,6 +45,8 @@ include_directories("ezcpp")
 set(EZUSAGES
   "ezcpp/sharedtimer.cpp"
   "ezcpp/bitbasher.cpp"
+  "ezcpp/quadraturecounter.cpp"
+  "ezcpp/quadraturecounter.h"
 )
 
 if (${CortexmVendor} STREQUAL "stm32")
