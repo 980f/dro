@@ -30,34 +30,37 @@ include_directories(".")
 
 include_directories("cortexm")
 set(CORTEXUSAGES ${CORTEXUSAGES}
-  "cortexm/bitbanding.cpp"
-  "cortexm/clockstarter.cpp"
-  "cortexm/fifo.cpp" "cortexm/core-atomic.cpp"
-  "cortexm/systick.cpp"
-  "cortexm/wtf.cpp"
-  "cortexm/nvic.cpp"
-  "cortexm/core_cmfunc.cpp"
-  "cortexm/${gcccpu}.cpp"
-  "cortexm/stackfault.cpp"
+  cortexm/bitbanding.cpp
+  cortexm/clockstarter.cpp
+  cortexm/fifo.cpp
+  cortexm/core-atomic.cpp
+  cortexm/systick.cpp
+  cortexm/wtf.cpp
+  cortexm/nvic.cpp
+  cortexm/core_cmfunc.cpp
+  cortexm/${gcccpu}.cpp
+  cortexm/stackfault.cpp
 )
 
 include_directories("ezcpp")
 set(EZUSAGES
-  "ezcpp/sharedtimer.cpp"
-  "ezcpp/bitbasher.cpp"
-  "ezcpp/quadraturecounter.cpp"
-  "ezcpp/quadraturecounter.h"
+  ezcpp/sharedtimer.cpp
+  ezcpp/bitbasher.cpp
+  ezcpp/quadraturecounter.cpp
+  ezcpp/quadraturecounter.h
 )
 
 if (${CortexmVendor} STREQUAL "stm32")
   set(${CortexmVendor}_VENDOR_USAGES
-    "cortexm/stm32/${BoardName}.cpp"
-    "cortexm/stm32/stm32.cpp"
-    "cortexm/stm32/gpio.cpp"
-    "cortexm/stm32/exti.cpp"
-    "cortexm/stm32/${CLOCK_MODULE}.cpp"
-    "cortexm/stm32/afio.cpp"
-    "cortexm/stm32/uart.cpp"
+    cortexm/stm32/${BoardName}.cpp
+    cortexm/stm32/stm32.cpp
+    cortexm/stm32/gpio.cpp
+    cortexm/stm32/exti.cpp
+    cortexm/stm32/${CLOCK_MODULE}.cpp
+    cortexm/stm32/afio.cpp
+    cortexm/stm32/uart.cpp
+    cortexm/stm32/dmatransfer.cpp
+    cortexm/stm32/dmatransfer.h
   )
 endif ()
 

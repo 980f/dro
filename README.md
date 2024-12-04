@@ -16,6 +16,8 @@ An index marker is supported. That is a signal that indicates the position is at
 The low level implementation records the speed and position when the index sensor changes, with separate values for low to high and high to low.
 Due to potential hysteresis and backlash this device will not automatically zero on the index marker change, but does support various combinations of the recorded transitions to be referenced by the zero command so that the host doesn't have to deal with reading the various values to compute a best estimate.
 
-It can be put into "circular mode" for counting shaft rotations. The host supplies a counts per revolution and when the position crosses that value a rev's counter is incremented (or decremented) and the position zeroed. 
+It can be put into "rotational mode" for counting shaft rotations. The host supplies a counts per revolution and when the position crosses that value a rev's counter is incremented (or decremented) and the position zeroed. 
 
 While the host may poll for values at any time it can also program for them to be sent periodically by time or distance (or both).
+
+As many axes as possible will be accomodated with rapidly decreasing value after 3.
