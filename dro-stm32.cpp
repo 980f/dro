@@ -37,9 +37,9 @@ static ClockStarter startup InitStep(InitHardware / 2)(true, 0, 1000); //externa
 #include "exti.h"  //interrupts only tangentially coupled to i/o pins.
 
 Pin primePin(PB, 11);
-const InputPin primePhase(primePin);
+const InputPin primePhase( {PB,11});//primePin);
 Pin otherPin(PB, 12);
-const InputPin otherPhase(otherPin);
+const InputPin otherPhase( {PB,12});//&otherPin);
 
 const Irq &prime(Exti::enablePin(primePin, true, true));
 #define myIrq 40
@@ -58,9 +58,11 @@ void IrqName(6) (){
 }
 
 Uart theUart(2);
-#else//presume bluepill for now, add other boards as the need arises
+#elif DEVICE==103//presume bluepill for now, add other boards as the need arises
 #include "bluepill.h"
-
+Uart theUart(1);
+#elif DEVICE==411
+#include "blackpill.h"
 Uart theUart(1);
 #endif
 ///////////////////////////////////////////////////
@@ -70,8 +72,8 @@ public:
   /** for the UI */
   struct Description {
     const char *name;
-    const char *unit;
-    const float resolution;
+    const char *unit;//as in inches, mm,mils
+    const float resolution;//encoder tick in above unit
     Description(const char *name,const char *unit,const float tickSize):name(name),unit(unit),resolution(tickSize){}
   };
   Description description;
